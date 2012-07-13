@@ -4,43 +4,36 @@
  * $Rev:$
  */
 
-package fr.lip6.mg4j.extensions.warc;
+package net.bpiwowar.mg4j.extensions.warc;
 
-import fr.lip6.mg4j.extensions.trec.TRECDocumentCollection;
-import fr.lip6.mg4j.extensions.trec.TRECDocumentFactory;
+import it.unimi.di.big.mg4j.document.DocumentFactory;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.mg4j.document.DocumentFactory;
-
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-
+import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
+import net.bpiwowar.mg4j.extensions.CollectionBuilderOptions;
+import net.bpiwowar.mg4j.extensions.Compression;
+import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
+import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.log4j.Logger;
 
-import uk.ac.gla.dcs.renaissance.mg4j.BuildWARCFileSequence;
-import uk.ac.gla.dcs.renaissance.mg4j.trec.TRECDocumentFactory.CollectionType;
-import uk.ac.gla.dcs.renaissance.util.WarcHTMLResponseRecord;
-import uk.ac.gla.dcs.renaissance.util.WarcRecord;
-import bpiwowar.log.Logger;
+import java.io.*;
+import java.util.Arrays;
 
 /**
  * Managing TREC collections provided in a WARC format, as used for instance
  * by the TREC session track. A document collection basically consists of a set
  * of descriptors pointing to important locations in the (possibly zipped) 
  * document archive. This is called a <em>sequence</em>.
- * @author <a href="mailto:ingo@dcs.gla.ac.uk">Ingo Frommholz</a>
- * @see BuildWARCFileSequence
- * @see fr.lip6.mg4j.extensions.trec.TRECDocumentCollection
+ *
+ * * @author <a href="mailto:ingo@dcs.gla.ac.uk">Ingo Frommholz</a>
+ * @see net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection
  * @see DocumentFactory
  */
 public class WARCDocumentCollection extends TRECDocumentCollection {
 
 	private static final long serialVersionUID = 1;
-	private static final Logger LOGGER = Logger.getLogger();
+	private static final Logger LOGGER = Logger.getLogger(WARCDocumentCollection.class);
 	final boolean debugEnabled = LOGGER.isDebugEnabled();
 
 	/**
@@ -66,7 +59,7 @@ public class WARCDocumentCollection extends TRECDocumentCollection {
 	 * initializes final fields
 	 */
 	public WARCDocumentCollection(String[] file, DocumentFactory factory,
-			ObjectArrayList<TRECDocumentDescriptor> descriptors,
+                                  ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
 			int bufferSize, Compression compression) {
 		super(file, factory, descriptors, bufferSize, compression);
 	}
@@ -91,11 +84,11 @@ public class WARCDocumentCollection extends TRECDocumentCollection {
 				long currStart = warcResponse.getStartMarker();
 				long currStop = warcResponse.getStopMarker();
 				if (debugEnabled)
-					LOGGER.debug("Setting markers {%s, %d, %d}", docno,
-							currStart, currStop);
-				descriptors.add(new TRECDocumentDescriptor(docno,
+					LOGGER.debug(String.format("Setting markers {%s, %d, %d}", docno,
+							currStart, currStop));
+				descriptors.add(new SegmentedDocumentDescriptor(docno,
 						fileIndex, currStart, currStop));
-				LOGGER.debug("Descriptor size is " + descriptors.size());
+				LOGGER.debug("Descriptor size is " + descriptors.size64());
 			}
 		}
 		dis.close();
@@ -113,8 +106,7 @@ public class WARCDocumentCollection extends TRECDocumentCollection {
 	 * @throws java.io.IOException
 	 * @throws ConfigurationException
 	 */
-	public static void run(Options options, String[] file) throws IOException,
-			ConfigurationException {
+	public static void run(CollectionBuilderOptions options, String[] file) throws IOException, ConfigurationException {
 
 		// If we don't have files given, we read a list of file names from STDIN
 		if (file.length == 0) {
@@ -127,18 +119,19 @@ public class WARCDocumentCollection extends TRECDocumentCollection {
 			file = files.toArray(new String[0]);
 		}
 
-		// To avoid problems with find and similar utilities, we sort the file
-		// names
+		// To avoid problems with find and similar utilities,
+		// we sort the file names (unless otherwise instructed)
 		if (!options.unsorted)
 			Arrays.sort(file);
 
-		final TRECDocumentFactory documentFactory = new TRECDocumentFactory(
+		final WARCDocumentFactory documentFactory = new WARCDocumentFactory(
 				options.properties
 						.toArray(new String[options.properties.size()]));
-		documentFactory.setCollectionType(CollectionType.WARC);
+		documentFactory.setCollectionType(WARCDocumentFactory.CollectionType.WARC018);
 
 		if (file.length == 0)
 			System.err.println("WARNING: empty file set.");
+
 		WARCDocumentCollection coll = new WARCDocumentCollection(file,
 				documentFactory, options.bufferSize, options.compression);
 		BinIO.storeObject(coll, options.collection);

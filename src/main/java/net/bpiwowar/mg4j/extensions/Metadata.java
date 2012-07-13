@@ -1,4 +1,4 @@
-package fr.lip6.mg4j.extensions;
+package net.bpiwowar.mg4j.extensions;
 
 public enum Metadata {
     /** The document ID */

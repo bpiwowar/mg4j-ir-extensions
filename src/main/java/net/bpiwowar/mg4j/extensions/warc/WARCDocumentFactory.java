@@ -1,4 +1,4 @@
-package fr.lip6.mg4j.extensions.trec;
+package net.bpiwowar.mg4j.extensions.warc;
 
 /*		 
  * MG4J: Managing Gigabytes for Java
@@ -21,14 +21,13 @@ package fr.lip6.mg4j.extensions.trec;
  *
  */
 
-import fr.lip6.mg4j.extensions.MarkedUpDocument;
-import fr.lip6.mg4j.extensions.TagPointer;
-import fr.lip6.mg4j.extensions.warc.WarcHTMLResponseRecord;
-import fr.lip6.mg4j.extensions.warc.WarcRecord;
-import it.unimi.di.mg4j.document.AbstractDocument;
-import it.unimi.di.mg4j.document.PropertyBasedDocumentFactory;
-import it.unimi.di.mg4j.util.parser.callback.AnchorExtractor;
-import it.unimi.dsi.fastutil.chars.CharArrays;
+import bpiwowar.argparser.Logger;
+import it.unimi.dsi.parser.HTMLFactory;
+import net.bpiwowar.mg4j.extensions.MarkedUpDocument;
+import net.bpiwowar.mg4j.extensions.TagPointer;
+import it.unimi.di.big.mg4j.document.AbstractDocument;
+import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
+import it.unimi.di.big.mg4j.util.parser.callback.AnchorExtractor;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.WordReader;
@@ -36,9 +35,8 @@ import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.parser.BulletParser;
 import it.unimi.dsi.parser.callback.ComposedCallbackBuilder;
 import it.unimi.dsi.util.Properties;
+import net.bpiwowar.mg4j.extensions.trec.TRECSegmentedTextExtractor;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -47,10 +45,11 @@ import java.util.Iterator;
 /**
  * A factory that provides fields for body and title of HTML documents. It uses
  * internally a {@link BulletParser}.
+ * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
 
-public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
-	final static private Log LOGGER = LogFactory.getLog(TRECDocumentFactory.class);
+public class WARCDocumentFactory extends PropertyBasedDocumentFactory {
+	final static private Logger LOGGER = Logger.getLogger();
 
 	private static final long serialVersionUID = 1L;
 
@@ -67,7 +66,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 	private transient char[] text;
 
 	/** The collection type (e.g. TREC, WARC) */
-	private CollectionType collectionType = CollectionType.TREC;
+	private CollectionType collectionType = CollectionType.WARC018;
 
 	@Override
 	protected boolean parseProperty(final String key, final String[] values,
@@ -89,9 +88,8 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 	
 	
 	private void init() {
-		LOGGER.info("Initialising the TREC document factory");
-		/** The TREC bullet parser */
-		this.parser = new BulletParser(TRECParsingFactory.INSTANCE);
+		/** The HTML bullet parser */
+		this.parser = new BulletParser(HTMLFactory.INSTANCE);
 
 		ComposedCallbackBuilder composedBuilder = new ComposedCallbackBuilder();
 
@@ -103,7 +101,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 		text = new char[DEFAULT_BUFFER_SIZE];
 
 		if (collectionType == null)
-			collectionType = CollectionType.TREC;
+			collectionType = CollectionType.WARC018;
 
 	}
 
@@ -115,33 +113,32 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 	 * the copy.
 	 */
 	@Override
-	public TRECDocumentFactory copy() {
-		return new TRECDocumentFactory(defaultMetadata);
+	public WARCDocumentFactory copy() {
+		return new WARCDocumentFactory(defaultMetadata);
 	}
 
-	public TRECDocumentFactory(final Properties properties)
+	public WARCDocumentFactory(final Properties properties)
 			throws ConfigurationException {
 		super(properties);
-		LOGGER.info(String.format("TREC Document Factory metadata is %s", defaultMetadata));
 		initVars();
 		init();
 	}
 
-	public TRECDocumentFactory(
-			final Reference2ObjectMap<Enum<?>, Object> defaultMetadata) {
+	public WARCDocumentFactory(
+            final Reference2ObjectMap<Enum<?>, Object> defaultMetadata) {
 		super(defaultMetadata);
 		initVars();
 		init();
 	}
 
-	public TRECDocumentFactory(final String[] property)
+	public WARCDocumentFactory(final String[] property)
 			throws ConfigurationException {
 		super(property);
 		initVars();
 		init();
 	}
 
-	public TRECDocumentFactory() {
+	public WARCDocumentFactory() {
 		super();
 		initVars();
 		init();
@@ -156,12 +153,12 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 		TEXT, TITLE
 	}
 
+    /**
+     * Type of collection
+     */
 	public static enum CollectionType {
-		// classical TREC
-		TREC,
-
-		// collections in WARC format
-		WARC
+		// collections in WARC 0.18 format
+		WARC018
 	}
 
 	@Override
@@ -205,14 +202,12 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 		init();
 	}
 
-	final static char[] DOCNO_OPEN = "<DOCNO>".toCharArray();
-	final static char[] DOCNO_CLOSE = "</DOCNO>".toCharArray();
 
 	@Override
-	public TRECSegmentedDocument getDocument(final InputStream rawContent,
+	public WARCSegmentedDocument getDocument(final InputStream rawContent,
 			final Reference2ObjectMap<Enum<?>, Object> metadata)
 			throws IOException {
-		return new TRECSegmentedDocument(rawContent, metadata);
+		return new WARCSegmentedDocument(rawContent, metadata);
 	}
 
 	/**
@@ -225,7 +220,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 	 * We delay the actual parsing until it is actually necessary, so operations
 	 * like getting the document URI will not require parsing.
 	 */
-	public class TRECSegmentedDocument extends AbstractDocument implements
+	public class WARCSegmentedDocument extends AbstractDocument implements
             MarkedUpDocument {
 		private final Reference2ObjectMap<Enum<?>, Object> metadata;
 		/** Whether we already parsed the document. */
@@ -243,11 +238,8 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 				return;
 
 			switch(collectionType) {
-			case TREC:
-				parseTRECDocument();
-				break;
-			case WARC:
-				parseWARCDocument();
+			case WARC018:
+				parseWAR018CDocument();
 				break;
 			}
 		}
@@ -257,7 +249,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 		 * 
 		 * @throws java.io.IOException
 		 */
-		private void parseWARCDocument() throws IOException {
+		private void parseWAR018CDocument() throws IOException {
 			WarcRecord warcRecord = null;
 			DataInputStream dis = new DataInputStream(rawContent);
 
@@ -278,8 +270,13 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 						warcResponse.getTargetTrecID());
 
 				// parse the HTML content (skip HTTP header)
-				char[] text = warcResponse.getHTMLContent().toCharArray();
-				parser.parse(text, 0, text.length);
+				Reader reader = warcResponse.getContentReader();
+                char [] buffer = new char[1024];
+                int len = 0;
+                while ((len = reader.read(buffer, 0, buffer.length)) >= 0) {
+                    parser.parse(text, 0, len);
+                }
+                reader.close();
 				textExtractor.title.trim();
 				parsed = true;
 			}
@@ -294,60 +291,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 		}
 
 
-		/**
-		 * Parses a document from a classical TREC collection
-		 * 
-		 * @throws java.io.IOException
-		 */
-		private void parseTRECDocument() throws IOException {
-			// --- Read everything
-			int offset = 0, l;
-
-			InputStreamReader r = new InputStreamReader(rawContent,
-					(String) resolveNotNull(
-							PropertyBasedDocumentFactory.MetadataKeys.ENCODING,
-							metadata));
-
-			while ((l = r.read(text, offset, text.length - offset)) > 0) {
-				offset += l;
-				text = CharArrays.grow(text, offset + 1);
-			}
-
-			// --- Search for DOCNO and use it for the TITLE metadata
-
-			int docno_start = -1;
-			for (int i = 0, n = 0; i < offset; i++) {
-				if (docno_start < 0)
-					if (text[i] == DOCNO_OPEN[n]) {
-						n++;
-						if (n == DOCNO_OPEN.length) {
-							docno_start = i + 1;
-							n = 0;
-						}
-					} else
-						n = 0;
-				else {
-					if (text[i] == DOCNO_CLOSE[n]) {
-						n++;
-						if (n == DOCNO_CLOSE.length) {
-							String docno = new String(text, docno_start, i
-									- DOCNO_CLOSE.length - docno_start + 1)
-									.trim();
-							metadata.put(MetadataKeys.TITLE, docno);
-							break;
-						}
-					} else
-						n = 0;
-				}
-			}
-
-			// Parse the text
-			parser.parse(text, 0, offset);
-			textExtractor.title.trim();
-			parsed = true;
-		}
-
-		@Override
+        @Override
 		public Iterator<TagPointer> tags(int field) {
 			try {
 				ensureParsed();
@@ -366,8 +310,8 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 			}
 		}
 
-		public TRECSegmentedDocument(final InputStream rawContent,
-				final Reference2ObjectMap<Enum<?>, Object> metadata) {
+		public WARCSegmentedDocument(final InputStream rawContent,
+                                     final Reference2ObjectMap<Enum<?>, Object> metadata) {
 			this.metadata = metadata;
 			this.rawContent = rawContent;
 		}

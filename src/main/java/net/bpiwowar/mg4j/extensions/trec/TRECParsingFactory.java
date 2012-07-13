@@ -1,4 +1,4 @@
-package fr.lip6.mg4j.extensions.trec;
+package net.bpiwowar.mg4j.extensions.trec;
 
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;

@@ -1,9 +1,9 @@
 /**
  * 
  */
-package fr.lip6.mg4j.extensions.trec;
+package net.bpiwowar.mg4j.extensions.trec;
 
-import fr.lip6.mg4j.extensions.TagPointer;
+import net.bpiwowar.mg4j.extensions.TagPointer;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.parser.Attribute;
 import it.unimi.dsi.parser.BulletParser;
