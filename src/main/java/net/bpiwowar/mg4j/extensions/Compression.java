@@ -2,8 +2,6 @@ package net.bpiwowar.mg4j.extensions;
 
 import bpiwowar.argparser.EnumValue;
 
-import java.lang.annotation.Annotation;
-
 /**
  * Sets the compression
 * @author B. Piwowarski <benjamin@bpiwowar.net>

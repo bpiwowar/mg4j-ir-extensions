@@ -7,18 +7,16 @@
 package net.bpiwowar.mg4j.extensions.warc;
 
 import it.unimi.di.big.mg4j.document.DocumentFactory;
-import it.unimi.dsi.fastutil.io.BinIO;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
-import net.bpiwowar.mg4j.extensions.CollectionBuilderOptions;
 import net.bpiwowar.mg4j.extensions.Compression;
+import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
-import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
-import org.apache.commons.configuration.ConfigurationException;
+import net.bpiwowar.mg4j.extensions.utils.HTMLDocumentFactory;
 import org.apache.log4j.Logger;
 
-import java.io.*;
-import java.util.Arrays;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Managing TREC collections provided in a WARC format, as used for instance
@@ -26,15 +24,17 @@ import java.util.Arrays;
  * of descriptors pointing to important locations in the (possibly zipped) 
  * document archive. This is called a <em>sequence</em>.
  *
- * * @author <a href="mailto:ingo@dcs.gla.ac.uk">Ingo Frommholz</a>
+ * @author <a href="mailto:ingo@dcs.gla.ac.uk">Ingo Frommholz</a>
+ * @author <a href="mailto:benjamin@bpiwowar.net">Benjamin Piwowarski</a>
  * @see net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection
  * @see DocumentFactory
  */
-public class WARCDocumentCollection extends TRECDocumentCollection {
+public class WARCDocumentCollection extends SegmentedDocumentCollection {
 
 	private static final long serialVersionUID = 1;
 	private static final Logger LOGGER = Logger.getLogger(WARCDocumentCollection.class);
 	final boolean debugEnabled = LOGGER.isDebugEnabled();
+
 
 	/**
 	 * Creates a new TREC WARC collection by parsing the given files.
@@ -42,16 +42,14 @@ public class WARCDocumentCollection extends TRECDocumentCollection {
 	 * @param file
 	 *            an array of file names containing documents in TREC WARC
 	 *            format.
-	 * @param factory
-	 *            the document factory (usually, a composite one).
 	 * @param bufferSize
 	 *            the buffer size.
 	 * @param compression
 	 *            true if the files are gzipped.
 	 */
-	public WARCDocumentCollection(String[] file, DocumentFactory factory,
+	public WARCDocumentCollection(String[] file,
 			int bufferSize, Compression compression) throws IOException {
-		super(file, factory, bufferSize, compression);
+		super(file, new HTMLDocumentFactory(), bufferSize, compression);
 	}
 
 	/**
@@ -65,13 +63,11 @@ public class WARCDocumentCollection extends TRECDocumentCollection {
 	}
 	
 
-	
-	
 	@Override
 	protected void parseContent(int fileIndex, InputStream is)
 			throws IOException {
 		WarcRecord.newFile();
-		WarcRecord warcRecord = null;
+		WarcRecord warcRecord;
 		DataInputStream dis = new DataInputStream(is);
 		boolean oldReadContentFlag =
 				WarcRecord.readContent(false); // don't read content
@@ -86,57 +82,19 @@ public class WARCDocumentCollection extends TRECDocumentCollection {
 				if (debugEnabled)
 					LOGGER.debug(String.format("Setting markers {%s, %d, %d}", docno,
 							currStart, currStop));
-				descriptors.add(new SegmentedDocumentDescriptor(docno,
-						fileIndex, currStart, currStop));
-				LOGGER.debug("Descriptor size is " + descriptors.size64());
+				descriptors.add(new SegmentedDocumentDescriptor(fileIndex, currStart, currStop));
+				LOGGER.debug("Descriptor size is " + size());
 			}
 		}
 		dis.close();
 		WarcRecord.readContent(oldReadContentFlag); // reset readContent flag
 	}
-	
-	
 
-	/**
-	 * Parses the document collection and finally stores the created
-	 * WARCDocumentCollection in a file
-	 * @param options the set of options
-	 * @param file the list of document files to parse. If the list is 
-	 * 		empty, the files are read from STDIN
-	 * @throws java.io.IOException
-	 * @throws ConfigurationException
-	 */
-	public static void run(CollectionBuilderOptions options, String[] file) throws IOException, ConfigurationException {
-
-		// If we don't have files given, we read a list of file names from STDIN
-		if (file.length == 0) {
-			final ObjectArrayList<String> files = new ObjectArrayList<String>();
-			BufferedReader bufferedReader = new BufferedReader(
-					new InputStreamReader(System.in));
-			String s;
-			while ((s = bufferedReader.readLine()) != null)
-				files.add(s);
-			file = files.toArray(new String[0]);
-		}
-
-		// To avoid problems with find and similar utilities,
-		// we sort the file names (unless otherwise instructed)
-		if (!options.unsorted)
-			Arrays.sort(file);
-
-		final WARCDocumentFactory documentFactory = new WARCDocumentFactory(
-				options.properties
-						.toArray(new String[options.properties.size()]));
-		documentFactory.setCollectionType(WARCDocumentFactory.CollectionType.WARC018);
-
-		if (file.length == 0)
-			System.err.println("WARNING: empty file set.");
-
-		WARCDocumentCollection coll = new WARCDocumentCollection(file,
-				documentFactory, options.bufferSize, options.compression);
-		BinIO.storeObject(coll, options.collection);
-
-	}
+    @Override
+    public WARCDocumentCollection copy() {
+        return new WARCDocumentCollection(files, factory().copy(), descriptors,
+                bufferSize, compression);
+    }
 
 
 	

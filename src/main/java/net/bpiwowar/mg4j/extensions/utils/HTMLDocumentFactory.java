@@ -1,4 +1,4 @@
-package net.bpiwowar.mg4j.extensions.warc;
+package net.bpiwowar.mg4j.extensions.utils;
 
 /*		 
  * MG4J: Managing Gigabytes for Java
@@ -22,9 +22,6 @@ package net.bpiwowar.mg4j.extensions.warc;
  */
 
 import bpiwowar.argparser.Logger;
-import it.unimi.dsi.parser.HTMLFactory;
-import net.bpiwowar.mg4j.extensions.MarkedUpDocument;
-import net.bpiwowar.mg4j.extensions.TagPointer;
 import it.unimi.di.big.mg4j.document.AbstractDocument;
 import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.di.big.mg4j.util.parser.callback.AnchorExtractor;
@@ -33,9 +30,13 @@ import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.WordReader;
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.parser.BulletParser;
+import it.unimi.dsi.parser.HTMLFactory;
 import it.unimi.dsi.parser.callback.ComposedCallbackBuilder;
 import it.unimi.dsi.util.Properties;
-import net.bpiwowar.mg4j.extensions.trec.TRECSegmentedTextExtractor;
+import net.bpiwowar.mg4j.extensions.MarkedUpDocument;
+import net.bpiwowar.mg4j.extensions.TagPointer;
+import net.bpiwowar.mg4j.extensions.warc.WarcHTMLResponseRecord;
+import net.bpiwowar.mg4j.extensions.warc.WarcRecord;
 import org.apache.commons.configuration.ConfigurationException;
 
 import java.io.*;
@@ -48,7 +49,7 @@ import java.util.Iterator;
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
 
-public class WARCDocumentFactory extends PropertyBasedDocumentFactory {
+public class HTMLDocumentFactory extends PropertyBasedDocumentFactory {
 	final static private Logger LOGGER = Logger.getLogger();
 
 	private static final long serialVersionUID = 1L;
@@ -57,7 +58,7 @@ public class WARCDocumentFactory extends PropertyBasedDocumentFactory {
 	/** A parser that will be used to extract text from HTML documents. */
 	private transient BulletParser parser;
 	/** The callback recording text. */
-	private transient TRECSegmentedTextExtractor textExtractor;
+	private transient StructuredTextExtractor textExtractor;
 	/** The callback for anchors. */
 	private transient AnchorExtractor anchorExtractor;
 	/** The word reader used for all documents. */
@@ -94,7 +95,7 @@ public class WARCDocumentFactory extends PropertyBasedDocumentFactory {
 		ComposedCallbackBuilder composedBuilder = new ComposedCallbackBuilder();
 
 		composedBuilder
-				.add(this.textExtractor = new TRECSegmentedTextExtractor());
+				.add(this.textExtractor = new StructuredTextExtractor());
 		parser.setCallback(composedBuilder.compose());
 
 		this.wordReader = new FastBufferedReader();
@@ -113,32 +114,32 @@ public class WARCDocumentFactory extends PropertyBasedDocumentFactory {
 	 * the copy.
 	 */
 	@Override
-	public WARCDocumentFactory copy() {
-		return new WARCDocumentFactory(defaultMetadata);
+	public HTMLDocumentFactory copy() {
+		return new HTMLDocumentFactory(defaultMetadata);
 	}
 
-	public WARCDocumentFactory(final Properties properties)
+	public HTMLDocumentFactory(final Properties properties)
 			throws ConfigurationException {
 		super(properties);
 		initVars();
 		init();
 	}
 
-	public WARCDocumentFactory(
+	public HTMLDocumentFactory(
             final Reference2ObjectMap<Enum<?>, Object> defaultMetadata) {
 		super(defaultMetadata);
 		initVars();
 		init();
 	}
 
-	public WARCDocumentFactory(final String[] property)
+	public HTMLDocumentFactory(final String[] property)
 			throws ConfigurationException {
 		super(property);
 		initVars();
 		init();
 	}
 
-	public WARCDocumentFactory() {
+	public HTMLDocumentFactory() {
 		super();
 		initVars();
 		init();
@@ -265,20 +266,22 @@ public class WARCDocumentFactory extends PropertyBasedDocumentFactory {
 			}
 
 			if (warcResponse != null) {
-				// we take the id as document title
-				metadata.put(MetadataKeys.TITLE,
-						warcResponse.getTargetTrecID());
 
 				// parse the HTML content (skip HTTP header)
 				Reader reader = warcResponse.getContentReader();
-                char [] buffer = new char[1024];
                 int len = 0;
-                while ((len = reader.read(buffer, 0, buffer.length)) >= 0) {
+                while ((len = reader.read(text, 0, text.length)) >= 0) {
                     parser.parse(text, 0, len);
                 }
                 reader.close();
-				textExtractor.title.trim();
-				parsed = true;
+
+
+                // We use the TrecID for the URI
+                metadata.put(MetadataKeys.URI, warcResponse.getTargetTrecID());
+                // Set the title
+                metadata.put(MetadataKeys.TITLE, textExtractor.title.trim());
+
+                parsed = true;
 			}
 			else {
 				LOGGER.warn("Couldn't find WARC response in stream!");
@@ -345,7 +348,7 @@ public class WARCDocumentFactory extends PropertyBasedDocumentFactory {
 			ensureParsed();
 			switch (field) {
 			case 0:
-				return new FastBufferedReader(textExtractor.text);
+                return new FastBufferedReader(textExtractor.text);
 			case 1:
 				return new FastBufferedReader(textExtractor.title);
 			case 2:

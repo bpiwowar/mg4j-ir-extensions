@@ -21,28 +21,23 @@ package net.bpiwowar.mg4j.extensions.trec;
  *
  */
 
-import bpiwowar.argparser.*;
-import it.unimi.di.big.mg4j.document.AbstractDocumentCollection;
+import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.DocumentFactory;
-import it.unimi.di.big.mg4j.document.*;
+import it.unimi.di.big.mg4j.document.DocumentIterator;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
+import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.io.SegmentedInputStream;
-import it.unimi.dsi.logging.ProgressLogger;
-import net.bpiwowar.mg4j.extensions.CollectionBuilderOptions;
 import net.bpiwowar.mg4j.extensions.Compression;
-import net.bpiwowar.mg4j.extensions.Metadata;
+import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
+import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentIterator;
 import net.bpiwowar.mg4j.extensions.utils.Match;
-import net.sf.samtools.util.BlockCompressedInputStream;
-import org.apache.commons.configuration.ConfigurationException;
 
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.zip.GZIPInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A collection for the TREC data set.
@@ -68,18 +63,33 @@ import java.util.zip.GZIPInputStream;
  * @author Luca Natali
  * @author Benjamin Piwowarski
  */
-public class TRECDocumentCollection extends AbstractDocumentCollection
-        implements Serializable {
-
+public class TRECDocumentCollection extends SegmentedDocumentCollection {
+    /** Our static logger */
     static final private Logger LOGGER = Logger.getLogger(TRECDocumentCollection.class);
 
+    /** Serialization ID */
     private static final long serialVersionUID = 1;
 
     transient private static final boolean DEBUG = false;
-    /**
-     * Default buffer size, set up after some experiments.
-     */
-    transient public static final int DEFAULT_BUFFER_SIZE = 64000;
+
+
+    transient byte buffer[] = new byte[8 * 1024];
+
+    transient byte docnoBuffer[] = new byte[1024];
+
+    public TRECDocumentCollection(String[] files, DocumentFactory factory, int bufferSize, Compression compression) throws IOException {
+        super(files, factory, bufferSize, compression);
+    }
+
+    public TRECDocumentCollection(String[] files, DocumentFactory factory, ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors, int bufferSize, Compression compression) {
+        super(files, factory, descriptors, bufferSize, compression);
+    }
+
+
+    transient static final Match DOC_OPEN = Match.create("<DOC>"),
+            DOC_CLOSE = Match.create("</DOC>"), DOCNO_OPEN = Match.create("<DOCNO>"),
+            DOCNO_CLOSE = Match.create("</DOCNO>");
+
 
     protected static boolean equals(byte[] a, int len, byte[] b) {
         if (len != b.length)
@@ -88,145 +98,6 @@ public class TRECDocumentCollection extends AbstractDocumentCollection
             if (a[len] != b[len])
                 return false;
         return true;
-    }
-
-    public static void main(String[] arg) throws IOException,
-            InstantiationException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException,
-            InvalidHolderException, ConfigurationException,
-            ArgParserException {
-
-        CollectionBuilderOptions options = new CollectionBuilderOptions();
-        ArgParser argParser = new ArgParser("TRECDocumentCollection");
-        argParser.addOptions(options);
-        String[] file = argParser.matchAllArgs(arg, 0,
-                ArgParserOption.STOP_FIRST_UNMATCHED);
-
-        run(options, file);
-    }
-
-    /**
-     * Parses the document collection and finally stores the
-     * TRECDocumentCollection in a files
-     *
-     * @param options the set of options
-     * @param files   the list of document files to parse
-     * @throws java.io.IOException
-     */
-    public static void run(CollectionBuilderOptions options, String[] files) throws IOException,
-           ConfigurationException {
-
-        // Get an array of files from standard input if we don't have one in the arguments
-        if (files.length == 0) {
-            final ObjectArrayList<String> list = new ObjectArrayList<String>();
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(System.in));
-            String s;
-            while ((s = bufferedReader.readLine()) != null)
-                list.add(s);
-            files = list.toArray(new String[0]);
-        }
-
-        // To avoid problems with find and similar utilities, we sort the files
-        // names
-        if (!options.unsorted)
-            Arrays.sort(files);
-
-        final DocumentFactory documentFactory = new TRECDocumentFactory(
-                options.properties
-                        .toArray(new String[options.properties.size()]));
-
-        if (files.length == 0)
-            System.err.println("WARNING: empty files set.");
-        TRECDocumentCollection coll = new TRECDocumentCollection(files,
-                documentFactory, options.bufferSize, options.compression);
-        BinIO.storeObject(coll, options.collection);
-    }
-
-    /**
-     * The list of the files containing the documents.
-     */
-    String[] files;
-
-    /**
-     * Whether the files in {@link #files} are gzipped.
-     */
-    private Compression compression = Compression.NONE;
-
-    /**
-     * The document factory.
-     */
-    protected DocumentFactory factory;
-
-    /**
-     * The list of document descriptors. We assume that descriptors within the
-     * same files are contiguous - descriptors are saved separately, that's why
-     * they are transient
-     */
-    protected transient ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors;
-
-    /**
-     * The buffer size.
-     */
-    private final int bufferSize;
-
-    /**
-     * The last returned stream.
-     */
-    transient private SegmentedInputStream lastStream;
-
-    transient byte buffer[] = new byte[8 * 1024];
-
-    transient byte docnoBuffer[] = new byte[1024];
-
-    transient static final Match DOC_OPEN = Match.create("<DOC>"),
-            DOC_CLOSE = Match.create("</DOC>"), DOCNO_OPEN = Match.create("<DOCNO>"),
-            DOCNO_CLOSE = Match.create("</DOCNO>");
-
-    /**
-     * Creates a new TREC collection by parsing the given files.
-     *
-     * @param files       an array of files names containing documents in TREC
-     *                    format.
-     * @param factory     the document factory (usually, a composite one).
-     * @param bufferSize  the buffer size.
-     * @param compression true if the files are gzipped.
-     */
-    public TRECDocumentCollection(String[] files, DocumentFactory factory,
-                                  int bufferSize, Compression compression) throws IOException {
-        this.files = files;
-        this.factory = factory;
-        this.bufferSize = bufferSize;
-        this.descriptors = new ObjectBigArrayBigList<SegmentedDocumentDescriptor>();
-        this.compression = compression;
-
-        final ProgressLogger progressLogger = new ProgressLogger(LOGGER);
-        progressLogger.expectedUpdates = files.length;
-        progressLogger.itemsName = "files";
-
-        progressLogger.start("Parsing files with compression \"" + compression
-                + "\"");
-
-        for (int i = 0; i < files.length; i++) {
-            parseContent(i, openFileStream(files[i]));
-            progressLogger.update();
-        }
-
-        progressLogger.done();
-    }
-
-    /**
-     * Copy constructor (that is, the one used by {@link #copy()}. Just
-     * initializes final fields
-     */
-    protected TRECDocumentCollection(String[] files, DocumentFactory factory,
-                                     ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
-                                     int bufferSize, Compression compression) {
-        this.compression = compression;
-        this.files = files;
-        this.bufferSize = bufferSize;
-        this.factory = factory;
-        this.descriptors = descriptors;
     }
 
     @Override
@@ -239,43 +110,11 @@ public class TRECDocumentCollection extends AbstractDocumentCollection
 
     @Override
     public TRECDocumentCollection copy() {
-        return new TRECDocumentCollection(files, factory.copy(), descriptors,
+        return new TRECDocumentCollection(files, factory().copy(), descriptors,
                 bufferSize, compression);
     }
 
-    /**
-     * Returns a document
-     *
-     * @param n number of the document to return
-     * @return the document
-     */
-    @Override
-    public Document document(long n) throws IOException {
-        Reference2ObjectMap<Enum<?>, Object> metadata = metadata(n);
-        return factory.getDocument(stream(n), metadata);
-    }
 
-    /**
-     * Returns the underlying document factory
-     *
-     * @return the document factory
-     */
-    @Override
-    public DocumentFactory factory() {
-        return this.factory;
-    }
-
-    /**
-     * Returns the iterator over the documents. Use this method if you want
-     * sequential access to the documents.
-     *
-     * @return the document iterator
-     * @throws java.io.IOException
-     */
-    @Override
-    public DocumentIterator iterator() throws IOException {
-        return new TRECDocumentIterator(this);
-    }
 
     /**
      * Merges a new collection in this one, by rebuilding the gzFile array and
@@ -302,43 +141,6 @@ public class TRECDocumentCollection extends AbstractDocumentCollection
             tdd.fileIndex += oldLength;
             this.descriptors.add(tdd);
         }
-    }
-
-    @Override
-    public Reference2ObjectMap<Enum<?>, Object> metadata(final long index) {
-        ensureDocumentIndex(index);
-        final Reference2ObjectArrayMap<Enum<?>, Object> metadata
-                = new Reference2ObjectArrayMap<Enum<?>, Object>(4);
-
-        SegmentedDocumentDescriptor trecDocumentDescriptor = descriptors.get(index);
-        metadata.put(PropertyBasedDocumentFactory.MetadataKeys.URI, "Document #" + index);
-        metadata.put(Metadata.DOCID, trecDocumentDescriptor.docid);
-        return metadata;
-    }
-
-    /**
-     * Opens the files stream, supporting certain kinds of compression
-     *
-     * @param fileName the files name
-     * @return the files stream
-     * @throws java.io.IOException if something went wrong or compression is not
-     *                             supported
-     */
-    final InputStream openFileStream(String fileName)
-            throws IOException {
-        if (compression == null) compression = Compression.NONE;
-
-        switch (compression) {
-            case BLOCK_GZIP:
-                return new BlockCompressedInputStream(new File(fileName));
-            case GZIP:
-                return new GZIPInputStream(new FileInputStream(fileName));
-            case NONE:
-                return new FileInputStream(fileName);
-        }
-
-        throw new AssertionError(
-                "Missing case in the switch for handling compression in files");
     }
 
     /**
@@ -420,8 +222,7 @@ public class TRECDocumentCollection extends AbstractDocumentCollection
                         if (debugEnabled)
                             LOGGER.debug("Setting markers {%s, %d, %d}", docno,
                                     currStart, currStop);
-                        descriptors.add(new SegmentedDocumentDescriptor(docno,
-                                fileIndex, currStart, currStop));
+                        descriptors.add(new SegmentedDocumentDescriptor(fileIndex, currStart, currStop));
                         startedBlock = false;
 
                     }
@@ -435,61 +236,5 @@ public class TRECDocumentCollection extends AbstractDocumentCollection
         fbis.close();
     }
 
-
-    @Override
-    public long size() {
-        return descriptors.size();
-    }
-
-    @Override
-    public InputStream stream(final long n) throws IOException {
-        // Creates a Segmented Input Stream with only one segment in (the
-        // requested one).
-        ensureDocumentIndex(n);
-        if (lastStream != null)
-            lastStream.close();
-        final SegmentedDocumentDescriptor descr = descriptors.get(n);
-        return lastStream = new SegmentedInputStream(
-                openFileStream(files[descr.fileIndex]), descr.toSegments());
-    }
-
-
-    /**
-     * Deserialization
-     *
-     * @param s The object stream
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(final ObjectInputStream s) throws IOException,
-            ClassNotFoundException {
-        s.defaultReadObject();
-
-        final int size = s.readInt();
-        final ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors = new ObjectBigArrayBigList<SegmentedDocumentDescriptor>();
-        descriptors.ensureCapacity(size);
-        for (int i = 0; i < size; i++)
-            descriptors.add(new SegmentedDocumentDescriptor(s.readUTF(),
-                    s.readInt(), s.readLong(), s.readInt()));
-        this.descriptors = descriptors;
-    }
-
-    /**
-     * Write the object to disk
-     *
-     * @param s The serialisation step
-     * @throws java.io.IOException
-     */
-    private void writeObject(final ObjectOutputStream s) throws IOException {
-        s.defaultWriteObject();
-        s.writeInt(descriptors.size());
-
-        for (SegmentedDocumentDescriptor descriptor : descriptors) {
-            s.writeUTF(descriptor.docid);
-            s.writeInt(descriptor.fileIndex);
-            s.writeLong(descriptor.startMarker);
-            s.writeInt(descriptor.stopMarkerDiff);
-        }
-    }
 
 }

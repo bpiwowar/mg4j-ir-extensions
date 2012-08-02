@@ -39,7 +39,12 @@
 
 package net.bpiwowar.mg4j.extensions.warc;
 
-import it.unimi.dsi.io.ByteBufferInputStream;
+import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.parser.Attribute;
+import it.unimi.dsi.parser.BulletParser;
+import it.unimi.dsi.parser.Element;
+import it.unimi.dsi.parser.HTMLFactory;
+import it.unimi.dsi.parser.callback.Callback;
 import net.bpiwowar.mg4j.extensions.utils.Match;
 import org.apache.log4j.Logger;
 
@@ -47,9 +52,10 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import java.util.Arrays;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -387,20 +393,44 @@ public class WarcHTMLResponseRecord {
 
 
 
-private static Pattern CHARSET_PATTERN = Pattern.compile("^" + getLUPattern("charset") + "\\s*=\\s*(\\S+)\\s*$");
+    private static Pattern CHARSET_PATTERN = Pattern.compile("^" + getLUPattern("charset") + "\\s*=\\s*(\\S+)\\s*$");
+
+    final char [] buffer = new char[8192];
 
     private Charset retrieveEncoding() {
         // Parse the file
-        Charset charset = retrieveCharsetFromContentType(contentType);
-        if (charset != null)
-            return charset;
 
-        // TODO: Parse the file
+        final Charset[] charset = {retrieveCharsetFromContentType(contentType)}; // use an array so it can be accessed by inner classes
+        if (charset[0] != null)
+            return charset[0];
 
-        // By default
+        final BulletParser parser = new BulletParser(HTMLFactory.INSTANCE);
+
+        parser.setCallback(new MyCallback(charset));
+
+        final byte[] content = start >= 0 ? warcRecord.getContent() : null;
+        final Reader reader = new InputStreamReader(new ByteArrayInputStream(content, start, content.length-start), Charset.defaultCharset());
+
+
+        try {
+            int read = reader.read(buffer, 0, buffer.length);
+            parser.parse(buffer, 0, read);
+        } catch (IOException e) {
+            LOGGER.error("Error while reading stored HTML file");
+        }
+
+        if (charset[0] != null) {
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Retrieved charset from HTML: " + charset[0]);
+            return charset[0];
+        }
+
+
+            // By default
         return DEFAULT_CHARSET;
     }
 
+    /** Retrieve the charset from a content type */
     private Charset retrieveCharsetFromContentType(String contentType) {
         if (contentType == null) return null;
 
@@ -408,18 +438,100 @@ private static Pattern CHARSET_PATTERN = Pattern.compile("^" + getLUPattern("cha
         for (String field : fields) {
             final Matcher matcher = CHARSET_PATTERN.matcher(field);
             if (matcher.matches()) {
-                String encoding = matcher.group(1);
-                try {
-                    return Charset.forName(encoding.toUpperCase());
-                } catch(IllegalCharsetNameException e) {
-                    System.err.println(e);
-                }
+                // Cleans up the encoding: uppercase, remove quotes
+                String encoding = matcher.group(1).toUpperCase();
+                if (encoding.startsWith("\"")) encoding = encoding.substring(1);
+                if (encoding.endsWith("\"")) encoding = encoding.substring(0, encoding.length()-1);
+
+                // Handles some aliases
+                if (encoding.equals("ISO-LATIN-1"))
+                    encoding = "ISO-8859-1";
+
+                return getCharset(encoding);
 
             }
         }
         return null;
     }
 
+    static private Charset getCharset(String encoding) {
+        try {
+            return Charset.forName(encoding);
+        } catch(IllegalCharsetNameException e) {
+            LOGGER.error("Cannot handle charset [" + encoding + "]: " + e);
+        } catch(UnsupportedCharsetException e) {
+            LOGGER.error("Cannot handle charset [" + encoding + "]: " + e);
+        }
+        return null;
+    }
 
+
+    /** Callback used to parse the content encoding */
+    private class MyCallback implements Callback {
+        private final Charset[] charset;
+
+        public MyCallback(Charset[] charset) {
+            this.charset = charset;
+        }
+
+        @Override
+        public void configure(BulletParser parser) {
+            parser.parseTags(true);
+            parser.parseAttributes(true);
+            parser.parseAttribute(Attribute.CHARSET);
+            parser.parseAttribute(Attribute.HTTP_EQUIV);
+            parser.parseAttribute(Attribute.CONTENT);
+        }
+
+        @Override
+        public void startDocument() {
+        }
+
+        @Override
+        public boolean startElement(Element element, Map<Attribute, MutableString> attributes) {
+            if (charset[0] != null)
+                return true;
+
+            if (element == Element.META) {
+                final MutableString httpEquiv = attributes.get(Attribute.HTTP_EQUIV);
+                final MutableString content = attributes.get(Attribute.CONTENT);
+                if (content != null && httpEquiv != null && httpEquiv.toLowerCase().equals("content-type")) {
+                    charset[0] = retrieveCharsetFromContentType(content.toString());
+//                    return charset[0] == null;
+                    return true;
+                }
+
+                final MutableString metaCharset = attributes.get(Attribute.CHARSET);
+                if  (metaCharset != null) {
+                    charset[0] = getCharset(metaCharset.toUpperCase().toString());
+                    return true;
+//                    return charset[0] == null;
+                }
+            }
+
+
+            return true; // element != Element.BODY;
+        }
+
+        @Override
+        public boolean endElement(Element element) {
+//                FIXME: bug in bullet parser ? return element != Element.HEAD;
+            return true;
+        }
+
+        @Override
+        public boolean characters(char[] chars, int i, int i1, boolean b) {
+            return true;
+        }
+
+        @Override
+        public boolean cdata(Element element, char[] chars, int i, int i1) {
+            return true;
+        }
+
+        @Override
+        public void endDocument() {
+        }
+    }
 }
 

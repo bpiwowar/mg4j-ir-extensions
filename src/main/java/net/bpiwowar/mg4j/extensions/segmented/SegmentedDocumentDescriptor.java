@@ -20,28 +20,28 @@ public class SegmentedDocumentDescriptor implements Cloneable {
      */
     public int stopMarkerDiff;
 
+
     /**
      * The document ID
      */
-    public String docid;
+//    public String docid;
 
-    public SegmentedDocumentDescriptor(String docid, int findex, long start,
+    public SegmentedDocumentDescriptor(int findex, long start,
                                        int stopMarkerDiff) {
-        this.docid = docid;
         this.fileIndex = findex;
         this.startMarker = start;
         this.stopMarkerDiff = stopMarkerDiff;
     }
 
-    public SegmentedDocumentDescriptor(String docid, int findex, long start,
+    public SegmentedDocumentDescriptor(int findex, long start,
                                        long stop) {
-        this(docid, findex, start, (int) (stop - start));
+        this(findex, start, (int) (stop - start));
 
     }
 
     @Override
     public Object clone() {
-        return new SegmentedDocumentDescriptor(docid, fileIndex, startMarker,
+        return new SegmentedDocumentDescriptor(fileIndex, startMarker,
                 stopMarkerDiff);
     }
 

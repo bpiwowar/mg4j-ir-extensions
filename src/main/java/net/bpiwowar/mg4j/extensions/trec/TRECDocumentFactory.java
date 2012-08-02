@@ -35,6 +35,7 @@ import it.unimi.dsi.parser.callback.ComposedCallbackBuilder;
 import it.unimi.dsi.util.Properties;
 import net.bpiwowar.mg4j.extensions.MarkedUpDocument;
 import net.bpiwowar.mg4j.extensions.TagPointer;
+import net.bpiwowar.mg4j.extensions.utils.StructuredTextExtractor;
 import org.apache.commons.configuration.ConfigurationException;
 
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
     /**
      * The callback recording text.
      */
-    private transient TRECSegmentedTextExtractor textExtractor;
+    private transient StructuredTextExtractor textExtractor;
     /**
      * The callback for anchors.
      */
@@ -93,13 +94,14 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 
     private void init() {
         LOGGER.info("Initialising the TREC document factory");
-        /** The TREC bullet parser */
+
+        // The parser is a SGML BulletParser with TREC vocabulary
         this.parser = new BulletParser(TRECParsingFactory.INSTANCE);
 
         ComposedCallbackBuilder composedBuilder = new ComposedCallbackBuilder();
 
         composedBuilder
-                .add(this.textExtractor = new TRECSegmentedTextExtractor());
+                .add(this.textExtractor = new StructuredTextExtractor());
         parser.setCallback(composedBuilder.compose());
 
         this.wordReader = new FastBufferedReader();
@@ -150,6 +152,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
         return Fields.values().length;
     }
 
+    /** Fields that can be returned */
     public static enum Fields {
         TEXT, TITLE
     }
@@ -260,7 +263,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
                 text = CharArrays.grow(text, offset + 1);
             }
 
-            // --- Search for DOCNO and use it for the TITLE metadata
+            // --- Search for DOCNO and use it for the URI metadata
 
             int docno_start = -1;
             for (int i = 0, n = 0; i < offset; i++) {
@@ -280,7 +283,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
                             String docno = new String(text, docno_start, i
                                     - DOCNO_CLOSE.length - docno_start + 1)
                                     .trim();
-                            metadata.put(MetadataKeys.TITLE, docno);
+                            metadata.put(MetadataKeys.URI, docno);
                             break;
                         }
                     } else

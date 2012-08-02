@@ -1,7 +1,5 @@
 package net.bpiwowar.mg4j.extensions.utils;
 
-import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
-
 import java.io.UnsupportedEncodingException;
 
 /**

@@ -39,26 +39,19 @@
 
 package net.bpiwowar.mg4j.extensions.warc;
 
-import net.bpiwowar.mg4j.extensions.trec.TRECParsingFactory;
-import net.bpiwowar.mg4j.extensions.trec.TRECSegmentedTextExtractor;
 import it.unimi.dsi.io.SegmentedInputStream;
 import it.unimi.dsi.parser.BulletParser;
 import it.unimi.dsi.parser.callback.ComposedCallbackBuilder;
+import net.bpiwowar.mg4j.extensions.trec.TRECParsingFactory;
+import net.bpiwowar.mg4j.extensions.utils.StructuredTextExtractor;
+import net.sf.samtools.util.BlockCompressedInputStream;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
-
-import net.sf.samtools.util.BlockCompressedInputStream;
 
 public class WarcRecord {
 
@@ -837,7 +830,7 @@ public class WarcRecord {
                     // See how the parsed content looks like
                     BulletParser parser = new BulletParser(TRECParsingFactory.INSTANCE);
                     ComposedCallbackBuilder composedBuilder = new ComposedCallbackBuilder();
-                    TRECSegmentedTextExtractor textExtractor = new TRECSegmentedTextExtractor();
+                    StructuredTextExtractor textExtractor = new StructuredTextExtractor();
                     composedBuilder.add(textExtractor);
                     parser.setCallback(composedBuilder.compose());
                     parser.parse(w.getHTMLContent().toCharArray());

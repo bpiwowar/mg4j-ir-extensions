@@ -1,11 +1,11 @@
-package net.bpiwowar.mg4j.extensions.trec;
+package net.bpiwowar.mg4j.extensions.segmented;
 
 import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.AbstractDocumentIterator;
 import it.unimi.di.big.mg4j.document.Document;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.io.SegmentedInputStream;
-import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
+import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
 
 import java.io.IOException;
 
@@ -14,8 +14,8 @@ import java.io.IOException;
 * @author B. Piwowarski <benjamin@bpiwowar.net>
 * @date 20/6/12
 */
-class TRECDocumentIterator extends AbstractDocumentIterator {
-    static final private Logger LOGGER = Logger.getLogger(TRECDocumentIterator.class);
+public class SegmentedDocumentIterator extends AbstractDocumentIterator {
+    static final private Logger LOGGER = Logger.getLogger(SegmentedDocumentIterator.class);
 
     /**
      * An iterator returning the descriptors of the documents in the
@@ -33,9 +33,13 @@ class TRECDocumentIterator extends AbstractDocumentIterator {
      * <code>null</code> if nextFile() has never been called.
      */
     private SegmentedDocumentDescriptor firstNextDescriptor;
-    private TRECDocumentCollection collection;
+    private SegmentedDocumentCollection collection;
 
-    public TRECDocumentIterator(TRECDocumentCollection collection) {
+    /**
+     * Initialiaze a new document iterator on a segmented document collection
+     * @param collection
+     */
+    public SegmentedDocumentIterator(SegmentedDocumentCollection collection) {
         this.collection = collection;
         descriptorIterator = collection.descriptors
                 .iterator();

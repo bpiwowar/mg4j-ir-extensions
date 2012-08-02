@@ -4,14 +4,15 @@ import bpiwowar.argparser.Argument;
 import bpiwowar.argparser.checkers.IOChecker;
 import bpiwowar.experiments.AbstractTask;
 import bpiwowar.experiments.TaskDescription;
+import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.util.Properties;
 import net.bpiwowar.mg4j.extensions.Compression;
+import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
 import net.bpiwowar.mg4j.extensions.trec.TRECDocumentFactory;
 import net.bpiwowar.mg4j.extensions.warc.WARCDocumentCollection;
-import net.bpiwowar.mg4j.extensions.warc.WARCDocumentFactory;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -25,7 +26,6 @@ import javax.xml.xpath.XPathFactory;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -85,18 +85,17 @@ public class BuildCollection extends AbstractTask {
         // Choose the right document factory
         final String docType = documents.getAttribute("type");
 
-        final TRECDocumentCollection collection;
+        final DocumentCollection collection;
         if (docType.equals("trec")) {
             Properties properties = new Properties();
             properties.setProperty(PropertyBasedDocumentFactory.MetadataKeys.ENCODING, "UTF-8");
             final TRECDocumentFactory documentFactory = new TRECDocumentFactory(properties);
 
             collection = new TRECDocumentCollection(files,
-                    documentFactory, TRECDocumentCollection.DEFAULT_BUFFER_SIZE, compression);
+                    documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression);
 
         } else if (docType.equals("warc/0.18")) {
-            collection = new WARCDocumentCollection(files,
-                    new WARCDocumentFactory(), WARCDocumentCollection.DEFAULT_BUFFER_SIZE, compression);
+            collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression);
         } else {
             LOGGER.error(String.format("Unkown document type [%s]", docType));
             System.exit(-1);
