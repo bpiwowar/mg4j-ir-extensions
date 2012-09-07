@@ -5,7 +5,6 @@ import it.unimi.di.big.mg4j.document.AbstractDocumentIterator;
 import it.unimi.di.big.mg4j.document.Document;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.io.SegmentedInputStream;
-import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
 
 import java.io.IOException;
 

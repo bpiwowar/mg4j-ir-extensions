@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.SegmentedInputStream;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.bpiwowar.mg4j.extensions.Compression;
-import net.bpiwowar.mg4j.extensions.Metadata;
 import net.sf.samtools.util.BlockCompressedInputStream;
 
 import java.io.*;
@@ -25,7 +24,7 @@ import java.util.zip.GZIPInputStream;
  */
 public abstract class SegmentedDocumentCollection extends AbstractDocumentCollection implements Serializable {
     /** The serialization ID */
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 2;
 
     static final private Logger LOGGER = Logger.getLogger(SegmentedDocumentCollection.class);
     /**
@@ -168,7 +167,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
             ClassNotFoundException {
         s.defaultReadObject();
 
-        final int size = s.readInt();
+        final long size = s.readLong();
         final ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors = new ObjectBigArrayBigList<SegmentedDocumentDescriptor>();
         descriptors.ensureCapacity(size);
         for (int i = 0; i < size; i++)
@@ -184,7 +183,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
      */
     private void writeObject(final ObjectOutputStream s) throws IOException {
         s.defaultWriteObject();
-        s.writeInt(descriptors.size());
+        s.writeLong(descriptors.size64());
 
         for (SegmentedDocumentDescriptor descriptor : descriptors) {
             s.writeInt(descriptor.fileIndex);

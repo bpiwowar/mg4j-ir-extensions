@@ -23,7 +23,6 @@ package net.bpiwowar.mg4j.extensions.trec;
 
 import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.DocumentFactory;
-import it.unimi.di.big.mg4j.document.DocumentIterator;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
@@ -33,7 +32,6 @@ import it.unimi.dsi.io.SegmentedInputStream;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
-import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentIterator;
 import net.bpiwowar.mg4j.extensions.utils.Match;
 
 import java.io.IOException;
@@ -73,9 +71,9 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
     transient private static final boolean DEBUG = false;
 
 
-    transient byte buffer[] = new byte[8 * 1024];
+    transient byte buffer[];
 
-    transient byte docnoBuffer[] = new byte[1024];
+    transient byte docnoBuffer[];
 
     public TRECDocumentCollection(String[] files, DocumentFactory factory, int bufferSize, Compression compression) throws IOException {
         super(files, factory, bufferSize, compression);
@@ -83,6 +81,13 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
 
     public TRECDocumentCollection(String[] files, DocumentFactory factory, ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors, int bufferSize, Compression compression) {
         super(files, factory, descriptors, bufferSize, compression);
+    }
+
+    public void checkBuffers() {
+        if (buffer == null) {
+            buffer = new byte[8 * 1024];
+            docnoBuffer = new byte[1024];
+        }
     }
 
 
@@ -170,6 +175,7 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
         DOC_OPEN.reset();
         position = 0;
         int docnoCount = 0;
+        checkBuffers();
 
         final boolean debugEnabled = LOGGER.isDebugEnabled();
         while ((read = fbis.read(buffer, 0, buffer.length)) > 0) {
