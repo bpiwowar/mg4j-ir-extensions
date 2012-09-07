@@ -1,58 +1,66 @@
-/**
+/*
+ * This file is part of experimaestro.
+ * Copyright (c) 2012 B. Piwowarski <benjamin@bpiwowar.net>
+ *
+ * experimaestro is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * experimaestro is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with experimaestro.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ /**
  * Builds a sequence object
  */
 var task_sequence = {
-	module: module_adhoc.id,	
-	id: xpm.qName(qirns(), "sequence"),
+	id: qname(ns_mg4jext, "sequence"),
 	
 	description: 
 	<><p>Creates a <b>sequence</b> from a list of files, 
 	together with the adapted document builder
 	</p></>,
     
-    inputs: <inputs xmlns:irc={irc.uri}>
+    inputs: <inputs xmlns:irc={ns_irc}>
 			<param id="outdir" type="xp:directory" help="The main directory for output"/>
 			
-			<param id="documents" type="irc:task">
+			<param id="documents" type="irc:task" required="true">
 				<p>A document object as produced by the <code>get-task</code> command of 
-				<a href="http://ircollections.sourceforge.net">IR collections</a>.</p>
+				<a href="https://github.com/bpiwowar/ircollections">IR collections</a>.</p>
 			</param>
 		</inputs>,
 		
-	outputs: <outputs xmlns:qia={qia.uri}>
-			<value id="sequence" type="qia:sequence"/>
+	outputs: <outputs xmlns:mg4jext={ns_mg4jext}>
+			<value id="sequence" type="mg4jext:sequence"/>
 		</outputs>,
 	
 	run: function(inputs) {
 		// Initialisation
 		var outdir = new java.io.File(inputs.outdir.@xp::value);
+		var id = inputs.documents.ns_irc::documents.@id;
 
-		xpm.log("Outdir is [%s]", outdir);
 		// Get the collection directory
-		var colldir = xpm.filepath(outdir, inputs.documents.@id);
-		var sequence = format("%s/collection", colldir);
-
-		// Constructs the command line
-		var dtype = inputs.documents.@type.toString();
-		switch(dtype) {
-			case "trec":
-				command = ["trec-sequence", "--property", "encoding=ISO-8859-1"];
-				break;
-			default: 
-				throw format("Unknown collection type %s", dtype);
-		}
-		
-		var seqfile = format("%s.seq", sequence);
-		var command = [].concat("cat", inputs.documents.@path.toString(), "|", 
-			qiaJarCmd, command, "--collection", seqfile);
-		
-
+		var colldir = xpm.filepath(outdir, id);
 		colldir.mkdirs();
-		scheduler.addCommandLineJob(sequence, command, []);
+
+		var sequence = xpm.filepath(colldir, "collection").getAbsolutePath();
+		
+		var command = get_command(["build-collection", "--out", sequence]);
+
+		xpm.log("Creating sequence in [%s] with command [%s]", sequence, command.join(" "));
+		scheduler.command_line_job(sequence, command, {
+			stdin: inputs.documents.toString()
+		});
 		
 		var r = <xpm:outputs xmlns:xpm={xpm.ns()}>
-			<sequence xmlns:qia={qirns()} xmlns={qirns()} xpm:resource={sequence}>
-			  <path qia:arg="collection-sequence">{seqfile}</path>
+			<sequence xmlns:mg4jext={ns_mg4jext.uri} xmlns={ns_mg4jext.uri} xpm:resource={sequence}>
+			  <path mg4jext:arg="collection-sequence">{sequence}</path>
 			  {inputs.documents}
 			</sequence>
 		</xpm:outputs>;
