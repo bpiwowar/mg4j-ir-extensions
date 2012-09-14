@@ -20,30 +20,28 @@
  * Builds a sequence object
  */
 var task_sequence = {
-	id: qname(ns_mg4jext, "sequence"),
-	
+	id: qname(mg4jext, "sequence"),
+	output: qname(mg4jext, "sequence"),
+
 	description: 
-	<><p>Creates a <b>sequence</b> from a list of files, 
-	together with the adapted document builder
-	</p></>,
+		<><p>Creates a <b>sequence</b> from a list of files, 
+		together with the adapted document builder
+		</p></>,
     
     inputs: <inputs xmlns:irc={ns_irc}>
-			<param id="outdir" type="xp:directory" help="The main directory for output"/>
+			<value id="outdir" value-type="xp:directory" help="The main directory for output"/>
 			
-			<param id="documents" type="irc:task" required="true">
+			<xml id="documents" type="irc:documents">
 				<p>A document object as produced by the <code>get-task</code> command of 
 				<a href="https://github.com/bpiwowar/ircollections">IR collections</a>.</p>
-			</param>
+			</xml>
 		</inputs>,
 		
-	outputs: <outputs xmlns:mg4jext={ns_mg4jext}>
-			<value id="sequence" type="mg4jext:sequence"/>
-		</outputs>,
 	
 	run: function(inputs) {
 		// Initialisation
 		var outdir = new java.io.File(inputs.outdir.@xp::value);
-		var id = inputs.documents.ns_irc::documents.@id;
+		var id = inputs.documents.@id;
 
 		// Get the collection directory
 		var colldir = xpm.filepath(outdir, id);
@@ -54,20 +52,20 @@ var task_sequence = {
 		var command = get_command(["build-collection", "--out", sequence]);
 
 		xpm.log("Creating sequence in [%s] with command [%s]", sequence, command.join(" "));
+		xpm.log("Documents: %s", inputs.documents.toXMLString());
 		scheduler.command_line_job(sequence, command, {
-			stdin: inputs.documents.toString()
+			stdin: inputs.documents.toXMLString()
 		});
 		
-		var r = <xpm:outputs xmlns:xpm={xpm.ns()}>
-			<sequence xmlns:mg4jext={ns_mg4jext.uri} xmlns={ns_mg4jext.uri} xpm:resource={sequence}>
+		var r =
+			<sequence xmlns:xpm={xp.uri} xmlns:mg4jext={mg4jext.uri} xmlns={mg4jext.uri} xpm:resource={sequence}>
 			  <path mg4jext:arg="collection-sequence">{sequence}</path>
 			  {inputs.documents}
-			</sequence>
-		</xpm:outputs>;
+			</sequence>;
 		
 		return r;
 	}
 	
 }
 
-xpm.addTaskFactory(task_sequence);
+xpm.add_task_factory(task_sequence);
