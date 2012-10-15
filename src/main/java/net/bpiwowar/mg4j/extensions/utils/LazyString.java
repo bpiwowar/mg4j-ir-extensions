@@ -8,7 +8,7 @@ public class LazyString {
     private String format;
     private Object[] objects;
 
-    public LazyString(String format, Object[] objects) {
+    public LazyString(String format, Object... objects) {
         this.format = format;
         this.objects = objects;
     }

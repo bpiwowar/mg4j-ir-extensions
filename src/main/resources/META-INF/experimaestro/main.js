@@ -4,6 +4,7 @@
 var mg4jext = new Namespace("net.bpiwowar.mg4j-ir-extensions");
 var mg4j = mg4jext;
 var ns_irc = new Namespace("http://ircollections.sourceforge.net");
+var irc = ns_irc;
 
 xpm.set_property("namespace", mg4jext);
 
@@ -67,4 +68,4 @@ include("configuration/relevance_feedback.js");
 include("configuration/bm25.js");
 
 include("composed/prepare_collection.js");
-// include("composed/adhoc.js");
+include("composed/adhoc.js");

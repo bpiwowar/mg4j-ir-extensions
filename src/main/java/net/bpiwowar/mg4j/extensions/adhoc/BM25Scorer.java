@@ -1,4 +1,4 @@
-package net.bpiwowar.mg4j.extensions.scorer;
+package net.bpiwowar.mg4j.extensions.adhoc;
 
 /*		 
  * MG4J: Managing Gigabytes for Java (big)
@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.Arrays;
 
-/** A scorer that implements the BM25 ranking scheme.
+/** A adhoc that implements the BM25 ranking scheme.
  * 
  * <p>BM25 is the name of a ranking scheme for text derived from the probabilistic model. The essential feature
  * of the scheme is that of assigning to each term appearing in a given document a weight depending
@@ -178,13 +178,13 @@ public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScor
 	/** A visitor used by the generic evaluator. */
 	private Visitor visitor;
 
-	/** Creates a BM25 scorer using {@link #DEFAULT_K1} and {@link #DEFAULT_B} as parameters.
+	/** Creates a BM25 adhoc using {@link #DEFAULT_K1} and {@link #DEFAULT_B} as parameters.
 	 */
 	public BM25Scorer() {
 		this( DEFAULT_K1, DEFAULT_B );
 	}
 
-	/** Creates a BM25 scorer using specified <var>k</var><sub>1</sub> and <var>b</var> parameters.
+	/** Creates a BM25 adhoc using specified <var>k</var><sub>1</sub> and <var>b</var> parameters.
 	 * @param k1 the <var>k</var><sub>1</sub> parameter.
 	 * @param b the <var>b</var> parameter.
 	 */
@@ -196,7 +196,7 @@ public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScor
 		k1Times1MinusB = k1 * ( 1 - b );
 	}
 
-	/** Creates a BM25 scorer using specified <var>k</var><sub>1</sub> and <var>b</var> parameters specified by strings.
+	/** Creates a BM25 adhoc using specified <var>k</var><sub>1</sub> and <var>b</var> parameters specified by strings.
 	 * 
 	 * @param k1 the <var>k</var><sub>1</sub> parameter.
 	 * @param b the <var>b</var> parameter.
@@ -282,7 +282,7 @@ public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScor
 			if ( flatIndexIterator.length != 0 ) {
 				// Some caching of frequently-used values
 				k1TimesBDividedByAverageDocumentSize = k1 * b * flatIndexIterator[ 0 ].index().numberOfDocuments / flatIndexIterator[ 0 ].index().numberOfOccurrences;
-				if ( ( this.sizes = flatIndexIterator[ 0 ].index().sizes ) == null ) throw new IllegalStateException( "A BM25 scorer requires document sizes" );
+				if ( ( this.sizes = flatIndexIterator[ 0 ].index().sizes ) == null ) throw new IllegalStateException( "A BM25 adhoc requires document sizes" );
 
 				// We do all logs here, and multiply by the weight
 				k1Plus1TimesWeightedIdfPart = new double[ numberOfPairs ];
@@ -302,7 +302,7 @@ public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScor
 			if ( DEBUG ) LOGGER.debug( "Average document sizes: " + Arrays.toString( k1TimesBDividedByAverageDocumentSize ) );
 			final IntBigList[] sizes = new IntBigList[ index.length ];
 			for( int i = index.length; i-- != 0; )
-				if ( ( sizes[ i ] = index[ i ].sizes ) == null ) throw new IllegalStateException( "A BM25 scorer requires document sizes" );
+				if ( ( sizes[ i ] = index[ i ].sizes ) == null ) throw new IllegalStateException( "A BM25 adhoc requires document sizes" );
 			
 			setupVisitor.prepare();
 			d.accept( setupVisitor );

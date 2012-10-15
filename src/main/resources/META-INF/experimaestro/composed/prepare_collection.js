@@ -3,11 +3,10 @@ var composed_prepare_collection = {
 	
 	description: <>
 		<p>Prepare a collection:
-		<ol>
-		<li>parse document boundaries</li>
-		<li>build the inverted index</li>
-		<li>build the direct index</li>
-		</ol>)
+			<ol>
+				<li>parse document boundaries</li>
+				<li>build the inverted index</li>
+			</ol>
 		</p>
 	</>,
 	

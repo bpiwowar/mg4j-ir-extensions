@@ -11,30 +11,38 @@ xpm.add_task_factory({
 	</>,
 	
 	inputs: 
-		<inputs xmlns={xpm.ns()} xmlns:irc={ircns()} xmlns:qia={qia.uri}>
-			<task id="prepare" type="qia:prepare-collection" named="false"/>
+		<inputs xmlns={xp.uri} xmlns:irc={irc.uri} xmlns:mg4j={mg4j.uri}>
+			<task id="prepare" ref="mg4j:prepare-collection" merge="true"/>
 			
-			<task id="topics" type="qia:get-topics">
-			   <connect from="prepare.index" path="xp:parentPath(qia:index/qia:path)" to="outdir"/>
-			   <connect from="prepare.collection" path="irc:task/irc:topics" to="topics"/>
-			</task>
-
             <!-- Description of the model we use -->
-			<task id="model" type="qia:adhoc-model"/>
+			<alternative id="model" type="mg4j:adhoc.model"/>
 						
-			<task id="run" type="qia:adhoc-run">
+			<task id="run" ref="mg4j:adhoc.run">
+        	   <connect from="model" path="." to="model"/>
 			   <connect from="prepare.index" path="." to="index"/>
-        	   <connect from="model" path="qia:adhoc-model" to="model"/>
-			   <connect from="prepare.collection" path="qia:topics" to="topics"/>
+			   <connect from="prepare.collection" path="irc:topics" to="topics"/>
+
+			   <!-- Output will be in outdir/<id task>/<id model> -->
+				<connect to="run-path" xmlns:irc={irc.uri}>
+					<from var="o" ref="prepare.outdir"/>
+					<from var="c" ref="prepare.collection"/>
+					<from var="m" ref="model"/>
+					<xquery>
+						concat($o/@xp:value, "/","adhoc",
+							  "/",$c//irc:documents/@id,
+							  "/",$c//irc:topics/@id,
+							  "/",$m/@id)
+					</xquery>
+			   </connect>
 			</task>
 
-			<task id="evaluate" type="irc:evaluate">
-			   <connect from="run" path="qia:run/qia:path" to="run"/>
-			   <connect from="prepare" path="irc:qrels" to="qrels"/>
-			   <connect from="run" path="xp:joinPaths(xp:parentPath(qia:run/qia:path), 'results.dat')" to="out"/>
-			</task>
+			<!--
+			 <task id="evaluate" ref="irc:evaluate">
+			    <connect from="run" path="mg4j:run/mg4j:path" to="run"/>
+			    <connect from="prepare" path="irc:qrels" to="qrels"/>
+			    <connect from="run" path="xp:joinPaths(xp:parentPath(mg4j:run/mg4j:path), 'results.dat')" to="out"/>
+			 </task>
+			-->
 		</inputs>,
 		
-	outputs: <></>,
 });
-

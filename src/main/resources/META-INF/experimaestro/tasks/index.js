@@ -19,14 +19,16 @@ var task_index = {
 	
 	   // --- Initialisations
 	   
+
 	   // Get the sequence file
 	   var seq_file = inputs.sequence.mg4j::path;
 	   var index_dir = inputs.indexdir == undefined ? xpm.filepath(new java.io.File(seq_file).getParentFile()) : index_dir = inputs.indexdir.@xp::value;
 	   var basename = inputs.basename.@xp::value;
+	   var commandId = index_dir + "/" + basename;
 	   
 	   // Prepare the output
 	   var output =
-		   <mg4j:index xmlns:mg4j={mg4j.uri} xmlns:xp={xp.uri} xp:resource={index_dir}>
+		   <mg4j:index xmlns:mg4j={mg4j.uri} xmlns:xp={xp.uri} xp:resource={commandId}>
 			   <mg4j:directory mg4j:arg="index-dir">{index_dir}</mg4j:directory>
 			   <mg4j:name mg4j:arg="index-basename">{basename}</mg4j:name>
 
@@ -48,11 +50,9 @@ var task_index = {
 
 	   command = get_command(command);
 
-	   xpm.log("Resources: %s", resources.toSource());
-
 	   // Make the directories
 	   index_dir.mkdirs();
-	   scheduler.command_line_job(index_dir + "/" + basename, command, { "lock": resources });
+	   scheduler.command_line_job(commandId, command, { "lock": resources });
 
 	   return output;
 	   
