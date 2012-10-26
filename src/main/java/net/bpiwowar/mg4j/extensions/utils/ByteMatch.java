@@ -7,27 +7,27 @@ import java.io.UnsupportedEncodingException;
  *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
-public class Match {
+public class ByteMatch {
     final byte[] bytes;
     final byte[] alt;
 
     int index = 0;
 
-    public Match(byte[] bytes, byte [] alt) {
+    public ByteMatch(byte[] bytes, byte[] alt) {
         this.bytes = bytes;
         this.alt = alt;
     }
 
-    static public Match create(String string) {
+    static public ByteMatch create(String string) {
         return create(string, false);
     }
 
-    static public Match create(String string, boolean noCase) {
+    static public ByteMatch create(String string, boolean noCase) {
         try {
             if (!noCase)
-                return new Match(string.getBytes("ASCII"), null);
+                return new ByteMatch(string.getBytes("ASCII"), null);
 
-            return new Match(string.toLowerCase().getBytes("ASCII"), string.toUpperCase().getBytes("ASCII"));
+            return new ByteMatch(string.toLowerCase().getBytes("ASCII"), string.toUpperCase().getBytes("ASCII"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
