@@ -7,16 +7,17 @@
 package net.bpiwowar.mg4j.extensions.warc;
 
 import it.unimi.di.big.mg4j.document.DocumentFactory;
+import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
 import net.bpiwowar.mg4j.extensions.utils.HTMLDocumentFactory;
 import org.apache.log4j.Logger;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * Managing TREC collections provided in a WARC format, as used for instance
@@ -48,8 +49,8 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
 	 *            true if the files are gzipped.
 	 */
 	public WARCDocumentCollection(String[] file,
-			int bufferSize, Compression compression) throws IOException {
-		super(file, new HTMLDocumentFactory(), bufferSize, compression);
+			int bufferSize, Compression compression, File metadataFile) throws IOException {
+		super(file, new HTMLDocumentFactory(), bufferSize, compression, metadataFile);
 	}
 
 	/**
@@ -58,13 +59,28 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
 	 */
 	public WARCDocumentCollection(String[] file, DocumentFactory factory,
                                   ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
-			int bufferSize, Compression compression) {
-		super(file, factory, descriptors, bufferSize, compression);
+			int bufferSize, Compression compression, File metadataFile) {
+		super(file, factory, descriptors, bufferSize, compression, metadataFile);
 	}
-	
 
-	@Override
-	protected void parseContent(int fileIndex, InputStream is)
+    @Override
+    public Reference2ObjectMap<Enum<?>, Object> metadata(long index) {
+        ensureDocumentIndex(index);
+        final Reference2ObjectArrayMap<Enum<?>, Object> metadata
+                = new Reference2ObjectArrayMap<>(4);
+
+        try {
+            metadataRandomAccess.seek(descriptors.get(index).metadataPosition);
+            String docno = metadataRandomAccess.readUTF();
+            metadata.put(PropertyBasedDocumentFactory.MetadataKeys.URI, docno);
+        } catch (IOException e) {
+            LOGGER.error(String.format("Could not retrieve metadata for file %d [%s]", index, e));
+        }
+        return metadata;
+    }
+
+    @Override
+	protected void parseContent(int fileIndex, InputStream is, DataOutputStream metadataOutput)
 			throws IOException {
 		WarcRecord.newFile();
 		WarcRecord warcRecord;
@@ -82,7 +98,11 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
 				if (debugEnabled)
 					LOGGER.debug(String.format("Setting markers {%s, %d, %d}", docno,
 							currStart, currStop));
-				descriptors.add(new SegmentedDocumentDescriptor(fileIndex, currStart, currStop));
+
+                long metadataPos = metadataOutput.size();
+                metadataOutput.writeUTF(docno);
+
+                descriptors.add(SegmentedDocumentDescriptor.create(fileIndex, currStart, currStop, metadataPos));
 				LOGGER.debug("Descriptor size is " + size());
 			}
 		}
@@ -90,10 +110,11 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
 		WarcRecord.readContent(oldReadContentFlag); // reset readContent flag
 	}
 
+
     @Override
     public WARCDocumentCollection copy() {
         return new WARCDocumentCollection(files, factory().copy(), descriptors,
-                bufferSize, compression);
+                bufferSize, compression, metadataFile);
     }
 
 

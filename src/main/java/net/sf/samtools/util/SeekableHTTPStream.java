@@ -92,7 +92,7 @@ public class SeekableHTTPStream extends SeekableStream {
         }
 
         catch (IOException e) {
-            // THis is a bit of a hack, but its not clear how else to handle this.  If a byte range is specified
+            // THis is a bit of a hack, but its not clear how else to endDocument this.  If a byte range is specified
             // that goes past the end of the file the response code will be 416.  The MAC os translates this to
             // an IOException with the 416 code in the message.  Windows translates the error to an EOFException.
             //

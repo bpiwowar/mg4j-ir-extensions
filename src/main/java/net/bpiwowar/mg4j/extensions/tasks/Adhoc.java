@@ -7,12 +7,12 @@ import bpiwowar.experiments.AbstractTask;
 import bpiwowar.experiments.TaskDescription;
 import it.unimi.di.big.mg4j.document.Document;
 import it.unimi.di.big.mg4j.document.DocumentCollection;
+import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import net.bpiwowar.mg4j.extensions.Metadata;
 import net.bpiwowar.mg4j.extensions.adhoc.BM25;
 import net.bpiwowar.mg4j.extensions.adhoc.RetrievalModel;
 import net.bpiwowar.mg4j.extensions.adhoc.TRECJudgments;
@@ -185,7 +185,9 @@ public class Adhoc extends AbstractTask {
 			for (int i = 0; i < retrieved && added < capacity; i++) {
 				DocumentScoreInfo dsi = results.get(i);
 				Document document = collection.document(dsi.document);
-				final String docno = (String) collection.metadata(dsi.document).get(Metadata.DOCID);
+                System.err.println("URI: " + document.uri());
+                System.err.println("URI["+dsi.document+"]: " + collection.metadata(dsi.document).get(PropertyBasedDocumentFactory.MetadataKeys.URI));
+				final String docno = (String) collection.metadata(dsi.document).get(PropertyBasedDocumentFactory.MetadataKeys.URI);
 
 				// If it was not a discarded document
 				if (discardedDocuments == null

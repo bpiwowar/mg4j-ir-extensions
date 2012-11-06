@@ -1,15 +1,20 @@
 
-// Declares an alternative
+/**
+ * Task: Adhoc run
+ */
 xpm.declare_alternative(qname(mg4j, "adhoc.model"));
 
 var task_adhoc_run = {
 	id: qname(mg4j, "adhoc.run"),
 
-	description: <xp:documentation xmlns:xp={xp.uri} xmlns:irc={ns_irc.uri}><p>Run a configured model on an adhoc task.
-	 This can be evaluated by <xp:task-link type="irc:evaluation">the IRC evaluation task</xp:task-link>.</p>
+	description: 
+	<xp:documentation xmlns:xp={xp.uri} xmlns:irc={ns_irc.uri}>
+		<p>Run a configured model on an adhoc task. This can be evaluated by 
+		<xp:task-link type="irc:evaluation">the IRC evaluation task</xp:task-link>.</p>
 	 </xp:documentation>,
 
-	inputs: <inputs xmlns={xp.uri} xmlns:irc={irc.uri} xmlns:mg4j={mg4j.uri}>
+	inputs: 
+	<inputs xmlns={xp.uri} xmlns:irc={irc.uri} xmlns:mg4j={mg4j.uri}>
 		<value id="run-path" type="xp:file" help="The file where results should be stored"/>
 
 		<value id="top-k" type="xs:integer" default="1500" help="The maximum number of documents to retrieve"/>
@@ -41,20 +46,20 @@ var task_adhoc_run = {
 			get_command(command),
 			{ 
 				stdin: (<task>{inputs.topics}{inputs.model}</task>).toXMLString(),
-				sdout: path,
+				stdout: path.toString(),
 				lock: resources
 			}
 		);
 		
-		return <outputs>
-			<adhoc-run xmlns={mg4j.uri} xmlns:xp={xp.uri} xp:resource={path}>
+		r = <adhoc-run xmlns={mg4j.uri} xmlns:xp={xp.uri} xp:resource={path}>
 				<path>{path}</path>
 				{inputs.model}
 				{inputs.topics}
 				{inputs["top-k"]}
 				{inputs.index}
-			</adhoc-run>
-		</outputs>;
+			</adhoc-run>;
+		xpm.log("Returning [%s]", r)
+		return r;
 	}
 };
 

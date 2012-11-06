@@ -4,9 +4,10 @@ xpm.add_task_factory({
 	output: qname(mg4j, "adhoc.model"),
 
 	inputs: 
-		<inputs>
+		<inputs xmlns:mg4j={mg4j.uri}>
 			<value id="k1" default="1.2" type="xs:float"/>
 			<value id="b" default="0.75" type="xs:float"/>
+
 		</inputs>,
 
 	run: function(inputs) {	

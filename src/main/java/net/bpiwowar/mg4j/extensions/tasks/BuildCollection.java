@@ -36,6 +36,8 @@ import java.util.Iterator;
 @TaskDescription(name = "build-collection", project = {"mg4j", "extensions"})
 public class BuildCollection extends AbstractTask {
     final static private Logger LOGGER = Logger.getLogger(BuildCollection.class);
+    public static final String IRCOLLECTIONS_NS = "http://ircollections.sourceforge.net";
+    public static final String EXPERIMAESTRO_NS = "http://experimaestro.sf.net";
 
     @Argument(name = "out", help = "The output file", required = true)
     File output;
@@ -56,7 +58,7 @@ public class BuildCollection extends AbstractTask {
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(stream);
 
-        LOGGER.info(String.format("Root is %s", document.getDocumentElement().getNamespaceURI()));
+        LOGGER.info(String.format("Root is %s", document.getDocumentElement().getLocalName()));
         // Get the document definition
         XPath xpath = XPathFactory.newInstance().newXPath();
         xpath.setNamespaceContext(new IRCNamespaces());
@@ -71,9 +73,9 @@ public class BuildCollection extends AbstractTask {
 
         // Get the files
         LOGGER.info("Reading the file list");
-        final String path = documents.getAttribute("path");
-        System.out.format("Document path: %s%n", path);
-        ArrayList<String> list = new ArrayList<String>();
+        final String path = documents.getAttributeNS(EXPERIMAESTRO_NS, "path");
+                System.out.format("Document path: %s%n", path);
+        ArrayList<String> list = new ArrayList<>();
         final BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path)));
         String s;
         while ((s = reader.readLine()) != null)
@@ -86,18 +88,19 @@ public class BuildCollection extends AbstractTask {
         final String docType = documents.getAttribute("type");
 
         final DocumentCollection collection;
+        File metadataFile = new File(output.getAbsolutePath() + ".metadata");
         if (docType.equals("trec")) {
             Properties properties = new Properties();
             properties.setProperty(PropertyBasedDocumentFactory.MetadataKeys.ENCODING, "UTF-8");
             final TRECDocumentFactory documentFactory = new TRECDocumentFactory(properties);
 
             collection = new TRECDocumentCollection(files,
-                    documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression);
+                    documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile);
 
         } else if (docType.equals("warc/0.18")) {
-            collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression);
+            collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile);
         } else {
-            LOGGER.error(String.format("Unkown document type [%s]", docType));
+            LOGGER.error(String.format("Unknown document type [%s]", docType));
             System.exit(-1);
             throw new AssertionError();
         }
@@ -112,7 +115,7 @@ public class BuildCollection extends AbstractTask {
         @Override
         public String getNamespaceURI(String s) {
             if (s.equals("irc"))
-                return "http://ircollections.sourceforge.net";
+                return IRCOLLECTIONS_NS;
             return null;
         }
 

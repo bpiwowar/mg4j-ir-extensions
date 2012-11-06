@@ -13,7 +13,8 @@ import it.unimi.dsi.parser.ParsingFactory;
  */
 public class TRECParsingFactory implements ParsingFactory {
 
-	@Override
+
+    @Override
 	public Element getElement(final MutableString name) {
 		return NAME2ELEMENT.get(name.toString().toLowerCase());
 	}
@@ -93,10 +94,13 @@ public class TRECParsingFactory implements ParsingFactory {
 
 			// javascript and friends
 			ELEMENT_SCRIPT = newElement("script", true, true),
-			
-			
-			ELEMENT_BODY = newElement("body", true, true),
-			ELEMENT_TEXT = newElement("text", true, true),
+
+
+              ELEMENT_SUMMARY = newElement("summary", true, true),
+            ELEMENT_HL = newElement("hl", true, true),
+            ELEMENT_ABST = newElement("abst", true, true),
+            ELEMENT_BODY = newElement("body", true, true),
+            ELEMENT_TEXT = newElement("text", true, true),
 			ELEMENT_P = newElement("p", true, true),
 			ELEMENT_SECTION = newElement("section", true, true),
 			ELEMENT_LEADPARA = newElement("leadpara", true, true),

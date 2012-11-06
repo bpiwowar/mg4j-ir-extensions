@@ -45,7 +45,7 @@ import it.unimi.dsi.parser.BulletParser;
 import it.unimi.dsi.parser.Element;
 import it.unimi.dsi.parser.HTMLFactory;
 import it.unimi.dsi.parser.callback.Callback;
-import net.bpiwowar.mg4j.extensions.utils.Match;
+import net.bpiwowar.mg4j.extensions.utils.ByteMatch;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -361,7 +361,7 @@ public class WarcHTMLResponseRecord {
 
 
         // Start to read
-        final Match match = Match.create("Content-Type:", true);
+        final ByteMatch match = ByteMatch.create("Content-Type:", true);
 
         int newlines = 0;
         start = 0;

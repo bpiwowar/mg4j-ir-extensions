@@ -1,9 +1,11 @@
 package net.bpiwowar.mg4j.extensions.segmented;
 
 import bpiwowar.argparser.Logger;
-import it.unimi.di.big.mg4j.document.*;
+import it.unimi.di.big.mg4j.document.AbstractDocumentCollection;
+import it.unimi.di.big.mg4j.document.Document;
+import it.unimi.di.big.mg4j.document.DocumentFactory;
+import it.unimi.di.big.mg4j.document.DocumentIterator;
 import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.SegmentedInputStream;
 import it.unimi.dsi.logging.ProgressLogger;
@@ -15,7 +17,7 @@ import java.util.zip.GZIPInputStream;
 
 /**
  * A collection of documents that are concatenated in files.
- *
+ * <p/>
  * It is assumed that while the number of documents is big, and may not fit easily in memory,
  * the number of files is low.
  *
@@ -23,7 +25,9 @@ import java.util.zip.GZIPInputStream;
  * @date 17/7/12
  */
 public abstract class SegmentedDocumentCollection extends AbstractDocumentCollection implements Serializable {
-    /** The serialization ID */
+    /**
+     * The serialization ID
+     */
     private static final long serialVersionUID = 2;
 
     static final private Logger LOGGER = Logger.getLogger(SegmentedDocumentCollection.class);
@@ -34,6 +38,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
 
     /**
      * The list of the files containing the documents.
+     *
      * @todo Use a trie data structure?
      */
     protected String[] files;
@@ -54,11 +59,21 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
     protected final int bufferSize;
 
     /**
+     * The metadata file
+     */
+    protected final File metadataFile;
+
+    /**
      * The list of document descriptors. We assume that descriptors within the
      * same files are contiguous - descriptors are saved separately, that's why
      * they are transient
      */
     public transient ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors;
+
+    /**
+     * The metadata random file access
+     */
+    protected transient RandomAccessFile metadataRandomAccess;
 
     /**
      * The last returned stream.
@@ -68,19 +83,21 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
     /**
      * Creates a new TREC collection by parsing the given files.
      *
-     * @param files       an array of files names containing documents in TREC
-     *                    format.
-     * @param factory     the document factory (usually, a composite one).
-     * @param bufferSize  the buffer size.
-     * @param compression true if the files are gzipped.
+     * @param files        an array of files names containing documents in TREC
+     *                     format.
+     * @param factory      the document factory (usually, a composite one).
+     * @param bufferSize   the buffer size.
+     * @param compression  true if the files are gzipped.
+     * @param metadataFile The file where metadata will be stored
      */
     public SegmentedDocumentCollection(String[] files, DocumentFactory factory,
-                                  int bufferSize, Compression compression) throws IOException {
+                                       int bufferSize, Compression compression, File metadataFile) throws IOException {
         this.files = files;
         this.factory = factory;
         this.bufferSize = bufferSize;
-        this.descriptors = new ObjectBigArrayBigList<SegmentedDocumentDescriptor>();
+        this.descriptors = new ObjectBigArrayBigList<>();
         this.compression = compression;
+        this.metadataFile = metadataFile;
 
         final ProgressLogger progressLogger = new ProgressLogger(LOGGER);
         progressLogger.expectedUpdates = files.length;
@@ -89,10 +106,14 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         progressLogger.start("Parsing files with compression \"" + compression
                 + "\"");
 
+        final DataOutputStream metadataStream = new DataOutputStream(new FileOutputStream(metadataFile));
         for (int i = 0; i < files.length; i++) {
-            parseContent(i, openFileStream(files[i]));
+            parseContent(i, openFileStream(files[i]), metadataStream);
             progressLogger.update();
         }
+        metadataStream.close();
+
+        metadataRandomAccess = new RandomAccessFile(metadataFile, "r");
 
         progressLogger.done();
     }
@@ -102,13 +123,14 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
      * initializes final fields
      */
     protected SegmentedDocumentCollection(String[] files, DocumentFactory factory,
-                                     ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
-                                     int bufferSize, Compression compression) {
+                                          ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
+                                          int bufferSize, Compression compression, File metadataFile) {
         this.compression = compression;
         this.files = files;
         this.bufferSize = bufferSize;
         this.factory = factory;
         this.descriptors = descriptors;
+        this.metadataFile = metadataFile;
     }
 
     @Override
@@ -116,8 +138,10 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         return descriptors.size64();
     }
 
-    /** Parse the content of a given file */
-    abstract protected void parseContent(int fileIndex, InputStream is) throws IOException;
+    /**
+     * Parse the content of a given file
+     */
+    abstract protected void parseContent(int fileIndex, InputStream is, DataOutputStream metadataStream) throws IOException;
 
     /**
      * Opens the files stream, supporting certain kinds of compression
@@ -168,11 +192,14 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         s.defaultReadObject();
 
         final long size = s.readLong();
-        final ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors = new ObjectBigArrayBigList<SegmentedDocumentDescriptor>();
+        final ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors = new ObjectBigArrayBigList<>();
         descriptors.ensureCapacity(size);
-        for (int i = 0; i < size; i++)
-            descriptors.add(new SegmentedDocumentDescriptor(s.readInt(), s.readLong(), s.readInt()));
+        for (int i = 0; i < size; i++) {
+            descriptors.add(new SegmentedDocumentDescriptor(s));
+        }
         this.descriptors = descriptors;
+
+        this.metadataRandomAccess = new RandomAccessFile(this.metadataFile, "r");
     }
 
     /**
@@ -185,11 +212,8 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         s.defaultWriteObject();
         s.writeLong(descriptors.size64());
 
-        for (SegmentedDocumentDescriptor descriptor : descriptors) {
-            s.writeInt(descriptor.fileIndex);
-            s.writeLong(descriptor.startMarker);
-            s.writeInt(descriptor.stopMarkerDiff);
-        }
+        for (SegmentedDocumentDescriptor descriptor : descriptors)
+            descriptor.writeObject(s);
     }
 
     /**
@@ -200,18 +224,6 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
     @Override
     public DocumentFactory factory() {
         return this.factory;
-    }
-
-    @Override
-    public Reference2ObjectMap<Enum<?>, Object> metadata(final long index) {
-        ensureDocumentIndex(index);
-        final Reference2ObjectArrayMap<Enum<?>, Object> metadata
-                = new Reference2ObjectArrayMap<Enum<?>, Object>(4);
-
-        SegmentedDocumentDescriptor trecDocumentDescriptor = descriptors.get(index);
-        metadata.put(PropertyBasedDocumentFactory.MetadataKeys.URI, "Document #" + index);
-//        metadata.put(Metadata.DOCID, trecDocumentDescriptor.docid);
-        return metadata;
     }
 
     /**

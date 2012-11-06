@@ -1,5 +1,9 @@
 package net.bpiwowar.mg4j.extensions.segmented;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 /**
  * A compact description of the location and of the internal segmentation of
  * a TREC document inside a file.
@@ -20,29 +24,38 @@ public class SegmentedDocumentDescriptor implements Cloneable {
      */
     public int stopMarkerDiff;
 
-
     /**
-     * The document ID
+     * The position in the metadata stream
      */
-//    public String docid;
+    public long metadataPosition;
 
-    public SegmentedDocumentDescriptor(int findex, long start,
-                                       int stopMarkerDiff) {
+
+    final static public SegmentedDocumentDescriptor create(int findex, long start,
+                                        long stop, long metadataPosition) {
+        return new SegmentedDocumentDescriptor(findex, start, (int) (stop - start), metadataPosition);
+    }
+
+    private SegmentedDocumentDescriptor(int findex, long start,
+                                       int stopMarkerDiff, long metadataPosition) {
         this.fileIndex = findex;
         this.startMarker = start;
         this.stopMarkerDiff = stopMarkerDiff;
+        this.metadataPosition = metadataPosition;
     }
 
-    public SegmentedDocumentDescriptor(int findex, long start,
-                                       long stop) {
-        this(findex, start, (int) (stop - start));
 
+    SegmentedDocumentDescriptor(ObjectInputStream s) throws IOException {
+        this.fileIndex = s.readInt();
+        this.startMarker= s.readLong();
+        this.stopMarkerDiff = s.readInt();
+        this.metadataPosition = s.readLong();
     }
+
 
     @Override
     public Object clone() {
         return new SegmentedDocumentDescriptor(fileIndex, startMarker,
-                stopMarkerDiff);
+                stopMarkerDiff, metadataPosition);
     }
 
     public final long[] toSegments() {
@@ -50,4 +63,11 @@ public class SegmentedDocumentDescriptor implements Cloneable {
 
     }
 
+    public void writeObject(ObjectOutputStream s) throws IOException {
+        s.writeInt(this.fileIndex);
+        s.writeLong(this.startMarker);
+        s.writeInt(this.stopMarkerDiff);
+        s.writeLong(this.metadataPosition);
+
+    }
 }

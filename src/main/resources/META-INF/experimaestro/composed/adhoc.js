@@ -36,13 +36,10 @@ xpm.add_task_factory({
 			   </connect>
 			</task>
 
-			<!--
 			 <task id="evaluate" ref="irc:evaluate">
-			    <connect from="run" path="mg4j:run/mg4j:path" to="run"/>
-			    <connect from="prepare" path="irc:qrels" to="qrels"/>
-			    <connect from="run" path="xp:joinPaths(xp:parentPath(mg4j:run/mg4j:path), 'results.dat')" to="out"/>
+			    <connect from="run" path="mg4j:path/text()" to="run"/>
+			    <connect from="prepare.collection" path="irc:qrels" to="qrels"/>
 			 </task>
-			-->
 		</inputs>,
 		
 });

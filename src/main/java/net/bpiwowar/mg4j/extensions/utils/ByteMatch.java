@@ -58,6 +58,11 @@ public class ByteMatch {
         return false;
     }
 
+
+    public byte[] getBytes() {
+        return bytes;
+    }
+
     /**
      * Resets the internal matching pointer
      */

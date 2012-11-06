@@ -23,17 +23,18 @@ package net.bpiwowar.mg4j.extensions.trec;
 
 import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.DocumentFactory;
+import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
-import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.io.SegmentedInputStream;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
-import net.bpiwowar.mg4j.extensions.utils.Match;
+import net.bpiwowar.mg4j.extensions.utils.ByteMatch;
 
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -68,19 +69,16 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
     /** Serialization ID */
     private static final long serialVersionUID = 1;
 
-    transient private static final boolean DEBUG = false;
-
-
     transient byte buffer[];
 
     transient byte docnoBuffer[];
 
-    public TRECDocumentCollection(String[] files, DocumentFactory factory, int bufferSize, Compression compression) throws IOException {
-        super(files, factory, bufferSize, compression);
+    public TRECDocumentCollection(String[] files, DocumentFactory factory, int bufferSize, Compression compression, File metadataFile) throws IOException {
+        super(files, factory, bufferSize, compression, metadataFile);
     }
 
-    public TRECDocumentCollection(String[] files, DocumentFactory factory, ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors, int bufferSize, Compression compression) {
-        super(files, factory, descriptors, bufferSize, compression);
+    public TRECDocumentCollection(String[] files, DocumentFactory factory, ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors, int bufferSize, Compression compression, File metadataFile) {
+        super(files, factory, descriptors, bufferSize, compression, metadataFile);
     }
 
     public void checkBuffers() {
@@ -91,9 +89,9 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
     }
 
 
-    transient static final Match DOC_OPEN = Match.create("<DOC>"),
-            DOC_CLOSE = Match.create("</DOC>"), DOCNO_OPEN = Match.create("<DOCNO>"),
-            DOCNO_CLOSE = Match.create("</DOCNO>");
+    transient static final ByteMatch DOC_OPEN = ByteMatch.create("<DOC>"),
+            DOC_CLOSE = ByteMatch.create("</DOC>"), DOCNO_OPEN = ByteMatch.create("<DOCNO>"),
+            DOCNO_CLOSE = ByteMatch.create("</DOCNO>");
 
 
     protected static boolean equals(byte[] a, int len, byte[] b) {
@@ -116,10 +114,24 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
     @Override
     public TRECDocumentCollection copy() {
         return new TRECDocumentCollection(files, factory().copy(), descriptors,
-                bufferSize, compression);
+                bufferSize, compression, metadataFile);
     }
 
+    @Override
+    public Reference2ObjectMap<Enum<?>, Object> metadata(long index) {
+        ensureDocumentIndex(index);
+        final Reference2ObjectArrayMap<Enum<?>, Object> metadata
+                = new Reference2ObjectArrayMap<>(4);
 
+        try {
+            metadataRandomAccess.seek(descriptors.get(index).metadataPosition);
+            String docno = metadataRandomAccess.readUTF();
+            metadata.put(PropertyBasedDocumentFactory.MetadataKeys.URI, docno);
+        } catch (IOException e) {
+            LOGGER.error(String.format("Could not retrieve metadata for file %d [%s]", index, e));
+        }
+        return metadata;
+    }
 
     /**
      * Merges a new collection in this one, by rebuilding the gzFile array and
@@ -157,41 +169,64 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
      * @param is        The input stream for this files
      * @throws java.io.IOException
      */
-    protected void parseContent(int fileIndex, InputStream is) throws IOException {
-
-        long currStart = 0, currStop = 0, position;
-
-        // Are we within a document
-        boolean startedBlock = false;
-        boolean startedDocNo = false;
-
+    @Override
+    protected void parseContent(final int fileIndex, InputStream is, final DataOutputStream metadataStream) throws IOException {
         LOGGER.debug("Processing files %d (%s)", fileIndex, files[fileIndex]);
-
+        checkBuffers();
         FastBufferedInputStream fbis = new FastBufferedInputStream(is,
                 bufferSize);
+        final boolean debugEnabled = LOGGER.isDebugEnabled();
+
+        EventHandler handler = new EventHandler() {
+            @Override
+            public void endDocument(String docno, long currStart, long currStop) throws IOException {
+                long metadataPosition = metadataStream.size();
+                metadataStream.writeUTF(docno);
+
+                // Store document pointers in a document descriptor,
+                // add to descriptors. This stores all required
+                // information to identify the document among the set
+                // of input files.
+                if (debugEnabled)
+                    LOGGER.debug("Setting markers {%s, %d, %d}", docno,
+                            currStart, currStop);
+                descriptors.add(SegmentedDocumentDescriptor.create(fileIndex, currStart, currStop, metadataPosition));
+
+            }
+        };
+        parseContent(fbis, buffer, docnoBuffer, handler);
+    }
+
+    static public class EventHandler {
+        public void startDocument() {}
+
+        public void endDocument(String docno, long currStart, long currStop) throws IOException {
+        }
+
+        public void write(byte[] bytes, int offset, int length) {
+        }
+    }
+
+    static public void parseContent(InputStream fbis, byte[] buffer, byte[] docnoBuffer, EventHandler handler) throws IOException {
+        long currStart = 0, currStop = 0, position;
+
+        // Are we within a document?
+        boolean startedBlock = false;
+        boolean startedDocNo = false;
 
         // Process the document
         int read;
         DOC_OPEN.reset();
         position = 0;
         int docnoCount = 0;
-        checkBuffers();
 
-        final boolean debugEnabled = LOGGER.isDebugEnabled();
         while ((read = fbis.read(buffer, 0, buffer.length)) > 0) {
+            int docOffset = 0;
+
             for (int offset = 0; offset < read; offset++) {
                 final byte b = buffer[offset];
 
-                if (!startedBlock) {
-                    if (DOC_OPEN.match(b)) {
-                        // we matched <DOC>, now getting ready for
-                        // <DOCNO> and </DOC>. A new document block starts
-                        startedBlock = true;
-                        currStart = position + offset + 1 - DOC_OPEN.size();
-                        DOC_CLOSE.reset();
-                        DOCNO_OPEN.reset();
-                    }
-                } else {
+                if (startedBlock) {
                     if (startedDocNo) {
                         // read and store document number byte
                         docnoBuffer = ByteArrays.grow(docnoBuffer,
@@ -221,18 +256,28 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
                         final String docno = new String(docnoBuffer, 0,
                                 docnoCount, "ASCII").trim();
 
-                        // Store document pointers in a document descriptor,
-                        // add to descriptors. This stores all required
-                        // information to identify the document among the set
-                        // of input files.
-                        if (debugEnabled)
-                            LOGGER.debug("Setting markers {%s, %d, %d}", docno,
-                                    currStart, currStop);
-                        descriptors.add(new SegmentedDocumentDescriptor(fileIndex, currStart, currStop));
-                        startedBlock = false;
-
+                        // New document
+                        handler.write(buffer, docOffset, offset - docOffset + 1);
+                        handler.endDocument(docno, currStart, currStop);
+                    }
+                } else {
+                    if (DOC_OPEN.match(b)) {
+                        // we matched <DOC>, now getting ready for
+                        // <DOCNO> and </DOC>. A new document block starts
+                        startedBlock = true;
+                        currStart = position + offset + 1 - DOC_OPEN.size();
+                        DOC_CLOSE.reset();
+                        DOCNO_OPEN.reset();
+                        handler.startDocument();
+                        handler.write(DOC_OPEN.getBytes(), 0, DOC_OPEN.getBytes().length);
+                        docOffset = offset + 1;
                     }
                 }
+            } // Loop over bytes of the buffer
+
+            if (startedBlock) {
+                assert read - docOffset < buffer.length;
+                handler.write(buffer, docOffset, read - docOffset);
             }
 
             // Update the number of read bytes
