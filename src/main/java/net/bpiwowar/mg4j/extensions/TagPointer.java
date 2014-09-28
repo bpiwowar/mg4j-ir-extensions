@@ -31,20 +31,10 @@ public class TagPointer extends Pointer {
 		this.tagtype = tagtype;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ingo.iqir.trec.ElementPointer#getElement()
-	 */
 	public Element getElement() {
 		return this.element;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ingo.iqir.trec.ElementPointer#getTagType()
-	 */
 	public TagType getTagType() {
 		return this.tagtype;
 	}

@@ -96,7 +96,7 @@ public class TRECParsingFactory implements ParsingFactory {
 			ELEMENT_SCRIPT = newElement("script", true, true),
 
 
-              ELEMENT_SUMMARY = newElement("summary", true, true),
+            ELEMENT_SUMMARY = newElement("summary", true, true),
             ELEMENT_HL = newElement("hl", true, true),
             ELEMENT_ABST = newElement("abst", true, true),
             ELEMENT_BODY = newElement("body", true, true),

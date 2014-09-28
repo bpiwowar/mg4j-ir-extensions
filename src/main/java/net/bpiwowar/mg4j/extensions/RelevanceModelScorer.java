@@ -1,24 +1,5 @@
-package net.bpiwowar.mg4j.extensions.adhoc;
+package net.bpiwowar.mg4j.extensions;
 
-/*		 
- * MG4J: Managing Gigabytes for Java (big)
- *
- * Copyright (C) 2006-2012 Sebastiano Vigna
- *
- *  This library is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU Lesser General Public License as published by the Free
- *  Software Foundation; either version 3 of the License, or (at your option)
- *  any later version.
- *
- *  This library is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- *  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
- *  for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, see <http://www.gnu.org/licenses/>.
- *
- */
 
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.index.IndexIterator;
@@ -38,50 +19,12 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.Arrays;
 
-/** A adhoc that implements the BM25 ranking scheme.
- * 
- * <p>BM25 is the name of a ranking scheme for text derived from the probabilistic model. The essential feature
- * of the scheme is that of assigning to each term appearing in a given document a weight depending
- * both on the count (the number of occurrences of the term in the document), on the frequency (the
- * number of the documents in which the term appears) and on the document length (in words). It was
- * devised in the early nineties, and it provides a significant improvement over the classical {@linkplain TfIdfScorer TF/IDF scheme}.
- * Karen Sp&auml;rck Jones, Steve Walker and Stephen E. Robertson give a full account of BM25 and of the
- * probabilistic model in &ldquo;A probabilistic model of information retrieval:
- * development and comparative experiments&rdquo;, <i>Inf. Process. Management</i> 36(6):779&minus;840, 2000.
- * 
- * <p>There are a number of incarnations with small variations of the formula itself. Here, the weight
- * assigned to a term which appears in <var>f</var> documents out of a collection of <var>N</var> documents
- * w.r.t. to a document of length <var>l</var> in which the term appears <var>c</var> times is
- * <div style="text-align: center">
- * log<big>(</big> (<var>N</var> &minus; <var>f</var> + 1/2) / (<var>f</var> + 1/2) <big>)</big> ( <var>k</var><sub>1</sub> + 1 ) <var>c</var> &nbsp;<big>&frasl;</big>&nbsp; <big>(</big> <var>c</var> + <var>k</var><sub>1</sub> ((1 &minus; <var>b</var>) + <var>b</var><var>l</var> / <var>L</var>) <big>)</big>,
- * </div>
- * where <var>L</var> is the average document length, and <var>k</var><sub>1</sub> and <var>b</var> are
- * parameters that default to {@link #DEFAULT_K1} and {@link #DEFAULT_B}: these values were chosen
- * following the suggestions given in 
- * &ldquo;Efficiency vs. effectiveness in Terabyte-scale information retrieval&rdquo;, by Stefan B&#252;ttcher and Charles L. A. Clarke, 
- * in <i>Proceedings of the 14th Text REtrieval 
- * Conference (TREC 2005)</i>. Gaithersburg, USA, November 2005. The logarithmic part (a.k.a.
- * <em>idf (inverse document-frequency)</em> part) is actually
- * maximised with {@link #EPSILON_SCORE}, so it is never negative (the net effect being that terms appearing 
- * in more than half of the documents have almost no weight).
- *  
- * <h2>Evaluation</h2>
- *  
- * <p>This class has two modes of evaluation, <em>generic</em> and <em>flat</em>. The generic evaluator uses an internal 
- * visitor building on {@link it.unimi.di.big.mg4j.search.visitor.CounterSetupVisitor}
- * and related classes (by means of {@link DocumentIterator#acceptOnTruePaths(it.unimi.di.big.mg4j.search.visitor.DocumentIteratorVisitor)})
- * to take into consideration only terms that are actually involved in query semantics for the current document.
- * The flat evaluator simulates the behaviour of the generic evaluator on a special subset of queries, that is, queries that
- * are formed by an {@linkplain IndexIterator index iterator} or a {@linkplain AbstractCompositeDocumentIterator composite document
- * iterator} whose underlying queries are all index iterators, by means of a simple loop. This is significantly faster
- * than the generic evaluator (as there is no recursive visit) either if document iterator is a subclass of {@link AbstractIntersectionDocumentIterator},
- * or if it is a subclass of {@link AbstractUnionDocumentIterator} and the disjuncts are not too many (less than {@link #MAX_FLAT_DISJUNCTS}).
- * 
- * @author Mauro Mereu
- * @author Sebastiano Vigna
+/**
+ * @author B. Piwowarski <benjamin
+ * Based on the {@linkplain it.unimi.di.big.mg4j.search.score.BM25Scorer} class
  */
-public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScorer {
-	public static final Logger LOGGER = Logger.getLogger( BM25Scorer.class );
+public class RelevanceModelScorer extends AbstractWeightedScorer implements DelegatingScorer {
+	public static final Logger LOGGER = Logger.getLogger( RelevanceModelScorer.class );
 	public static final boolean DEBUG = true;
 
 	private static final class Visitor extends AbstractDocumentIteratorVisitor {
@@ -93,7 +36,7 @@ public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScor
 		private final double k1TimesBDividedByAverageDocumentSize[];
 		/** An array (parallel to {@link TermCollectionVisitor#indices()} that caches size lists. */
 		private final IntBigList sizes[];
-		/** Cached from {@link BM25Scorer}. */
+		/** Cached from {@link RelevanceModelScorer}. */
 		private final double[] sizeComponent;
 		/** Cached from {@link CounterSetupVisitor}. */
 		private final int[] indexNumber;
@@ -180,7 +123,7 @@ public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScor
 
 	/** Creates a BM25 adhoc using {@link #DEFAULT_K1} and {@link #DEFAULT_B} as parameters.
 	 */
-	public BM25Scorer() {
+	public RelevanceModelScorer() {
 		this( DEFAULT_K1, DEFAULT_B );
 	}
 
@@ -188,7 +131,7 @@ public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScor
 	 * @param k1 the <var>k</var><sub>1</sub> parameter.
 	 * @param b the <var>b</var> parameter.
 	 */
-	public BM25Scorer( final double k1, final double b ) {
+	public RelevanceModelScorer(final double k1, final double b) {
 		termVisitor = new TermCollectionVisitor();
 		setupVisitor = new CounterSetupVisitor( termVisitor );
 		this.k1 = k1;
@@ -201,12 +144,12 @@ public class BM25Scorer extends AbstractWeightedScorer implements DelegatingScor
 	 * @param k1 the <var>k</var><sub>1</sub> parameter.
 	 * @param b the <var>b</var> parameter.
 	 */
-	public BM25Scorer( final String k1, final String b ) {
+	public RelevanceModelScorer(final String k1, final String b) {
 		this( Double.parseDouble( k1 ), Double.parseDouble( b ) );
 	}
 
-	public synchronized BM25Scorer copy() {
-		final BM25Scorer scorer = new BM25Scorer( k1, b );
+	public synchronized RelevanceModelScorer copy() {
+		final RelevanceModelScorer scorer = new RelevanceModelScorer( k1, b );
 		scorer.setWeights( index2Weight );
 		return scorer;
 	}

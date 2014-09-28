@@ -25,23 +25,22 @@ var task_adhoc_run = {
 		<alternative id="model" type="mg4j:adhoc.model" help="The model to run"/>
 	</inputs>,
 		
-	run: function(inputs) {			
-		var path = inputs["run-path"].@xp::value;
+	run: function(inputs) {		
+	   var log = logger.create("adhoc");	   
+		var path = xpm.file(inputs["run-path"].@value);
 		xpm.log("Model [%s]", inputs.model.toXMLString());
 		var command = [ "adhoc" ].concat( 
 			build_args("",inputs.index),
 			["--collection-sequence", inputs.index.mg4j::sequence.mg4j::path, 
-			"--top-k", inputs["top-k"].@xp::value, 
+			"--top-k", inputs["top-k"].@value, 
 			"--run-id", inputs.model.@id]);
 			
 	   var resources = get_resources(inputs.index, "READ_ACCESS");
-	   xpm.log(resources);
 
-	   	// FIXME: should use FileObject
-	   	xpm.filepath(path).getParentFile().mkdirs();
+	   log.info("Path is %s [%s]", path, inputs["run-path"].@value.toString());
+	   	path.get_parent().mkdirs();
 
-	   	xpm.log(command.toSource())
-		scheduler.command_line_job(			
+		xpm.command_line_job(			
 			path,
 			get_command(command),
 			{ 

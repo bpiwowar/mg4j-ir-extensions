@@ -28,7 +28,7 @@ xpm.add_task_factory({
 					<from var="c" ref="prepare.collection"/>
 					<from var="m" ref="model"/>
 					<xquery>
-						concat($o/@xp:value, "/","adhoc",
+						concat($o/@value, "/","adhoc",
 							  "/",$c//irc:documents/@id,
 							  "/",$c//irc:topics/@id,
 							  "/",$m/@id)

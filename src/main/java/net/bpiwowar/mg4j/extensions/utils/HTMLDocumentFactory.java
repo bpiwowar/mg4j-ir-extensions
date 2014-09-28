@@ -21,7 +21,6 @@ package net.bpiwowar.mg4j.extensions.utils;
  *
  */
 
-import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.AbstractDocument;
 import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.di.big.mg4j.util.parser.callback.AnchorExtractor;
@@ -38,6 +37,8 @@ import net.bpiwowar.mg4j.extensions.TagPointer;
 import net.bpiwowar.mg4j.extensions.warc.WarcHTMLResponseRecord;
 import net.bpiwowar.mg4j.extensions.warc.WarcRecord;
 import org.apache.commons.configuration.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -50,7 +51,7 @@ import java.util.Iterator;
  */
 
 public class HTMLDocumentFactory extends PropertyBasedDocumentFactory {
-	final static private Logger LOGGER = Logger.getLogger();
+	final static private Logger LOGGER = LoggerFactory.getLogger(HTMLDocumentFactory.class);
 
 	private static final long serialVersionUID = 1L;
 
@@ -286,7 +287,7 @@ public class HTMLDocumentFactory extends PropertyBasedDocumentFactory {
 			else {
 				LOGGER.warn("Couldn't find WARC response in stream!");
 				if (warcRecord != null) {
-					LOGGER.warn(warcRecord);
+					LOGGER.warn("{}", warcRecord);
 				}
 				else LOGGER.warn("WARC record is null!");
 				throw new IOException("Couldn't find WARC response in stream!");

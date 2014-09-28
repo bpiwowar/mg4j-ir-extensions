@@ -1,6 +1,7 @@
 package net.bpiwowar.mg4j.extensions;
 
 import bpiwowar.argparser.EnumValue;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Sets the compression
@@ -9,13 +10,20 @@ import bpiwowar.argparser.EnumValue;
 */
 public enum Compression {
     @EnumValue("none")
+    @SerializedName("none")
     NONE,
 
     @EnumValue("gzip")
+    @SerializedName("gzip")
     GZIP,
 
     @EnumValue("bgzip")
-    BLOCK_GZIP,;
+    @SerializedName("bgzip")
+    BLOCK_GZIP,
+
+    @EnumValue("xz")
+    @SerializedName("xz")
+    XZ;
 
     /**
      * Get the enum from a string

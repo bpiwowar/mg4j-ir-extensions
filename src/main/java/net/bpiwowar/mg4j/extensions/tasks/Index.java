@@ -11,7 +11,8 @@ import it.unimi.di.big.mg4j.index.NullTermProcessor;
 import it.unimi.di.big.mg4j.index.TermProcessor;
 import it.unimi.di.big.mg4j.tool.IndexBuilder;
 import it.unimi.di.big.mg4j.tool.Scan;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -22,7 +23,7 @@ import java.io.File;
  */
 @TaskDescription(name = "index", project = {"ir", "mg4j"}, description = "Index a series of documents")
 public class Index extends AbstractTask {
-    static final Logger logger = Logger.getLogger(Index.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(Index.class);
 
     @Argument(name = "index-dir", help = "Index directory", checkers = IOChecker.ValidDirectory.class, required = true)
     File directory;
@@ -47,9 +48,9 @@ public class Index extends AbstractTask {
         DocumentSequence documentSequence;
         documentSequence = Scan.getSequence(sequence,
                 IdentityDocumentFactory.class, new String[] {},
-                Scan.DEFAULT_DELIMITER, logger);
+                Scan.DEFAULT_DELIMITER, LOGGER);
 
-        logger.info(String.format("Term processor class is %s", termProcessor.getClass()));
+        LOGGER.info(String.format("Term processor class is %s", termProcessor.getClass()));
         IndexBuilder indexBuilder = new IndexBuilder(new File(directory,basename).getAbsolutePath(), documentSequence);
         indexBuilder.termProcessor(termProcessor).documentsPerBatch(
                 documentsPerBatch);

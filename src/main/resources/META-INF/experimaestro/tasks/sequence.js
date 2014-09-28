@@ -40,29 +40,31 @@ var task_sequence = {
 	
 	run: function(inputs) {
 		// Initialisation
-		var outdir = new java.io.File(inputs.outdir.@xp::value);
+		var log = logger.create("sequence");
+		var outdir = xpm.file(inputs.outdir.@value);
 		var id = inputs.documents.@id;
 
 		// Get the collection directory
-		var colldir = xpm.filepath(outdir, id);
+		var colldir = outdir.path(id);
 		colldir.mkdirs();
 
-		var sequence = xpm.filepath(colldir, "collection").getAbsolutePath();
+		var sequence = colldir.path("collection");
 		
-		var command = get_command(["build-collection", "--out", sequence]);
+		var command = get_command(["build-collection", "--out", path(sequence)]);
 
-		xpm.log("Creating sequence in [%s] with command [%s]", sequence, command.join(" "));
-		xpm.log("Documents: %s", inputs.documents.toXMLString());
-		scheduler.command_line_job(sequence, command, {
+		log.debug("Creating sequence in [%s] with command %s", sequence, command.toSource());
+		log.debug("Documents: %s", inputs.documents.toXMLString());
+		var rsrc = xpm.command_line_job(sequence, command, {
 			stdin: inputs.documents.toXMLString()
 		});
 		
 		var r =
-			<sequence xmlns:xpm={xp.uri} xmlns:mg4jext={mg4jext.uri} xmlns={mg4jext.uri} xpm:resource={sequence}>
-			  <path mg4jext:arg="collection-sequence">{sequence}</path>
+			<sequence xmlns:xp={xp.uri} xmlns:mg4jext={mg4jext.uri} xmlns={mg4jext.uri} xp:resource={rsrc}>
+			  <xp:path mg4jext:arg="collection-sequence">{sequence}</xp:path>
 			  {inputs.documents}
 			</sequence>;
 		
+		log.debug(r.toSource());
 		return r;
 	}
 	

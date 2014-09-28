@@ -1,6 +1,7 @@
 package net.bpiwowar.mg4j.extensions.adhoc;
 
 import it.unimi.di.big.mg4j.document.DocumentCollection;
+import it.unimi.di.big.mg4j.search.score.BM25Scorer;
 import net.bpiwowar.mg4j.extensions.conf.IndexConfiguration;
 import net.bpiwowar.mg4j.extensions.tasks.Adhoc;
 

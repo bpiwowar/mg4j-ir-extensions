@@ -6,6 +6,8 @@ var mg4j = mg4jext;
 var ns_irc = new Namespace("http://ircollections.sourceforge.net");
 var irc = ns_irc;
 
+var logger = xpm.logger("net.bpiwowar.mg4jext");
+
 xpm.set_property("namespace", mg4jext);
 
 // Check that IRC has been retrieved
@@ -13,21 +15,29 @@ xpm.set_property("namespace", mg4jext);
 
 // Executable
 var script_path = xpm.get_script_path();
-
-// FIXME: should not be using the file but a FileObject (or a proxy to it)
-var basedir = java.io.File(script_path).getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
-var pomfile = java.io.File(basedir, "pom.xml")
+var basedir = xpm.get_script_file().get_ancestor(6);
+var pomfile = basedir.path("pom.xml")
 
 /// Start mg4j-ir-ext jar file with given arguments  
 var get_command = function(args) {
 	// Case where we start with maven
-	return ["mvn", "-q", "-f", pomfile, "compile", "exec:java", "-Dexec.mainClass=bpiwowar.experiments.Run", "-Dexec.args=" + args.join(" ")];	
+    var a = ["-Dexec.args="];
+    for(var i = 0; i < args.length; i++) {
+        // xpm.log("Argument %.0f is [%s]", i, args[i].toSource());
+        if (i != 0) a.push(" ");
+        a.push(args[i]);
+    }
+    // xpm.log(a.toSource());
+	return ["mvn", "-q", "-f", path(pomfile), "compile", "exec:java", "-Dexec.mainClass=bpiwowar.experiments.Run", a];	
 } 
 
 // Some useful functions
 var format = java.lang.String.format;
 
 
+/**
+ * Returns all the resources
+ */
 function get_resources(xml, mode) {
         a = [];
         for each(var r in xml..@xp::resource) {
@@ -48,10 +58,15 @@ var build_args = function(prefix, a) {
                 if (x.nodeKind() == "element") {
                         var arg = x.@mg4j::arg;
                         if (arg.length() > 0) {
-                            var value = x.@xp::value;
-                            if (value.length() == 0) value = x.text();
-                            //xpm.log("ARG [%s]: %s=%s", x.toSource(), arg, value)
+                            // logger.debug("ARG [%s]: %s=%s", x.toSource(), arg, value);
+                            // If xp:path, returns it as it is
+                            if (x.localName() == "path" && x.namespace() == xp.uri)
+                                array = array.concat(prefix + (arg != "" ? (prefix ? "-" : "--") + arg : arg), x);
+                            else {
+                                var value = x.@value;
+                                if (value.length() == 0) value = x.*;
                                 array = array.concat(prefix + (arg != "" ? (prefix ? "-" : "--") + arg : arg), value);
+                            }
                         }
                 }
         return array;

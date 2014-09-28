@@ -12,9 +12,13 @@ import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
 
 public interface RetrievalModel {
 
+    /** Initialize the retrieval model from a document collection and index configuration */
 	public void init(DocumentCollection collection, IndexConfiguration index) throws Exception;
 
-	/**
+    /** Close all resources */
+    void close();
+
+    /**
 	 * Process a topic and return a set of results
 	 *
      * @param topic
@@ -27,5 +31,4 @@ public interface RetrievalModel {
             ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results,
             int capacity, TaskTimer timer) throws Exception;
 
-	void close();
 }

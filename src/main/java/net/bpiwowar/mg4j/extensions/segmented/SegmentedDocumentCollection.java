@@ -1,6 +1,5 @@
 package net.bpiwowar.mg4j.extensions.segmented;
 
-import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.AbstractDocumentCollection;
 import it.unimi.di.big.mg4j.document.Document;
 import it.unimi.di.big.mg4j.document.DocumentFactory;
@@ -11,6 +10,12 @@ import it.unimi.dsi.io.SegmentedInputStream;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.sf.samtools.util.BlockCompressedInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tukaani.xz.SeekableFileInputStream;
+import org.tukaani.xz.SeekableInputStream;
+import org.tukaani.xz.SeekableXZInputStream;
+import org.tukaani.xz.XZInputStream;
 
 import java.io.*;
 import java.util.zip.GZIPInputStream;
@@ -30,7 +35,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
      */
     private static final long serialVersionUID = 2;
 
-    static final private Logger LOGGER = Logger.getLogger(SegmentedDocumentCollection.class);
+    static final private Logger LOGGER = LoggerFactory.getLogger(SegmentedDocumentCollection.class);
     /**
      * Default buffer size, set up after some experiments.
      */
@@ -76,9 +81,14 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
     protected transient RandomAccessFile metadataRandomAccess;
 
     /**
-     * The last returned stream.
+     * Last input stream
      */
-    transient protected SegmentedInputStream lastStream;
+    transient private SegmentedInputStream lastStream;
+
+    /**
+     * Last input stream index
+     */
+    transient private int lastStreamIndex;
 
     /**
      * Creates a new TREC collection by parsing the given files.
@@ -87,7 +97,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
      *                     format.
      * @param factory      the document factory (usually, a composite one).
      * @param bufferSize   the buffer size.
-     * @param compression  true if the files are gzipped.
+     * @param compression  Compression model.
      * @param metadataFile The file where metadata will be stored
      */
     public SegmentedDocumentCollection(String[] files, DocumentFactory factory,
@@ -138,6 +148,14 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         return descriptors.size64();
     }
 
+    @Override
+    public void close() throws IOException {
+        super.close();
+        if (lastStream != null)
+            lastStream.close();
+        descriptors = null;
+    }
+
     /**
      * Parse the content of a given file
      */
@@ -160,6 +178,8 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
                 return new BlockCompressedInputStream(new File(fileName));
             case GZIP:
                 return new GZIPInputStream(new FileInputStream(fileName));
+            case XZ:
+                return new SeekableXZInputStream(new SeekableFileInputStream(fileName));
             case NONE:
                 return new FileInputStream(fileName);
         }
@@ -175,9 +195,10 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         ensureDocumentIndex(n);
         if (lastStream != null)
             lastStream.close();
+
+        // FIXME: not efficient at all
         final SegmentedDocumentDescriptor descr = descriptors.get(n);
-        return lastStream = new SegmentedInputStream(
-                openFileStream(files[descr.fileIndex]), descr.toSegments());
+        return new SegmentedInputStream(openFileStream(files[descr.fileIndex]), descr.toSegments());
     }
 
     /**
@@ -253,5 +274,10 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
     @Override
     public DocumentIterator iterator() throws IOException {
         return new SegmentedDocumentIterator(this);
+    }
+
+    public DocumentIterator iterator(int start) throws IOException {
+        ensureDocumentIndex(start);
+        return new SegmentedDocumentIterator(this, start);
     }
 }

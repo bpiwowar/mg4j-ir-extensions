@@ -11,8 +11,8 @@ xpm.add_task_factory({
 		</inputs>,
 
 	run: function(inputs) {	
-		var k1 = inputs.k1.@xp::value;
-		var b = inputs.b.@xp::value;
+		var k1 = inputs.k1.@value;
+		var b = inputs.b.@value;
 		r=<adhoc.model xmlns={mg4j.uri} id={"bm25-k1_" + k1 + "-b_" + b }> 
 			<bm25 k1={k1} b={b}/>
 		</adhoc.model>;

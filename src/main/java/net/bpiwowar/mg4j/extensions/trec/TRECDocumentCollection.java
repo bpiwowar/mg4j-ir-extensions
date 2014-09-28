@@ -21,7 +21,6 @@ package net.bpiwowar.mg4j.extensions.trec;
  *
  */
 
-import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.DocumentFactory;
 import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
@@ -32,6 +31,8 @@ import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
 import net.bpiwowar.mg4j.extensions.utils.ByteMatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -64,7 +65,7 @@ import java.io.InputStream;
  */
 public class TRECDocumentCollection extends SegmentedDocumentCollection {
     /** Our static logger */
-    static final private Logger LOGGER = Logger.getLogger(TRECDocumentCollection.class);
+    static final private Logger LOGGER = LoggerFactory.getLogger(TRECDocumentCollection.class);
 
     /** Serialization ID */
     private static final long serialVersionUID = 1;
@@ -101,14 +102,6 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
             if (a[len] != b[len])
                 return false;
         return true;
-    }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-        if (lastStream != null)
-            lastStream.close();
-        descriptors = null;
     }
 
     @Override

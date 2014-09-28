@@ -17,10 +17,10 @@ import it.unimi.di.big.mg4j.search.DocumentIteratorBuilderVisitor;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
 import it.unimi.di.big.mg4j.search.score.Scorer;
 import it.unimi.dsi.fastutil.Hash;
-import it.unimi.dsi.fastutil.ints.Int2IntMap.Entry;
-import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 import it.unimi.dsi.fastutil.ints.IntBigList;
-import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+import it.unimi.dsi.fastutil.longs.Long2LongRBTreeMap;
+import it.unimi.dsi.fastutil.longs.LongRBTreeSet;
 import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.io.WordReader;
 import it.unimi.dsi.lang.MutableString;
@@ -251,24 +251,24 @@ public class MG4JScorer implements RetrievalModel {
 				}
 
 				// --- Compute the frequencies of terms
-				Int2IntRBTreeMap relFreq = computeTermFrequencies(results);
+				Long2LongRBTreeMap relFreq = computeTermFrequencies(results);
 
 				// --- Select the candidates
-				for (Entry entry : relFreq.int2IntEntrySet()) {
-					int rt2 = entry.getIntValue();
-					int nt = frequencies.getInt(entry.getIntKey());
+				for (Long2LongMap.Entry entry : relFreq.long2LongEntrySet()) {
+					long rt2 = entry.getLongValue();
+					int nt = frequencies.getInt(entry.getLongKey());
 					final double termScore = rt2 * (logN - log(nt))
-							- combinaisons[rt2 - 1] - logV;
+							- combinaisons[(int)(rt2 - 1)] - logV;
 					if (termScore > c) {
 						// Add term to set
 						final CharSequence term = index.getTerm(entry
-								.getIntKey());
+								.getLongKey());
 						newTerms.add(term);
 						logger.info(String.format("Adding term %s", term));
 					} else {
 						if (logger.isDebugEnabled())
 							logger.debug(String.format("Not adding term %s (%g <= %g)", index
-									.getTerm(entry.getIntKey()), termScore, c));
+									.getTerm(entry.getLongKey()), termScore, c));
 					}
 
 				}
@@ -277,14 +277,15 @@ public class MG4JScorer implements RetrievalModel {
 			}
 
 			/**
-			 * @param results
-			 * @return
+			 *
+             * @param results
+             * @return
 			 * @throws java.io.IOException
 			 */
-			private Int2IntRBTreeMap computeTermFrequencies(
-					ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results)
+			private Long2LongRBTreeMap computeTermFrequencies(
+                    ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results)
 					throws IOException {
-				Int2IntRBTreeMap relFreq = new Int2IntRBTreeMap();
+				Long2LongRBTreeMap relFreq = new Long2LongRBTreeMap();
 				relFreq.defaultReturnValue(0);
 
 				for (int i = 0; i < min(k, results.size()); i++) {
@@ -296,11 +297,11 @@ public class MG4JScorer implements RetrievalModel {
 
 					MutableString word = new MutableString();
 					MutableString nonWord = new MutableString();
-					final IntRBTreeSet set = new IntRBTreeSet();
+					final LongRBTreeSet set = new LongRBTreeSet();
 
 					while (wordReader.next(word, nonWord)) {
 						if (processor.processTerm(word)) {
-							int termId = index.getTermId(word);
+							long termId = index.getTermId(word);
 							if (termId >= 0)
 								if (set.add(termId))
 									relFreq

@@ -21,7 +21,6 @@ package net.bpiwowar.mg4j.extensions.trec;
  *
  */
 
-import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.AbstractDocument;
 import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.di.big.mg4j.util.parser.callback.AnchorExtractor;
@@ -37,6 +36,7 @@ import net.bpiwowar.mg4j.extensions.MarkedUpDocument;
 import net.bpiwowar.mg4j.extensions.TagPointer;
 import net.bpiwowar.mg4j.extensions.utils.StructuredTextExtractor;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +51,7 @@ import java.util.Iterator;
  */
 
 public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
-    final static private Logger LOGGER = Logger.getLogger();
+    final static private Logger LOGGER = Logger.getLogger(TRECDocumentFactory.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -100,8 +100,14 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
 
         ComposedCallbackBuilder composedBuilder = new ComposedCallbackBuilder();
 
-        composedBuilder
-                .add(this.textExtractor = new StructuredTextExtractor());
+        composedBuilder.add(this.textExtractor = new StructuredTextExtractor());
+
+        this.textExtractor.ignore(
+                TRECParsingFactory.ELEMENT_DOCNO,
+                TRECParsingFactory.ELEMENT_FILEID,
+                TRECParsingFactory.ELEMENT_FIRST,
+                TRECParsingFactory.ELEMENT_SECOND
+        );
         parser.setCallback(composedBuilder.compose());
 
         this.wordReader = new FastBufferedReader();

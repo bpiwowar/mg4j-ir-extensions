@@ -29,5 +29,4 @@ public interface Topic {
 	 * @return a String list of available topic types 
 	 */
 	public List<String> getTypes();
-
 }

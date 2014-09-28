@@ -1,10 +1,11 @@
 package net.bpiwowar.mg4j.extensions.segmented;
 
-import bpiwowar.argparser.Logger;
 import it.unimi.di.big.mg4j.document.AbstractDocumentIterator;
 import it.unimi.di.big.mg4j.document.Document;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.io.SegmentedInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -14,7 +15,7 @@ import java.io.IOException;
 * @date 20/6/12
 */
 public class SegmentedDocumentIterator extends AbstractDocumentIterator {
-    static final private Logger LOGGER = Logger.getLogger(SegmentedDocumentIterator.class);
+    static final private Logger LOGGER = LoggerFactory.getLogger(SegmentedDocumentIterator.class);
 
     /**
      * An iterator returning the descriptors of the documents in the
@@ -40,8 +41,17 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
      */
     public SegmentedDocumentIterator(SegmentedDocumentCollection collection) {
         this.collection = collection;
-        descriptorIterator = collection.descriptors
-                .iterator();
+        descriptorIterator = collection.descriptors.iterator();
+    }
+
+    /**
+     * Initialiaze a new document iterator on a segmented document collection
+     * @param collection
+     */
+    public SegmentedDocumentIterator(SegmentedDocumentCollection collection, int start) {
+        this.collection = collection;
+        this.currentDocument = start;
+        descriptorIterator = collection.descriptors.subList(start, collection.descriptors.size64()).iterator();
     }
 
     @Override
@@ -91,7 +101,6 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
         SegmentedDocumentDescriptor currentDescriptor = firstNextDescriptor != null ? firstNextDescriptor
                 : descriptorIterator.next();
         int currentFileIndex = currentDescriptor.fileIndex;
-
 
         // We create the segmented input stream with all just collected descriptors
         siStream = new SegmentedInputStream(collection.openFileStream(collection.files[currentFileIndex]));

@@ -18,41 +18,44 @@ var task_index = {
 	run: function(inputs) {	
 	
 	   // --- Initialisations
-	   
+	   var log = logger.create("index");	   
 
 	   // Get the sequence file
-	   var seq_file = inputs.sequence.mg4j::path;
-	   var index_dir = inputs.indexdir == undefined ? xpm.filepath(new java.io.File(seq_file).getParentFile()) : index_dir = inputs.indexdir.@xp::value;
-	   var basename = inputs.basename.@xp::value;
+	   var seq_file = xpm.file(inputs.sequence.xp::path);
+	   log.debug("seq_file [%s]", seq_file);
+	   var index_dir = inputs.indexdir == undefined ? seq_file.get_parent().path("index") : inputs.indexdir.@value;
+	   var basename = inputs.basename.@value;
 	   var commandId = index_dir + "/" + basename;
+
+	   var term_processor = inputs["term-processor"];
 	   
-	   // Prepare the output
+	   log.debug("Index dir is [%s]", index_dir);
+
+	   // Prepare output and resources
 	   var output =
-		   <mg4j:index xmlns:mg4j={mg4j.uri} xmlns:xp={xp.uri} xp:resource={commandId}>
-			   <mg4j:directory mg4j:arg="index-dir">{index_dir}</mg4j:directory>
+		   <mg4j:index xmlns:mg4j={mg4j.uri} xmlns:xp={xp.uri}>
+			   <mg4j:directory mg4j:arg="index-dir"><xp:path>{index_dir}</xp:path></mg4j:directory>
 			   <mg4j:name mg4j:arg="index-basename">{basename}</mg4j:name>
 
 			   <!-- Dependent inputs -->
 			   {inputs.sequence}
-			   {inputs["term-processor"]}
+			   {inputs.term_processor}
 		   </mg4j:index>;
 
-	   
-	   
-
-		// Lock the resources	   
 	   var resources = get_resources(inputs.sequence, "READ_ACCESS");
 
 	   // Build the command
    	   var command  = [ "index" ].concat(build_args("", output));
-	   if (inputs["term-processor"] != undefined)
-	      command = command.concat("--term-processor", inputs["term-processor"].mg4j::path.text());
 
 	   command = get_command(command);
+	   log.debug("Command is %s", command.toSource());
 
 	   // Make the directories
 	   index_dir.mkdirs();
-	   scheduler.command_line_job(commandId, command, { "lock": resources });
+	   var rsrc = xpm.command_line_job(commandId, command, { "lock": resources });
+	   output.@xp::resource = rsrc.toString();
+
+	   log.debug("Output is %s", output.toSource());
 
 	   return output;
 	   

@@ -8,6 +8,8 @@ import bpiwowar.argparser.checkers.IOChecker.ValidDirectory;
 import it.unimi.di.big.mg4j.index.DiskBasedIndex;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.dsi.fastutil.ints.IntBigList;
+import it.unimi.dsi.fastutil.longs.LongBigArrayBigList;
+import it.unimi.dsi.fastutil.longs.LongBigList;
 import it.unimi.dsi.fastutil.objects.ObjectBigList;
 import it.unimi.dsi.io.InputBitStream;
 import org.apache.log4j.Logger;
@@ -28,10 +30,18 @@ final public class IndexConfiguration {
 
 	transient public Index index;
 
-	public IndexConfiguration() {
+    private long unknownTermId;
+
+    public IndexConfiguration() {
 	}
 
-	/**
+    /** Returns the ID of an unknown term */
+    public long getUnknownTermId() {
+        checkTermMap(false);
+        return unknownTermId;
+    }
+
+    /**
 	 * 
 	 * @param directory
 	 *            index directory
@@ -53,6 +63,9 @@ final public class IndexConfiguration {
 	 * Initialise the index
 	 */
 	public Index init() throws Exception {
+        if (index != null)
+            return index;
+
 		return index = Index.getInstance(
 				new File(directory, String.format("%s-%s", basename, field))
 						.toString(), true, true);
@@ -66,14 +79,8 @@ final public class IndexConfiguration {
 	 * 
 	 * @return
 	 */
-	public long getTotalLength() {
-		if (index.sizes == null)
-			return -1;
-
-		long totalLength = 0;
-		for (int size : index.sizes)
-			totalLength += size;
-		return totalLength;
+	public long getNumberOfPostings() {
+        return index.numberOfPostings;
 	}
 
 	/**
@@ -92,23 +99,18 @@ final public class IndexConfiguration {
 	 * @param word
 	 * @return
 	 */
-	public int getTermId(CharSequence word) {
+	public long getTermId(CharSequence word) {
 		checkTermMap(false);
 
-		final Long termId = termMap.get(word);
-		if (termId == null)
-			return -1;
-		final long l = (long) termId;
-		if (l > Integer.MAX_VALUE)
-			throw new RuntimeException(String.format(
-					"Term has a too high id (%d)", l));
-
-		return (int) l;
+		return termMap.getLong(word);
 	}
+
+
 
 	private void checkTermMap(boolean getList) {
 		if (termMap == null) {
             termMap = index.termMap;
+            unknownTermId = termMap.defaultReturnValue();
 		}
 
 		if (getList && list == null)
@@ -125,7 +127,7 @@ final public class IndexConfiguration {
 	 * @param i
 	 * @return
 	 */
-	public CharSequence getTerm(int i) {
+	public CharSequence getTerm(long i) {
 		checkTermMap(true);
 		return list.get(i);
 	}
@@ -149,14 +151,14 @@ final public class IndexConfiguration {
 					frequenciesFile);
 			list = DiskBasedIndex.readSizes(frequenciesFile.toString(),
 					index.numberOfTerms);
-			frequencies = new SoftReference<IntBigList>(list);
+			frequencies = new SoftReference<>(list);
 		}
 		return list;
 
 	}
 
 	/** Weak reference to document frequencies */
-	SoftReference<long[]> termfrequencies = new SoftReference<long[]>(null);
+	SoftReference<LongBigList> termfrequencies = new SoftReference<>(null);
 	
 	/**
 	 * Get term frequencies (i.e. the number of times a term occurs in the 
@@ -166,21 +168,21 @@ final public class IndexConfiguration {
 	 * 		ids
 	 * @throws java.io.IOException
 	 */
-	public long[] getTermFrequency() throws IOException {
-		long[] list = termfrequencies.get();
+	public LongBigList getTermFrequency() throws IOException {
+        LongBigList list = termfrequencies.get();
 		
 		if (list == null) {
 			File frequenciesFile = new File(directory, String.format("%s-%s%s",
 					basename, field, DiskBasedIndex.COUNTS_EXTENSION));
 			LOGGER.info("Loading term frequencies from file " +
 					frequenciesFile);
-			list = new long[(int) index.numberOfTerms];
-			
+			list = new LongBigArrayBigList(index.numberOfTerms);
+
 			final InputBitStream in = new InputBitStream(frequenciesFile);
-			for (int i = 0; i < list.length; i++)
-				list[i] = in.readLongGamma();
+			for (long i = 0; i < list.size64(); i++)
+				list.set(i, in.readLongGamma());
 			in.close();
-			termfrequencies = new SoftReference<long[]>(list);
+			termfrequencies = new SoftReference<>(list);
 			
 			LOGGER.info("Completed.");
 		}

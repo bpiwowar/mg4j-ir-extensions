@@ -18,12 +18,11 @@ import java.util.*;
  * A callback extracting text and titles for structured documents. This implementation
  * also keeps track of the different segments within the text. It
  * also stores the positions of elements and tags.
- * <p/>
- * <p/>
+ * <p>
  * This callbacks extracts all text in the page, and the title. The resulting
  * text is available through {@link #text}, and the title through {@link #title}
  * . Furthermore, the segments of the resulting text are preserved.
- * <p/>
+ * </p>
  *
  * @author Ingo Frommholz &lt;ingo@dcs.gla.ac.uk&gt
  * @author Benjamin Piwowarski <benjamin@bpiwowar.net>
@@ -49,7 +48,7 @@ public class StructuredTextExtractor implements Callback {
     /**
      * Elements to ignore
      */
-    private Set<Element> ignoredElements = new HashSet<Element>();
+    private Set<Element> ignoredElements = new HashSet<>();
 
     /**
      * The current position in the stream
@@ -69,8 +68,8 @@ public class StructuredTextExtractor implements Callback {
      *
      * @param element The element to ignore
      */
-    void ignore(Element element) {
-        ignoredElements.add(element);
+    public void ignore(Element... element) {
+        ignoredElements.addAll(Arrays.asList(element));
     }
 
     /**
@@ -126,7 +125,6 @@ public class StructuredTextExtractor implements Callback {
     public boolean startElement(Element element,
                                 Map<Attribute, MutableString> attrMapUnused) {
 
-        // we ignore (java)script
         if (!ignoredElements.contains(element)) {
             pointers.add(new TagPointer(currentPointer, element,
                     TagPointer.TagType.START));
