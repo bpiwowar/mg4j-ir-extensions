@@ -42,8 +42,8 @@ public class ByteMatch {
      *
      * @param b the next input byte to be checked
      * @return {@code true} if the whole string was matched, {@code false}
-     *         if there's a character mismatch or just a part of the string
-     *         was matched so far
+     * if there's a character mismatch or just a part of the string
+     * was matched so far
      */
     public boolean match(byte b) {
         if (b == bytes[index] || (alt != null && b == alt[index])) {

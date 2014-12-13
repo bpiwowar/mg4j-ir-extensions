@@ -1,0 +1,8 @@
+{
+    "packages": ["net.bpiwowar.mg4j.extensions.tasks"],
+
+    "namespaces": {
+        "mg4j" : "net.bpiwowar.mg4j",
+        "irc": "http://ircollections.sourceforge.net"
+    }
+}

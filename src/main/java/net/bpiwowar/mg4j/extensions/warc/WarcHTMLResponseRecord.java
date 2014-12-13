@@ -48,7 +48,11 @@ import it.unimi.dsi.parser.callback.Callback;
 import net.bpiwowar.mg4j.extensions.utils.ByteMatch;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -154,7 +158,7 @@ public class WarcHTMLResponseRecord {
      * Test if the underlying record is really a HTML response.
      *
      * @return <code>true</code> if record is an HYTML response,
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     public boolean isHTMLResponse() {
         return this.isHTMLResponse;
@@ -286,7 +290,7 @@ public class WarcHTMLResponseRecord {
      * Gets the difference between the start and stop marker
      *
      * @return the difference between start and stop marker or -1 if this value
-     *         is undefined
+     * is undefined
      */
     public int getStopMarkerDiff() {
         if (warcRecord != null) return warcRecord.getStopMarkerDiff();
@@ -322,7 +326,7 @@ public class WarcHTMLResponseRecord {
 
     /**
      * Get HTML Content
-     *
+     * <p/>
      * Prefer {@linkplain #getContentReader()} for effiency
      *
      * @return
@@ -332,16 +336,15 @@ public class WarcHTMLResponseRecord {
             return "";
 
         final byte[] content = warcRecord.getContent();
-        return new String(content, start, content.length-start+1, retrieveEncoding());
+        return new String(content, start, content.length - start + 1, retrieveEncoding());
     }
 
     public Reader getContentReader() {
         Charset encoding = retrieveEncoding();
         final byte[] content = start >= 0 ? warcRecord.getContent() : null;
-        return new InputStreamReader(new ByteArrayInputStream(content, start, content.length-start), encoding);
+        return new InputStreamReader(new ByteArrayInputStream(content, start, content.length - start), encoding);
 
     }
-
 
 
     /**
@@ -373,7 +376,7 @@ public class WarcHTMLResponseRecord {
                 for (++this.start; this.start < content.length; ++this.start) {
                     b = content[this.start];
                     if (b == '\n') {
-                        contentType = new String(content, start, this.start -start).trim();
+                        contentType = new String(content, start, this.start - start).trim();
 //                        System.err.println("Found MIME type: " + contentType);
                         break;
                     }
@@ -386,16 +389,14 @@ public class WarcHTMLResponseRecord {
                     ++start;
                     break;
                 }
-            }
-            else newlines = 0;
+            } else newlines = 0;
         }
     }
 
 
-
     private static Pattern CHARSET_PATTERN = Pattern.compile("^" + getLUPattern("charset") + "\\s*=\\s*(\\S+)\\s*$");
 
-    final char [] buffer = new char[8192];
+    final char[] buffer = new char[8192];
 
     private Charset retrieveEncoding() {
         // Parse the file
@@ -409,7 +410,7 @@ public class WarcHTMLResponseRecord {
         parser.setCallback(new MyCallback(charset));
 
         final byte[] content = start >= 0 ? warcRecord.getContent() : null;
-        final Reader reader = new InputStreamReader(new ByteArrayInputStream(content, start, content.length-start), Charset.defaultCharset());
+        final Reader reader = new InputStreamReader(new ByteArrayInputStream(content, start, content.length - start), Charset.defaultCharset());
 
 
         try {
@@ -426,11 +427,13 @@ public class WarcHTMLResponseRecord {
         }
 
 
-            // By default
+        // By default
         return DEFAULT_CHARSET;
     }
 
-    /** Retrieve the charset from a content type */
+    /**
+     * Retrieve the charset from a content type
+     */
     private Charset retrieveCharsetFromContentType(String contentType) {
         if (contentType == null) return null;
 
@@ -441,7 +444,7 @@ public class WarcHTMLResponseRecord {
                 // Cleans up the encoding: uppercase, remove quotes
                 String encoding = matcher.group(1).toUpperCase();
                 if (encoding.startsWith("\"")) encoding = encoding.substring(1);
-                if (encoding.endsWith("\"")) encoding = encoding.substring(0, encoding.length()-1);
+                if (encoding.endsWith("\"")) encoding = encoding.substring(0, encoding.length() - 1);
 
                 // Handles some aliases
                 if (encoding.equals("ISO-LATIN-1"))
@@ -457,16 +460,18 @@ public class WarcHTMLResponseRecord {
     static private Charset getCharset(String encoding) {
         try {
             return Charset.forName(encoding);
-        } catch(IllegalCharsetNameException e) {
+        } catch (IllegalCharsetNameException e) {
             LOGGER.error("Cannot handle charset [" + encoding + "]: " + e);
-        } catch(UnsupportedCharsetException e) {
+        } catch (UnsupportedCharsetException e) {
             LOGGER.error("Cannot handle charset [" + encoding + "]: " + e);
         }
         return null;
     }
 
 
-    /** Callback used to parse the content encoding */
+    /**
+     * Callback used to parse the content encoding
+     */
     private class MyCallback implements Callback {
         private final Charset[] charset;
 
@@ -502,7 +507,7 @@ public class WarcHTMLResponseRecord {
                 }
 
                 final MutableString metaCharset = attributes.get(Attribute.CHARSET);
-                if  (metaCharset != null) {
+                if (metaCharset != null) {
                     charset[0] = getCharset(metaCharset.toUpperCase().toString());
                     return true;
 //                    return charset[0] == null;

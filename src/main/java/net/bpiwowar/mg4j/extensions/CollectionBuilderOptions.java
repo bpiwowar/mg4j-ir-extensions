@@ -8,9 +8,9 @@ import java.util.ArrayList;
 /**
  * Options common to collection building processes
  *
-* @author B. Piwowarski <benjamin@bpiwowar.net>
-* @date 20/6/12
-*/
+ * @author B. Piwowarski <benjamin@bpiwowar.net>
+ * @date 20/6/12
+ */
 public class CollectionBuilderOptions {
     @Argument(name = "collection", required = true, help = "The filename for the serialised collection")
     public String collection;

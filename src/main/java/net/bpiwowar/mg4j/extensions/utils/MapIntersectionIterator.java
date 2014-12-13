@@ -5,18 +5,19 @@ package net.bpiwowar.mg4j.extensions.utils;
 
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * Intersection iterator between two sorted collections
  *
+ * @param <Key>   The key
+ * @param <Value> The value
  * @author bpiwowar
  * @date Nov 19, 2007
- *
- * @param <Key>
- *            The key
- * @param <Value>
- *            The value
  */
 final public class MapIntersectionIterator<Key, Value, Result> implements
         Iterator<Pair<Key, Result>> {
@@ -27,11 +28,10 @@ final public class MapIntersectionIterator<Key, Value, Result> implements
     /**
      * An entry that implements the heap code
      *
-     * @author bpiwowar
-     * @date Nov 19, 2007
-     *
      * @param <U>
      * @param <V>
+     * @author bpiwowar
+     * @date Nov 19, 2007
      */
     static class Entry<U, V> implements
             HeapElement<Entry<U, V>>,
@@ -48,7 +48,8 @@ final public class MapIntersectionIterator<Key, Value, Result> implements
 
         /**
          * Creates a new entry
-         * @param i The index
+         *
+         * @param i          The index
          * @param comparator
          * @param iterator
          */
@@ -172,7 +173,6 @@ final public class MapIntersectionIterator<Key, Value, Result> implements
 
     /**
      * Creates a new intersection iterator
-     *
      */
     public <Iterators extends Iterator<? extends Map.Entry<Key, Value>>> MapIntersectionIterator(
             Aggregator<Map.Entry<Key, Value>, Result> aggregator,

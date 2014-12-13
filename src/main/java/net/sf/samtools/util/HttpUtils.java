@@ -1,9 +1,9 @@
 package net.sf.samtools.util;
 
-import java.net.URLConnection;
-import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 /**
  * User: jrobinso
@@ -22,8 +22,7 @@ public class HttpUtils {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        }
-        finally {
+        } finally {
             if (conn != null && conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).disconnect();
             }
@@ -41,8 +40,7 @@ public class HttpUtils {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        }
-        finally {
+        } finally {
             if (conn != null && conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).disconnect();
             }
@@ -63,8 +61,7 @@ public class HttpUtils {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (conn != null && conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).disconnect();
             }
@@ -81,8 +78,7 @@ public class HttpUtils {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-        finally {
+        } finally {
             if (conn != null && conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).disconnect();
             }
@@ -93,7 +89,7 @@ public class HttpUtils {
         //printHeaderFields(new URL(
         //        "http://www.broadinstitute.org/igvdata/1KG/DCC_merged/freeze5/NA12891.pilot2.SLX.bam"));
         System.out.println(getETag(new URL(
-                 "http://www.broadinstitute.org/igvdata/test/sam/303KY.8.paired1.bam.tdf")));
+                "http://www.broadinstitute.org/igvdata/test/sam/303KY.8.paired1.bam.tdf")));
         System.out.println(resourceAvailable(new URL(
                 "http://www.broadinstitute.org/igvdata/test/sam/303KY.8.paired1.bam.tdf")));
 

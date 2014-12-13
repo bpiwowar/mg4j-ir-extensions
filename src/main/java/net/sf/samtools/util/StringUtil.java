@@ -31,9 +31,8 @@ public class StringUtil {
     private static final byte UPPER_CASE_OFFSET = 'A' - 'a';
 
     /**
-     *
      * @param separator String to interject between each string in strings arg
-     * @param strings List of strings to be joined.
+     * @param strings   List of strings to be joined.
      * @return String that concatenates each item of strings arg, with separator btw each of them.
      */
     public static String join(final String separator, final String... strings) {
@@ -54,9 +53,9 @@ public class StringUtil {
      * the total time when used for parsing ascii files.
      * Note that if tokens arg is not large enough to all the tokens in the string, excess tokens are discarded.
      *
-     * @param aString  the string to split
-     * @param tokens an array to hold the parsed tokens
-     * @param delim  character that delimits tokens
+     * @param aString the string to split
+     * @param tokens  an array to hold the parsed tokens
+     * @param delim   character that delimits tokens
      * @return the number of tokens parsed
      */
     public static int split(final String aString, final String[] tokens, final char delim) {
@@ -65,23 +64,20 @@ public class StringUtil {
         int nTokens = 0;
         int start = 0;
         int end = aString.indexOf(delim);
-        if(end < 0) {
+        if (end < 0) {
             tokens[nTokens++] = aString;
             return nTokens;
         }
-        while ((end > 0) && (nTokens < maxTokens))
-        {
+        while ((end > 0) && (nTokens < maxTokens)) {
             tokens[nTokens++] = aString.substring(start, end);
             start = end + 1;
             end = aString.indexOf(delim, start);
 
         }
         // Add the trailing string,  if there is room and if it is not empty.
-        if (nTokens < maxTokens)
-        {
+        if (nTokens < maxTokens) {
             final String trailingString = aString.substring(start);
-            if (trailingString.length() > 0)
-            {
+            if (trailingString.length() > 0) {
                 tokens[nTokens++] = trailingString;
             }
         }
@@ -95,9 +91,9 @@ public class StringUtil {
      * Note that the string is split into no more elements than tokens arg will hold, so the final tokenized
      * element may contain delimiter chars.
      *
-     * @param aString  the string to split
-     * @param tokens an array to hold the parsed tokens
-     * @param delim  character that delimits tokens
+     * @param aString the string to split
+     * @param tokens  an array to hold the parsed tokens
+     * @param delim   character that delimits tokens
      * @return the number of tokens parsed
      */
     public static int splitConcatenateExcessTokens(final String aString, final String[] tokens, final char delim) {
@@ -106,12 +102,11 @@ public class StringUtil {
         int nTokens = 0;
         int start = 0;
         int end = aString.indexOf(delim);
-        if(end < 0) {
+        if (end < 0) {
             tokens[nTokens++] = aString;
             return nTokens;
         }
-        while ((end > 0) && (nTokens < maxTokens - 1))
-        {
+        while ((end > 0) && (nTokens < maxTokens - 1)) {
             tokens[nTokens++] = aString.substring(start, end);
             start = end + 1;
             end = aString.indexOf(delim, start);
@@ -119,8 +114,7 @@ public class StringUtil {
         }
         // Add the trailing string,  if it is not empty.
         final String trailingString = aString.substring(start);
-        if (trailingString.length() > 0)
-        {
+        if (trailingString.length() > 0) {
             tokens[nTokens++] = trailingString;
         }
         return nTokens;
@@ -128,13 +122,13 @@ public class StringUtil {
 
     /**
      * @param b ASCII character
-     * @return uppercase version of arg if it was lowercase, otherwise returns arg 
+     * @return uppercase version of arg if it was lowercase, otherwise returns arg
      */
     public static byte toUpperCase(final byte b) {
         if (b < 'a' || b > 'z') {
             return b;
         }
-        return (byte)(b + UPPER_CASE_OFFSET);
+        return (byte) (b + UPPER_CASE_OFFSET);
     }
 
     /**
@@ -142,7 +136,7 @@ public class StringUtil {
      */
     public static void toUpperCase(final byte[] bytes) {
         final int length = bytes.length;
-        for (int i=0; i<length; ++i) {
+        for (int i = 0; i < length; ++i) {
             if (bytes[i] >= 'a' && bytes[i] <= 'z') {
                 bytes[i] = (byte) (bytes[i] + UPPER_CASE_OFFSET);
             }
@@ -154,13 +148,13 @@ public class StringUtil {
      * Checks that a String doesn't contain one or more characters of interest.
      *
      * @param illegalChars the String to check
-     * @param chars the characters to check for
+     * @param chars        the characters to check for
      * @return String the input String for convenience
      * @throws IllegalArgumentException if the String contains one or more of the characters
      */
     public static String assertCharactersNotInString(final String illegalChars, final char... chars) {
         for (final char illegalChar : illegalChars.toCharArray()) {
-            for (final char ch: chars) {
+            for (final char ch : chars) {
                 if (illegalChar == ch) {
                     throw new IllegalArgumentException("Supplied String contains illegal character '" + illegalChar + "'.");
                 }
@@ -178,7 +172,7 @@ public class StringUtil {
     public static String wordWrap(final String s, final int maxLineLength) {
         final String[] lines = s.split("\n");
         final StringBuilder sb = new StringBuilder();
-        for (final String line: lines) {
+        for (final String line : lines) {
             if (sb.length() > 0) {
                 sb.append("\n");
             }
@@ -209,7 +203,8 @@ public class StringUtil {
                 lastSpaceIndex = i;
             }
             // Include any trailing whitespace
-            for (; lastSpaceIndex < s.length() && Character.isWhitespace(s.charAt(lastSpaceIndex)); ++lastSpaceIndex) {}
+            for (; lastSpaceIndex < s.length() && Character.isWhitespace(s.charAt(lastSpaceIndex)); ++lastSpaceIndex) {
+            }
             if (sb.length() > 0) {
                 sb.append("\n");
             }
@@ -276,23 +271,24 @@ public class StringUtil {
     public static String readNullTerminatedString(final BinaryCodec binaryCodec) {
         final StringBuilder ret = new StringBuilder();
         for (byte b = binaryCodec.readByte(); b != 0; b = binaryCodec.readByte()) {
-            ret.append((char)(b & 0xff));
+            ret.append((char) (b & 0xff));
         }
         return ret.toString();
     }
 
     /**
      * Convert chars to bytes merely by casting
-     * @param chars input chars
+     *
+     * @param chars      input chars
      * @param charOffset where to start converting from chars array
-     * @param length how many chars to convert
-     * @param bytes where to put the converted output
+     * @param length     how many chars to convert
+     * @param bytes      where to put the converted output
      * @param byteOffset where to start writing the converted output.
      */
     public static void charsToBytes(final char[] chars, final int charOffset, final int length,
                                     final byte[] bytes, final int byteOffset) {
         for (int i = 0; i < length; ++i) {
-            bytes[byteOffset + i] = (byte)chars[charOffset + i];
+            bytes[byteOffset + i] = (byte) chars[charOffset + i];
         }
     }
 
@@ -300,18 +296,19 @@ public class StringUtil {
      * Convert ASCII char to byte.
      */
     public static byte charToByte(final char c) {
-        return (byte)c;
+        return (byte) c;
     }
 
     /**
      * Convert ASCII byte to ASCII char.
      */
     public static char byteToChar(final byte b) {
-        return (char)(b & 0xff);
+        return (char) (b & 0xff);
     }
 
     /**
      * Convert a byte array into a String hex representation.
+     *
      * @param data Input to be converted.
      * @return String twice as long as data.length with hex representation of data.
      */
@@ -319,8 +316,8 @@ public class StringUtil {
         final char[] chars = new char[2 * data.length];
         for (int i = 0; i < data.length; i++) {
             final byte b = data[i];
-            chars[2*i] = toHexDigit((b >> 4) & 0xF);
-            chars[2*i+1] = toHexDigit(b & 0xF);
+            chars[2 * i] = toHexDigit((b >> 4) & 0xF);
+            chars[2 * i + 1] = toHexDigit(b & 0xF);
         }
         return new String(chars);
     }
@@ -328,11 +325,12 @@ public class StringUtil {
     /**
      * Convert a String containing hex characters into an array of bytes with the binary representation
      * of the hex string
+     *
      * @param s Hex string.  Length must be even because each pair of hex chars is converted into a byte.
      * @return byte array with binary representation of hex string.
      * @throws NumberFormatException
      */
-    public static byte[] hexStringToBytes(final String s)  throws NumberFormatException {
+    public static byte[] hexStringToBytes(final String s) throws NumberFormatException {
         if (s.length() % 2 != 0) {
             throw new NumberFormatException("Hex representation of byte string does not have even number of hex chars: " + s);
         }
@@ -357,6 +355,7 @@ public class StringUtil {
 
     /**
      * Reverse the given string.  Does not check for null.
+     *
      * @param s String to be reversed.
      * @return New string that is the reverse of the input string.
      */
@@ -368,7 +367,7 @@ public class StringUtil {
 
     /**
      * <p>Checks if a String is whitespace, empty ("") or null.</p>
-     *
+     * <p/>
      * <pre>
      * StringUtils.isBlank(null)      = true
      * StringUtils.isBlank("")        = true
@@ -377,7 +376,7 @@ public class StringUtil {
      * StringUtils.isBlank("  sam  ") = false
      * </pre>
      *
-     * @param str  the String to check, may be null
+     * @param str the String to check, may be null
      * @return <code>true</code> if the String is null, empty or whitespace
      */
     public static boolean isBlank(String str) {
@@ -386,7 +385,7 @@ public class StringUtil {
             return true;
         }
         for (int i = 0; i < strLen; i++) {
-            if (!Character.isWhitespace(str.charAt(i)) ) {
+            if (!Character.isWhitespace(str.charAt(i))) {
                 return false;
             }
         }

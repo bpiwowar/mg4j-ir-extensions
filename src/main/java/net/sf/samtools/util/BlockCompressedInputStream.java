@@ -30,10 +30,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.net.URL;
+import java.util.Arrays;
 
 /*
  * Utility class for reading BGZF block compressed files.  The caller can treat this file like any other InputStream.
@@ -44,8 +44,7 @@ import java.net.URL;
  * c.f. http://samtools.sourceforge.net/SAM1.pdf for details of BGZF format
  */
 public class BlockCompressedInputStream
-        extends InputStream
-{
+        extends InputStream {
 
     private InputStream mStream = null;
     private SeekableStream mFile = null;
@@ -69,7 +68,7 @@ public class BlockCompressedInputStream
      * Use this ctor if you wish to call seek()
      */
     public BlockCompressedInputStream(final File file)
-        throws IOException {
+            throws IOException {
         mFile = new SeekableFileStream(file);
         mStream = null;
 
@@ -86,7 +85,7 @@ public class BlockCompressedInputStream
      * next caller of a method for this input stream. The next caller might be the same thread or another thread.
      */
     public int available()
-        throws IOException {
+            throws IOException {
         if (mCurrentBlock == null || mCurrentOffset == mCurrentBlock.length) {
             readBlock();
         }
@@ -100,7 +99,7 @@ public class BlockCompressedInputStream
      * Closes the underlying InputStream or RandomAccessFile
      */
     public void close()
-        throws IOException {
+            throws IOException {
         if (mFile != null) {
             mFile.close();
             mFile = null;
@@ -117,11 +116,11 @@ public class BlockCompressedInputStream
      * Reads the next byte of data from the input stream. The value byte is returned as an int in the range 0 to 255.
      * If no byte is available because the end of the stream has been reached, the value -1 is returned.
      * This method blocks until input data is available, the end of the stream is detected, or an exception is thrown.
-
+     *
      * @return the next byte of data, or -1 if the end of the stream is reached.
      */
     public int read()
-        throws IOException {
+            throws IOException {
         return (available() > 0) ? mCurrentBlock[mCurrentOffset++] : -1;
     }
 
@@ -129,7 +128,7 @@ public class BlockCompressedInputStream
      * Reads some number of bytes from the input stream and stores them into the buffer array b. The number of bytes
      * actually read is returned as an integer. This method blocks until input data is available, end of file is detected,
      * or an exception is thrown.
-     *
+     * <p/>
      * read(buf) has the same effect as read(buf, 0, buf.length).
      *
      * @param buffer the buffer into which the data is read.
@@ -137,14 +136,14 @@ public class BlockCompressedInputStream
      * the stream has been reached.
      */
     public int read(final byte[] buffer)
-        throws IOException {
+            throws IOException {
         return read(buffer, 0, buffer.length);
     }
 
     /**
      * Reads up to len bytes of data from the input stream into an array of bytes. An attempt is made to read
      * as many as len bytes, but a smaller number may be read. The number of bytes actually read is returned as an integer.
-     *
+     * <p/>
      * This method blocks until input data is available, end of file is detected, or an exception is thrown.
      *
      * @param buffer buffer into which data is read.
@@ -154,7 +153,7 @@ public class BlockCompressedInputStream
      * the stream has been reached.
      */
     public int read(final byte[] buffer, int offset, int length)
-        throws IOException {
+            throws IOException {
         final int originalLength = length;
         while (length > 0) {
             final int available = available();
@@ -181,7 +180,7 @@ public class BlockCompressedInputStream
      * @param pos virtual file pointer
      */
     public void seek(final long pos)
-        throws IOException {
+            throws IOException {
         if (mFile == null) {
             throw new IOException("Cannot seek on stream based file");
         }
@@ -234,7 +233,7 @@ public class BlockCompressedInputStream
      * @return true if the given file looks like a valid BGZF file.
      */
     public static boolean isValidFile(final InputStream stream)
-        throws IOException {
+            throws IOException {
         if (!stream.markSupported()) {
             throw new RuntimeException("Cannot test non-buffered stream");
         }
@@ -255,7 +254,7 @@ public class BlockCompressedInputStream
     }
 
     private void readBlock()
-        throws IOException {
+            throws IOException {
 
         if (mFileBuffer == null) {
             mFileBuffer = new byte[BlockCompressedStreamConstants.MAX_COMPRESSED_BLOCK_SIZE];
@@ -287,8 +286,8 @@ public class BlockCompressedInputStream
     }
 
     private void inflateBlock(final byte[] compressedBlock, final int compressedLength)
-        throws IOException {
-        final int uncompressedLength = unpackInt32(compressedBlock, compressedLength-4);
+            throws IOException {
+        final int uncompressedLength = unpackInt32(compressedBlock, compressedLength - 4);
         byte[] buffer = mCurrentBlock;
         mCurrentBlock = null;
         if (buffer == null || buffer.length != uncompressedLength) {
@@ -299,7 +298,7 @@ public class BlockCompressedInputStream
     }
 
     private int readBytes(final byte[] buffer, final int offset, final int length)
-        throws IOException {
+            throws IOException {
         if (mFile != null) {
             return readBytes(mFile, buffer, offset, length);
         } else if (mStream != null) {
@@ -310,7 +309,7 @@ public class BlockCompressedInputStream
     }
 
     private static int readBytes(final SeekableStream file, final byte[] buffer, final int offset, final int length)
-        throws IOException {
+            throws IOException {
         int bytesRead = 0;
         while (bytesRead < length) {
             final int count = file.read(buffer, offset + bytesRead, length - bytesRead);
@@ -323,7 +322,7 @@ public class BlockCompressedInputStream
     }
 
     private static int readBytes(final InputStream stream, final byte[] buffer, final int offset, final int length)
-        throws IOException {
+            throws IOException {
         int bytesRead = 0;
         while (bytesRead < length) {
             final int count = stream.read(buffer, offset + bytesRead, length - bytesRead);
@@ -337,20 +336,20 @@ public class BlockCompressedInputStream
 
     private int unpackInt16(final byte[] buffer, final int offset) {
         return ((buffer[offset] & 0xFF) |
-                ((buffer[offset+1] & 0xFF) << 8));
+                ((buffer[offset + 1] & 0xFF) << 8));
     }
 
     private int unpackInt32(final byte[] buffer, final int offset) {
         return ((buffer[offset] & 0xFF) |
-                ((buffer[offset+1] & 0xFF) << 8) |
-                ((buffer[offset+2] & 0xFF) << 16) |
-                ((buffer[offset+3] & 0xFF) << 24));
+                ((buffer[offset + 1] & 0xFF) << 8) |
+                ((buffer[offset + 2] & 0xFF) << 16) |
+                ((buffer[offset + 3] & 0xFF) << 24));
     }
 
     public enum FileTermination {HAS_TERMINATOR_BLOCK, HAS_HEALTHY_LAST_BLOCK, DEFECTIVE}
 
     public static FileTermination checkTermination(final File file)
-        throws IOException {
+            throws IOException {
         final long fileSize = file.length();
         if (fileSize < BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK.length) {
             return FileTermination.DEFECTIVE;
@@ -363,19 +362,19 @@ public class BlockCompressedInputStream
             if (Arrays.equals(buf, BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK)) {
                 return FileTermination.HAS_TERMINATOR_BLOCK;
             }
-            final int bufsize = (int)Math.min(fileSize, BlockCompressedStreamConstants.MAX_COMPRESSED_BLOCK_SIZE);
+            final int bufsize = (int) Math.min(fileSize, BlockCompressedStreamConstants.MAX_COMPRESSED_BLOCK_SIZE);
             buf = new byte[bufsize];
             raFile.seek(fileSize - bufsize);
             raFile.read(buf);
             for (int i = buf.length - BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK.length;
-                    i >= 0; --i) {
+                 i >= 0; --i) {
                 if (!preambleEqual(BlockCompressedStreamConstants.GZIP_BLOCK_PREAMBLE,
                         buf, i, BlockCompressedStreamConstants.GZIP_BLOCK_PREAMBLE.length)) {
                     continue;
                 }
                 final ByteBuffer byteBuffer = ByteBuffer.wrap(buf, i + BlockCompressedStreamConstants.GZIP_BLOCK_PREAMBLE.length, 4);
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-                final int totalBlockSizeMinusOne =  byteBuffer.getShort() & 0xFFFF;
+                final int totalBlockSizeMinusOne = byteBuffer.getShort() & 0xFFFF;
                 if (buf.length - i == totalBlockSizeMinusOne + 1) {
                     return FileTermination.HAS_HEALTHY_LAST_BLOCK;
                 } else {

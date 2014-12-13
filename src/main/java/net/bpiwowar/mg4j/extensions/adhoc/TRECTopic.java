@@ -23,217 +23,215 @@ import java.util.Map;
 
 /**
  * A TREC topic
- * 
+ *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
 public class TRECTopic implements Topic {
-	final static private Logger logger = Logger.getLogger(Topic.class);
+    final static private Logger logger = Logger.getLogger(Topic.class);
 
-	protected String id;
+    protected String id;
 
-	protected String narrative;
+    protected String narrative;
 
-	protected String description;
+    protected String description;
 
-	protected String title;
+    protected String title;
 
-	protected String concepts;
+    protected String concepts;
 
-	protected String definitions;
+    protected String definitions;
 
-	protected String summary;
+    protected String summary;
 
-	public String getTitle() {
-		return title;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getNarrative() {
-		return narrative;
-	}
+    public String getNarrative() {
+        return narrative;
+    }
 
-	public String getSummary() {
-		return summary;
-	}
+    public String getSummary() {
+        return summary;
+    }
 
-	public String getConcepts() {
-		return concepts;
-	}
+    public String getConcepts() {
+        return concepts;
+    }
 
-	public String getDefinitions() {
-		return definitions;
-	}
+    public String getDefinitions() {
+        return definitions;
+    }
 
-	/**
-	 * Read a set of TREC topics
-	 * 
-	 *
+    /**
+     * Read a set of TREC topics
+     *
      * @param reader
-     * @param quoteCommas
-     *            Should we quote word separated by commas?
+     * @param quoteCommas Should we quote word separated by commas?
      * @return
-	 * @throws IOException
-	 */
-	static public DefaultQuerySet readTopics(BufferedReader reader,
+     * @throws IOException
+     */
+    static public DefaultQuerySet readTopics(BufferedReader reader,
                                              final boolean quoteCommas) throws IOException {
-		logger.debug("Reading a topic file");
-		final DefaultQuerySet querySet = new DefaultQuerySet();
+        logger.debug("Reading a topic file");
+        final DefaultQuerySet querySet = new DefaultQuerySet();
 
-		BulletParser bulletParser = new BulletParser(
-				TRECParsingFactory.INSTANCE);
+        BulletParser bulletParser = new BulletParser(
+                TRECParsingFactory.INSTANCE);
 
-		bulletParser.setCallback(new DefaultCallback() {
-			TRECTopic topic = null;
-			MutableString curText = new MutableString();
-			Element curElement;
+        bulletParser.setCallback(new DefaultCallback() {
+            TRECTopic topic = null;
+            MutableString curText = new MutableString();
+            Element curElement;
 
-			@Override
-			public boolean characters(char[] text, int offset, int length,
-					boolean flowBroken) {
-				curText.append(text, offset, length);
-				return true;
-			}
+            @Override
+            public boolean characters(char[] text, int offset, int length,
+                                      boolean flowBroken) {
+                curText.append(text, offset, length);
+                return true;
+            }
 
-			@Override
-			public boolean startElement(Element element,
-					Map<Attribute, MutableString> attrMapUnused) {
+            @Override
+            public boolean startElement(Element element,
+                                        Map<Attribute, MutableString> attrMapUnused) {
 
-				// --- New tag
-				if (topic != null)
-					process();
+                // --- New tag
+                if (topic != null)
+                    process();
 
-				// ---
-				if (element == TRECParsingFactory.ELEMENT_TOP) {
-					topic = new TRECTopic();
-				}
-				curElement = element;
-				return true;
-			}
+                // ---
+                if (element == TRECParsingFactory.ELEMENT_TOP) {
+                    topic = new TRECTopic();
+                }
+                curElement = element;
+                return true;
+            }
 
-			void removePrefix(String prefix, MutableString text) {
-				if (text.startsWith(prefix))
-					text.delete(0, prefix.length());
+            void removePrefix(String prefix, MutableString text) {
+                if (text.startsWith(prefix))
+                    text.delete(0, prefix.length());
 
-			}
+            }
 
-			private void process() {
-				curText.trim();
-				curText.replace('\n', ' ');
-				curText.squeezeSpaces(false);
+            private void process() {
+                curText.trim();
+                curText.replace('\n', ' ');
+                curText.squeezeSpaces(false);
 
-				if (curElement == TRECParsingFactory.ELEMENT_TITLE) {
-					removePrefix("Topic: ", curText);
-					if (quoteCommas) {
-						StringBuilder builder = new StringBuilder();
-						boolean first = true;
-						for (String part : curText.toString()
-								.split("\\s*,\\s*")) {
-							if (first)
-								first = false;
-							else
-								builder.append(' ');
+                if (curElement == TRECParsingFactory.ELEMENT_TITLE) {
+                    removePrefix("Topic: ", curText);
+                    if (quoteCommas) {
+                        StringBuilder builder = new StringBuilder();
+                        boolean first = true;
+                        for (String part : curText.toString()
+                                .split("\\s*,\\s*")) {
+                            if (first)
+                                first = false;
+                            else
+                                builder.append(' ');
 
-							if (part.indexOf(' ') >= 0) {
-								builder.append('"');
-								builder.append(part);
-								builder.append('"');
-							} else
-								builder.append(part);
-						}
+                            if (part.indexOf(' ') >= 0) {
+                                builder.append('"');
+                                builder.append(part);
+                                builder.append('"');
+                            } else
+                                builder.append(part);
+                        }
 
-						topic.title = builder.toString();
-					} else
-						topic.title = curText.toString();
-				} else if (curElement == TRECParsingFactory.ELEMENT_NUM) {
-					removePrefix("Number: ", curText);
-					// Normalise the number
-					topic.id = new Integer(curText.toString()).toString();
-				} else if (curElement == TRECParsingFactory.ELEMENT_DESC) {
-					removePrefix("Description: ", curText);
-					topic.description = curText.toString();
-				} else if (curElement == TRECParsingFactory.ELEMENT_NARR) {
-					// TREC
-					removePrefix("Narrative: ", curText);
-					topic.narrative = curText.toString();
-				} else if (curElement == TRECParsingFactory.ELEMENT_SMRY) {
-					removePrefix("Summary: ", curText);
-					topic.summary = curText.toString();
-				} else if (curElement == TRECParsingFactory.ELEMENT_CON) {
-					// TREC 1
-					removePrefix("Concepts: ", curText);
-					topic.concepts = curText.toString();
-				} else if (curElement == TRECParsingFactory.ELEMENT_DEF) {
-					// TREC 1
-					removePrefix("Definition(s): ", curText);
-					removePrefix("Definition: ", curText);
-					topic.definitions = curText.toString();
-				}
-				curElement = null;
-				curText.delete(0, curText.length());
-			}
+                        topic.title = builder.toString();
+                    } else
+                        topic.title = curText.toString();
+                } else if (curElement == TRECParsingFactory.ELEMENT_NUM) {
+                    removePrefix("Number: ", curText);
+                    // Normalise the number
+                    topic.id = new Integer(curText.toString()).toString();
+                } else if (curElement == TRECParsingFactory.ELEMENT_DESC) {
+                    removePrefix("Description: ", curText);
+                    topic.description = curText.toString();
+                } else if (curElement == TRECParsingFactory.ELEMENT_NARR) {
+                    // TREC
+                    removePrefix("Narrative: ", curText);
+                    topic.narrative = curText.toString();
+                } else if (curElement == TRECParsingFactory.ELEMENT_SMRY) {
+                    removePrefix("Summary: ", curText);
+                    topic.summary = curText.toString();
+                } else if (curElement == TRECParsingFactory.ELEMENT_CON) {
+                    // TREC 1
+                    removePrefix("Concepts: ", curText);
+                    topic.concepts = curText.toString();
+                } else if (curElement == TRECParsingFactory.ELEMENT_DEF) {
+                    // TREC 1
+                    removePrefix("Definition(s): ", curText);
+                    removePrefix("Definition: ", curText);
+                    topic.definitions = curText.toString();
+                }
+                curElement = null;
+                curText.delete(0, curText.length());
+            }
 
-			@Override
-			public boolean endElement(Element element) {
-				if (topic != null)
-					process();
+            @Override
+            public boolean endElement(Element element) {
+                if (topic != null)
+                    process();
 
-				if (element == TRECParsingFactory.ELEMENT_TOP) {
-					if (topic.id == null) {
-						logger.warn("Topic had no identifier - skipping");
-					} else {
-						logger.debug(new LazyString("Adding topic %s with title [%s]",
-								topic.id, topic.title));
+                if (element == TRECParsingFactory.ELEMENT_TOP) {
+                    if (topic.id == null) {
+                        logger.warn("Topic had no identifier - skipping");
+                    } else {
+                        logger.debug(new LazyString("Adding topic %s with title [%s]",
+                                topic.id, topic.title));
 
-						querySet.put(topic.id, topic);
-					}
-					topic = null;
-				}
-				return true;
-			}
-		});
+                        querySet.put(topic.id, topic);
+                    }
+                    topic = null;
+                }
+                return true;
+            }
+        });
 
-		// Read the file & parse
-		char text[] = new char[8192];
-		int offset = 0, l;
-		while ((l = reader.read(text, offset, text.length - offset)) > 0) {
-			offset += l;
-			text = CharArrays.grow(text, offset + 1);
-		}
+        // Read the file & parse
+        char text[] = new char[8192];
+        int offset = 0, l;
+        while ((l = reader.read(text, offset, text.length - offset)) > 0) {
+            offset += l;
+            text = CharArrays.grow(text, offset + 1);
+        }
 
-		bulletParser.parseText(true);
-		bulletParser.parseCDATA(true);
-		bulletParser.parseTags(true);
-		bulletParser.parse(text, 0, offset);
+        bulletParser.parseText(true);
+        bulletParser.parseCDATA(true);
+        bulletParser.parseTags(true);
+        bulletParser.parse(text, 0, offset);
 
-		return querySet;
+        return querySet;
 
-	}
+    }
 
-	@Override
-	public String getId() {
-		return id;
-	}
+    @Override
+    public String getId() {
+        return id;
+    }
 
-	final static List<String> list = Arrays.asList(new String[] {
-			"title", "desc" });
+    final static List<String> list = Arrays.asList(new String[]{
+            "title", "desc"});
 
-	@Override
-	public Query getTopicPart(String type) {
-		if ("title".equals(type))
-			return new StringQuery(title);
+    @Override
+    public Query getTopicPart(String type) {
+        if ("title".equals(type))
+            return new StringQuery(title);
 
-		if ("desc".equals(type))
-			return new StringQuery(description);
+        if ("desc".equals(type))
+            return new StringQuery(description);
 
-		return null;
-	}
+        return null;
+    }
 
-	@Override
-	public List<String> getTypes() {
-		return list;
-	}
+    @Override
+    public List<String> getTypes() {
+        return list;
+    }
 
 }

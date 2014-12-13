@@ -31,12 +31,12 @@ public class SegmentedDocumentDescriptor implements Cloneable {
 
 
     final static public SegmentedDocumentDescriptor create(int findex, long start,
-                                        long stop, long metadataPosition) {
+                                                           long stop, long metadataPosition) {
         return new SegmentedDocumentDescriptor(findex, start, (int) (stop - start), metadataPosition);
     }
 
     private SegmentedDocumentDescriptor(int findex, long start,
-                                       int stopMarkerDiff, long metadataPosition) {
+                                        int stopMarkerDiff, long metadataPosition) {
         this.fileIndex = findex;
         this.startMarker = start;
         this.stopMarkerDiff = stopMarkerDiff;
@@ -46,7 +46,7 @@ public class SegmentedDocumentDescriptor implements Cloneable {
 
     SegmentedDocumentDescriptor(ObjectInputStream s) throws IOException {
         this.fileIndex = s.readInt();
-        this.startMarker= s.readLong();
+        this.startMarker = s.readLong();
         this.stopMarkerDiff = s.readInt();
         this.metadataPosition = s.readLong();
     }

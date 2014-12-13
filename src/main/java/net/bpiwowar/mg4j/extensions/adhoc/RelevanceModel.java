@@ -7,26 +7,26 @@ import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2DoubleLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArraySet;
+import it.unimi.dsi.fastutil.longs.LongBigList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.WordReader;
 import it.unimi.dsi.lang.MutableString;
-import net.bpiwowar.mg4j.extensions.conf.IndexConfiguration;
+import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
+import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.query.Query;
-import net.bpiwowar.mg4j.extensions.query.Topic;
 import net.bpiwowar.mg4j.extensions.rf.DocumentFactory;
 import net.bpiwowar.mg4j.extensions.rf.MG4JFactory;
 import net.bpiwowar.mg4j.extensions.rf.MG4JRelevanceFeedback;
 import net.bpiwowar.mg4j.extensions.rf.RelevanceFeedbackMethod;
-import net.bpiwowar.mg4j.extensions.tasks.Adhoc;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
 import org.apache.commons.lang.NotImplementedException;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlValue;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -39,33 +39,29 @@ import java.util.Set;
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  * @date 15/10/12
  */
-@XmlRootElement(name = "relevance-model", namespace = Adhoc.MG4J_NAMESPACE)
+@ClassChooserInstance(name = "RM", description = "Relevance model from Lavrenko")
 public class RelevanceModel implements RetrievalModel {
 
-
     static public enum Method {
-        @XmlValue
         IID,
-
-        @XmlValue
         CONDITIONAL
     }
 
-    @XmlAttribute
+    @JsonArgument
     double lambda;
 
-    @XmlAttribute
+    @JsonArgument
     Method method;
 
-    @XmlElement
+    @JsonArgument
     RetrievalModel baseModel;
 
-    @XmlElement
+    @JsonArgument
     RelevanceFeedbackMethod relevanceFeedbackMethod;
 
     transient private DocumentFactory factory;
     transient private DocumentCollection collection;
-    transient private IndexConfiguration index;
+    transient private IndexedField index;
     transient private LongBigList frequencies;
 
     @Override
@@ -74,7 +70,7 @@ public class RelevanceModel implements RetrievalModel {
     }
 
     @Override
-    public void init(DocumentCollection collection, IndexConfiguration index) throws Exception {
+    public void init(DocumentCollection collection, IndexedField index) throws Exception {
         baseModel.init(collection, index);
         relevanceFeedbackMethod.init();
         factory = new MG4JFactory(collection);
@@ -93,7 +89,9 @@ public class RelevanceModel implements RetrievalModel {
      * Holds the probabilities
      */
     public class Result {
-        /** Ratio p(w|R) / p(w|N) */
+        /**
+         * Ratio p(w|R) / p(w|N)
+         */
         final Long2DoubleLinkedOpenHashMap p_ratio;
 
         /**
@@ -150,11 +148,12 @@ public class RelevanceModel implements RetrievalModel {
     }
 
     @Override
-    public void process(Topic topic, ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results, int capacity, TaskTimer timer) throws Exception {
+    public void process(String topicId, String topic, int capacity, TaskTimer timer, ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results) throws Exception {
         // TODO: capacity should depend on the relevance feedback method
-        baseModel.process(topic, results, capacity, timer);
+        baseModel.process(topicId, topic, capacity, timer, results);
 
-        final Collection<MG4JRelevanceFeedback.MG4JDocument> feedback = relevanceFeedbackMethod.process(topic.getId(), null /* FIXME: should not be null */, factory);
+        final Collection<MG4JRelevanceFeedback.MG4JDocument> feedback =
+                relevanceFeedbackMethod.process(topicId, null /* FIXME: should not be null */, factory);
 
         // FIXME: should be a parameter
         int[] contents = {0};
@@ -162,7 +161,7 @@ public class RelevanceModel implements RetrievalModel {
 
         // --- Get the query terms
         if (1 == 1) throw new NotImplementedException("topic parts below");
-        final Query query = topic.getTopicPart(null);
+        final Query query = null; //topic.getTopicPart(null);
         Set<String> queryTermStrings = new HashSet<>();
         LongArraySet queryTermSet = new LongArraySet();
         query.addTerms(queryTermStrings);
@@ -177,13 +176,13 @@ public class RelevanceModel implements RetrievalModel {
         queryTerms = queryTermSet.toArray(queryTerms);
 
 
-        final Result result;
+        final Result result = null;
         switch (method) {
             case IID:
-                result = method1(feedback, results, contents, queryTerms);
+//                result = method1(feedback, topic, contents, queryTerms);
                 break;
             case CONDITIONAL:
-                result = method2(feedback, results, contents, queryTerms);
+//                result = method2(feedback, topic, contents, queryTerms);
                 break;
             default:
                 throw new AssertionError();
@@ -200,7 +199,7 @@ public class RelevanceModel implements RetrievalModel {
             double p_rel = 1;
             for (Multiset.Entry<Long> e : words.entrySet()) {
                 final long wordId = e.getElement().longValue();
-                p_rel *= Math.exp(Math.log(result.getTermPRatio(wordId)) * (double)e.getCount());
+                p_rel *= Math.exp(Math.log(result.getTermPRatio(wordId)) * (double) e.getCount());
             }
 
             dsi.score = p_rel;
@@ -354,6 +353,7 @@ public class RelevanceModel implements RetrievalModel {
 
     /**
      * Get a smoothed version for the relevance model
+     *
      * @param termId
      * @param termFreq
      * @param docLength

@@ -7,7 +7,11 @@ import it.unimi.dsi.parser.Attribute;
 import it.unimi.dsi.parser.BulletParser;
 import it.unimi.dsi.parser.Element;
 import it.unimi.dsi.parser.callback.DefaultCallback;
-import net.bpiwowar.mg4j.extensions.query.*;
+import net.bpiwowar.mg4j.extensions.query.DefaultQuerySet;
+import net.bpiwowar.mg4j.extensions.query.Query;
+import net.bpiwowar.mg4j.extensions.query.QuerySet;
+import net.bpiwowar.mg4j.extensions.query.StringQuery;
+import net.bpiwowar.mg4j.extensions.query.Topic;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -67,8 +71,7 @@ public class TRECTopic implements Topic {
      * Read a set of TREC topics
      *
      * @param reader
-     * @param quoteCommas
-     *            Should we quote word separated by commas?
+     * @param quoteCommas Should we quote word separated by commas?
      * @return
      * @throws IOException
      */

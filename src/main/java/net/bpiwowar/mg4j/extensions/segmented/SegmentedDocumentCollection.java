@@ -13,11 +13,18 @@ import net.sf.samtools.util.BlockCompressedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.SeekableFileInputStream;
-import org.tukaani.xz.SeekableInputStream;
 import org.tukaani.xz.SeekableXZInputStream;
-import org.tukaani.xz.XZInputStream;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.util.zip.GZIPInputStream;
 
 /**

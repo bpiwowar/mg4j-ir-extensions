@@ -1,5 +1,4 @@
 
-
 // The namespaces
 var mg4jext = new Namespace("net.bpiwowar.mg4j-ir-extensions");
 var mg4j = mg4jext;
@@ -20,31 +19,16 @@ var pomfile = basedir.path("pom.xml")
 
 /// Start mg4j-ir-ext jar file with given arguments  
 var get_command = function(args) {
-	// Case where we start with maven
-    var a = ["-Dexec.args="];
-    for(var i = 0; i < args.length; i++) {
-        // xpm.log("Argument %.0f is [%s]", i, args[i].toSource());
-        if (i != 0) a.push(" ");
-        a.push(args[i]);
-    }
+    // Case where we start with maven
     // xpm.log(a.toSource());
-	return ["mvn", "-q", "-f", path(pomfile), "compile", "exec:java", "-Dexec.mainClass=bpiwowar.experiments.Run", a];	
+    return ["mvn-argj-exec", "--pom", path(pomfile)].concat(args);
 } 
+
 
 // Some useful functions
 var format = java.lang.String.format;
 
 
-/**
- * Returns all the resources
- */
-function get_resources(xml, mode) {
-        a = [];
-        for each(var r in xml..@xp::resource) {
-                a.push([r.text(), mode]);
-        }
-        return a;
-}
 
 /**
  * Builds a command line from an XML fragment
@@ -77,10 +61,8 @@ var build_args = function(prefix, a) {
 
 include("tasks/sequence.js");
 include("tasks/index.js");
-include("tasks/adhoc.js");
+//include("tasks/adhoc.js");
 
-include("configuration/relevance_feedback.js");
-include("configuration/bm25.js");
+// include("configuration/relevance_feedback.js");
+// include("configuration/bm25.js");
 
-include("composed/prepare_collection.js");
-include("composed/adhoc.js");

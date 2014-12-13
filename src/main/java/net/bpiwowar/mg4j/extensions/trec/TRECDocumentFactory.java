@@ -158,7 +158,9 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
         return Fields.values().length;
     }
 
-    /** Fields that can be returned */
+    /**
+     * Fields that can be returned
+     */
     public static enum Fields {
         TEXT, TITLE
     }
@@ -218,9 +220,9 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
     /**
      * A TREC document. If a <samp>TITLE</samp> element is available, it will be
      * used for {@link #title()} instead of the default value.
-     *
+     * <p/>
      * The document may be segmented.
-     *
+     * <p/>
      * We delay the actual parsing until it is actually necessary, so operations
      * like getting the document URI will not require parsing.
      */

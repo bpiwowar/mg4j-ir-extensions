@@ -23,7 +23,14 @@
  */
 package net.sf.samtools.util;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -31,7 +38,7 @@ import java.nio.ByteOrder;
  * Encapsulates file representation of various primitive data types.  Forces little-endian disk representation.
  * Note that this class is currently not very efficient.  There are plans to increase the size of the ByteBuffer,
  * and move data between the ByteBuffer and the underlying input or output stream in larger chunks.
- *
+ * <p/>
  * All the read methods throw RuntimeEOFException if the input stream is exhausted before the required number
  * of bytes are read.
  *
@@ -72,7 +79,7 @@ public class BinaryCodec {
 
     private static final long MAX_UBYTE = (Byte.MAX_VALUE * 2) + 1;
     private static final long MAX_USHORT = (Short.MAX_VALUE * 2) + 1;
-    private static final long MAX_UINT = ((long)Integer.MAX_VALUE * 2) + 1;
+    private static final long MAX_UINT = ((long) Integer.MAX_VALUE * 2) + 1;
 
     // We never serialize more than this much at a time (except for Strings)
     private static final int MAX_BYTE_BUFFER = 8;
@@ -157,11 +164,12 @@ public class BinaryCodec {
 
     /**
      * Write whatever has been put into the byte buffer
+     *
      * @param numBytes -- how much to write.  Note that in case of writing an unsigned value,
-     * more bytes were put into the ByteBuffer than will get written out.
+     *                 more bytes were put into the ByteBuffer than will get written out.
      */
     private void writeByteBuffer(final int numBytes) {
-        assert(numBytes <= byteBuffer.limit());
+        assert (numBytes <= byteBuffer.limit());
         writeBytes(byteBuffer.array(), 0, numBytes);
     }
 
@@ -177,7 +185,7 @@ public class BinaryCodec {
     }
 
     public void writeByte(final int b) {
-        writeByte((byte)b);
+        writeByte((byte) b);
     }
 
     /**
@@ -186,7 +194,7 @@ public class BinaryCodec {
      * @param bytes value to write
      */
     public void writeBytes(final byte[] bytes) {
-        writeBytes(bytes,  0, bytes.length);
+        writeBytes(bytes, 0, bytes.length);
     }
 
     public void writeBytes(final byte[] bytes, final int startOffset, final int numBytes) {
@@ -261,7 +269,7 @@ public class BinaryCodec {
      */
     public void writeBoolean(final boolean value) {
         byteBuffer.clear();
-        byteBuffer.put(value ? (byte)1 : (byte)0);
+        byteBuffer.put(value ? (byte) 1 : (byte) 0);
         writeByteBuffer(1);
     }
 
@@ -383,7 +391,7 @@ public class BinaryCodec {
      * @param buffer where to put bytes read
      * @param offset offset to start putting bytes into buffer
      * @param length number of bytes to read.  Fewer bytes may be read if EOF is reached before length bytes
-     *        have been read.
+     *               have been read.
      * @return the total number of bytes read into the buffer, or -1 if there is no more data because the end of the stream has been reached.
      */
     public int readBytesOrFewer(final byte[] buffer, final int offset, final int length) {
@@ -409,7 +417,7 @@ public class BinaryCodec {
             if (ret == -1) {
                 throw new RuntimeEOFException(constructErrorMessage("Premature EOF"));
             }
-            return (byte)ret;
+            return (byte) ret;
         } catch (IOException e) {
             throw new RuntimeIOException(constructErrorMessage("Read error"), e);
         }
@@ -453,6 +461,7 @@ public class BinaryCodec {
 
     /**
      * Read ASCII bytes from the input stream until a null byte is read
+     *
      * @return String constructed from the ASCII bytes read
      */
     public String readNullTerminatedString() {
@@ -461,6 +470,7 @@ public class BinaryCodec {
 
     /**
      * Read an int length, and then a String of that length
+     *
      * @param devourNull if true, the length include a null terminator, which is read and discarded
      */
     public String readLengthAndString(final boolean devourNull) {
@@ -476,7 +486,7 @@ public class BinaryCodec {
     }
 
     private void readByteBuffer(final int numBytes) {
-        assert(numBytes <= byteBuffer.capacity());
+        assert (numBytes <= byteBuffer.capacity());
         readBytes(byteBuffer.array(), 0, numBytes);
         byteBuffer.limit(byteBuffer.capacity());
         byteBuffer.position(numBytes);
@@ -509,7 +519,7 @@ public class BinaryCodec {
      *
      * @return long
      */
-    public long readLong()  {
+    public long readLong() {
         readByteBuffer(8);
         byteBuffer.flip();
         return byteBuffer.getLong();
@@ -538,7 +548,7 @@ public class BinaryCodec {
      * @return boolean
      */
     public boolean readBoolean() {
-        return (((int)readByte()) == 1);
+        return (((int) readByte()) == 1);
     }
 
     /**
@@ -547,7 +557,7 @@ public class BinaryCodec {
      */
     public short readUByte() {
         readByteBuffer(1);
-        byteBuffer.put((byte)0);
+        byteBuffer.put((byte) 0);
         byteBuffer.flip();
         return byteBuffer.getShort();
     }
@@ -558,7 +568,7 @@ public class BinaryCodec {
      */
     public int readUShort() {
         readByteBuffer(2);
-        byteBuffer.putShort((short)0);
+        byteBuffer.putShort((short) 0);
         byteBuffer.flip();
         return byteBuffer.getInt();
     }
@@ -584,12 +594,11 @@ public class BinaryCodec {
                 // or else cause an exception to be thrown.
                 if (this.outputStream instanceof FileOutputStream) {
                     this.outputStream.flush();
-                    FileOutputStream fos = (FileOutputStream)this.outputStream;
+                    FileOutputStream fos = (FileOutputStream) this.outputStream;
                     fos.getFD().sync();
                 }
                 this.outputStream.close();
-            }
-            else this.inputStream.close();
+            } else this.inputStream.close();
         } catch (IOException e) {
             throw new RuntimeIOException(e.getMessage(), e);
         }
@@ -598,13 +607,13 @@ public class BinaryCodec {
     private String constructErrorMessage(final String msg) {
         final StringBuilder sb = new StringBuilder(msg);
         sb.append("; BinaryCodec in ");
-        sb.append(isWriting? "write": "read");
+        sb.append(isWriting ? "write" : "read");
         sb.append("mode; ");
-        final String filename = isWriting? outputFileName: inputFileName;
+        final String filename = isWriting ? outputFileName : inputFileName;
         if (filename != null) {
             sb.append("file: ");
             sb.append(filename);
-        } else  {
+        } else {
             sb.append("streamed file (filename not available)");
         }
         return sb.toString();

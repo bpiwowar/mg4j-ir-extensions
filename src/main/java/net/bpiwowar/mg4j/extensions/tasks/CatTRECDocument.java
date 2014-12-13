@@ -76,7 +76,7 @@ public class CatTRECDocument extends AbstractTask {
                 if (elements.contains(element)) {
                     inContent++;
                     if (output)
-                       writer.println();
+                        writer.println();
                 }
                 return true;
             }
@@ -92,7 +92,7 @@ public class CatTRECDocument extends AbstractTask {
             @Override
             public boolean characters(char[] chars, int offset, int length, boolean b) {
                 if (inContent > 0) {
-                    for(int i = offset; i < offset+length; i++) {
+                    for (int i = offset; i < offset + length; i++) {
                         if (Character.isSpaceChar(chars[i]))
                             writer.write(' ');
                         else

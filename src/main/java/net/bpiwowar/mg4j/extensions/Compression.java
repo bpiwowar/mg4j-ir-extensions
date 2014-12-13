@@ -5,9 +5,10 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * Sets the compression
-* @author B. Piwowarski <benjamin@bpiwowar.net>
-* @date 20/6/12
-*/
+ *
+ * @author B. Piwowarski <benjamin@bpiwowar.net>
+ * @date 20/6/12
+ */
 public enum Compression {
     @EnumValue("none")
     @SerializedName("none")
@@ -29,13 +30,13 @@ public enum Compression {
      * Get the enum from a string
      */
     public static Compression fromString(String string) {
-        if (string == null || string.length()==0) return NONE;
+        if (string == null || string.length() == 0) return NONE;
 
-        for(Compression s: Compression.values()) {
+        for (Compression s : Compression.values()) {
             try {
                 final EnumValue values =
                         Compression.class.getField(s.name()).getAnnotation(EnumValue.class);
-                for(String value: values.value()) {
+                for (String value : values.value()) {
                     if (value.equals(string))
                         return s;
                 }

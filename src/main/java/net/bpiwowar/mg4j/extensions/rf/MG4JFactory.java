@@ -8,9 +8,10 @@ import java.io.IOException;
 
 /**
  * MG4J factory
-* @author B. Piwowarski <benjamin@bpiwowar.net>
-* @date 21/11/12
-*/
+ *
+ * @author B. Piwowarski <benjamin@bpiwowar.net>
+ * @date 21/11/12
+ */
 public class MG4JFactory extends DocumentFactory<MG4JRelevanceFeedback.MG4JDocument> {
     final DocumentCollection collection;
     Object2IntRBTreeMap<String> map = null;

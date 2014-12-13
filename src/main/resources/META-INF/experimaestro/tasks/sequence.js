@@ -19,55 +19,32 @@
  /**
  * Builds a sequence object
  */
-var task_sequence = {
-	id: qname(mg4jext, "sequence"),
-	output: qname(mg4jext, "sequence"),
+tasks("mg4j:collection") = {
+	output: "mg4j:collection",
 
-	description: 
-		<><p>Creates a <b>sequence</b> from a list of files, 
-		together with the adapted document builder
-		</p></>,
+	description: "<p>Creates a <b>sequence</b> from a list of files, together with the adapted document builder</p>",
     
-    inputs: <inputs xmlns:irc={ns_irc}>
-			<value id="outdir" value-type="xp:directory" help="The main directory for output"/>
-			
-			<xml id="documents" type="irc:documents">
-				<p>A document object as produced by the <code>get-task</code> command of 
-				<a href="https://github.com/bpiwowar/ircollections">IR collections</a>.</p>
-			</xml>
-		</inputs>,
-		
+    inputs: {
+        documents: { json: "irc:documents", copy:true, help: "<p>A document object as produced by the <code>get-task</code>" +
+            "command of <a href=\"https://github.com/bpiwowar/ircollections\">IR collections</a>.</p>"}
+    },
 	
-	run: function(inputs) {
+	run: function(p, r) {
 		// Initialisation
 		var log = logger.create("sequence");
-		var outdir = xpm.file(inputs.outdir.@value);
-		var id = inputs.documents.@id;
+		var outdir = $(p.outdir);
+        var dir = this.unique_directory("collection", p.documents);
 
-		// Get the collection directory
-		var colldir = outdir.path(id);
-		colldir.mkdirs();
+		r.path = dir.path("sequence");
+		
+		var command = get_command(["build-collection", "--out", r.path]);
 
-		var sequence = colldir.path("collection");
-		
-		var command = get_command(["build-collection", "--out", path(sequence)]);
+		log.debug("Creating sequence in [%s] with command %s", r.path, command.toSource());
+		log.debug("Documents: %s", p.documents.toSource());
 
-		log.debug("Creating sequence in [%s] with command %s", sequence, command.toSource());
-		log.debug("Documents: %s", inputs.documents.toXMLString());
-		var rsrc = xpm.command_line_job(sequence, command, {
-			stdin: inputs.documents.toXMLString()
-		});
+		r.$$resource = xpm.command_line_job(r.path, command, { stdin: p.documents.toSource() });
 		
-		var r =
-			<sequence xmlns:xp={xp.uri} xmlns:mg4jext={mg4jext.uri} xmlns={mg4jext.uri} xp:resource={rsrc}>
-			  <xp:path mg4jext:arg="collection-sequence">{sequence}</xp:path>
-			  {inputs.documents}
-			</sequence>;
-		
-		log.debug(r.toSource());
 		return r;
 	}
 	
 }
-
-xpm.add_task_factory(task_sequence);

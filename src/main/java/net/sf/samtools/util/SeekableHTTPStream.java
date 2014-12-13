@@ -27,8 +27,7 @@ public class SeekableHTTPStream extends SeekableStream {
         if (contentLengthString != null) {
             try {
                 contentLength = Long.parseLong(contentLengthString);
-            }
-            catch (NumberFormatException ignored) {
+            } catch (NumberFormatException ignored) {
                 System.out.println("WARNING: Invalid content length (" + contentLengthString + "  for: " + url);
                 contentLength = -1;
             }
@@ -66,7 +65,7 @@ public class SeekableHTTPStream extends SeekableStream {
 
             long endRange = position + len - 1;
             // IF we know the total content length, limit the end range to that.
-            if(contentLength > 0) {
+            if (contentLength > 0) {
                 endRange = Math.min(endRange, contentLength);
             }
             byteRange = "bytes=" + position + "-" + endRange;
@@ -89,9 +88,7 @@ public class SeekableHTTPStream extends SeekableStream {
 
             return n;
 
-        }
-
-        catch (IOException e) {
+        } catch (IOException e) {
             // THis is a bit of a hack, but its not clear how else to endDocument this.  If a byte range is specified
             // that goes past the end of the file the response code will be 416.  The MAC os translates this to
             // an IOException with the 416 code in the message.  Windows translates the error to an EOFException.
@@ -110,9 +107,7 @@ public class SeekableHTTPStream extends SeekableStream {
                 throw e;
             }
 
-        }
-
-        finally {
+        } finally {
             if (is != null) {
                 is.close();
             }

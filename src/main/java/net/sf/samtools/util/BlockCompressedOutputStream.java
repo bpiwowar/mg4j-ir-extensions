@@ -33,25 +33,25 @@ import java.util.zip.Deflater;
  * Writer for a file that is a series of gzip blocks (BGZF format).  The caller just treats it as an
  * OutputStream, and under the covers a gzip block is written when the amount of uncompressed as-yet-unwritten
  * bytes reaches a threshold.
- *
+ * <p/>
  * The advantage of BGZF over conventional gzip is that BGZF allows for seeking without having to scan through
  * the entire file up to the position being sought.
- *
+ * <p/>
  * Note that the flush() method should not be called by client
  * unless you know what you're doing, because it forces a gzip block to be written even if the
  * number of buffered bytes has not reached threshold.  close(), on the other hand, must be called
  * when done writing in order to force the last gzip block to be written.
- *
+ * <p/>
  * c.f. http://samtools.sourceforge.net/SAM1.pdf for details of BGZF file format.
  */
 public class BlockCompressedOutputStream
-        extends OutputStream
-{
+        extends OutputStream {
     private static int defaultCompressionLevel = BlockCompressedStreamConstants.DEFAULT_COMPRESSION_LEVEL;
 
     /**
      * Sets the GZip compression level for subsequent BlockCompressedOutputStream object creation
      * that do not specify the compression level.
+     *
      * @param compressionLevel 1 <= compressionLevel <= 9
      */
     public static void setDefaultCompressionLevel(final int compressionLevel) {
@@ -96,6 +96,7 @@ public class BlockCompressedOutputStream
 
     /**
      * Prepare to compress at the given compression level
+     *
      * @param compressionLevel 1 <= compressionLevel <= 9
      */
     public BlockCompressedOutputStream(final String filename, final int compressionLevel) {
@@ -104,6 +105,7 @@ public class BlockCompressedOutputStream
 
     /**
      * Prepare to compress at the given compression level
+     *
      * @param compressionLevel 1 <= compressionLevel <= 9
      */
     public BlockCompressedOutputStream(final File file, final int compressionLevel) {
@@ -115,6 +117,7 @@ public class BlockCompressedOutputStream
     /**
      * Writes b.length bytes from the specified byte array to this output stream. The general contract for write(b)
      * is that it should have exactly the same effect as the call write(b, 0, b.length).
+     *
      * @param bytes the data
      */
     @Override
@@ -127,20 +130,20 @@ public class BlockCompressedOutputStream
      * contract for write(b, off, len) is that some of the bytes in the array b are written to the output stream in order;
      * element b[off] is the first byte written and b[off+len-1] is the last byte written by this operation.
      *
-     * @param bytes the data
+     * @param bytes      the data
      * @param startIndex the start offset in the data
-     * @param numBytes the number of bytes to write
+     * @param numBytes   the number of bytes to write
      */
     @Override
     public void write(final byte[] bytes, int startIndex, int numBytes) throws IOException {
-        assert(numUncompressedBytes < uncompressedBuffer.length);
+        assert (numUncompressedBytes < uncompressedBuffer.length);
         while (numBytes > 0) {
             final int bytesToWrite = Math.min(uncompressedBuffer.length - numUncompressedBytes, numBytes);
             System.arraycopy(bytes, startIndex, uncompressedBuffer, numUncompressedBytes, bytesToWrite);
             numUncompressedBytes += bytesToWrite;
             startIndex += bytesToWrite;
             numBytes -= bytesToWrite;
-            assert(numBytes >= 0);
+            assert (numBytes >= 0);
             if (numUncompressedBytes == uncompressedBuffer.length) {
                 deflateBlock();
             }
@@ -151,7 +154,6 @@ public class BlockCompressedOutputStream
      * WARNING: flush() affects the output format, because it causes the current contents of uncompressedBuffer
      * to be compressed and written, even if it isn't full.  Unless you know what you're doing, don't call flush().
      * Instead, call close(), which will flush any unwritten data before closing the underlying stream.
-     *
      */
     @Override
     public void flush() throws IOException {
@@ -164,7 +166,6 @@ public class BlockCompressedOutputStream
     /**
      * close() must be called in order to flush any remaining buffered bytes.  An unclosed file will likely be
      * defective.
-     *
      */
     @Override
     public void close() throws IOException {
@@ -186,11 +187,12 @@ public class BlockCompressedOutputStream
      * Writes the specified byte to this output stream. The general contract for write is that one byte is written
      * to the output stream. The byte to be written is the eight low-order bits of the argument b.
      * The 24 high-order bits of b are ignored.
+     *
      * @param bite
      * @throws java.io.IOException
      */
     public void write(final int bite) throws IOException {
-        singleByteArray[0] = (byte)bite;
+        singleByteArray[0] = (byte) bite;
         write(singleByteArray);
     }
 
@@ -199,6 +201,7 @@ public class BlockCompressedOutputStream
      * If the entire uncompressedBuffer does not fit in the maximum allowed size, reduce the amount
      * of data to be compressed, and slide the excess down in uncompressedBuffer so it can be picked
      * up in the next deflate event.
+     *
      * @return size of gzip block that was written.
      */
     private int deflateBlock() {
@@ -218,15 +221,15 @@ public class BlockCompressedOutputStream
             if (!deflater.finished()) {
                 bytesToCompress -= BlockCompressedStreamConstants.UNCOMPRESSED_THROTTLE_AMOUNT;
                 ++numberOfThrottleBacks;
-                assert(bytesToCompress > 0);
+                assert (bytesToCompress > 0);
                 continue;
             }
             // Data compressed small enough, so write it out.
             crc32.reset();
             crc32.update(uncompressedBuffer, 0, bytesToCompress);
-            
+
             final int totalBlockSize = writeGzipBlock(compressedSize, bytesToCompress, crc32.getValue());
-            assert(bytesToCompress <= numUncompressedBytes);
+            assert (bytesToCompress <= numUncompressedBytes);
 
             // Clear out from uncompressedBuffer the data that was written 
             if (bytesToCompress == numUncompressedBytes) {
@@ -243,7 +246,8 @@ public class BlockCompressedOutputStream
 
     /**
      * Writes the entire gzip block, assuming the compressed data is stored in compressedBuffer
-     * @return  size of gzip block that was written.
+     *
+     * @return size of gzip block that was written.
      */
     private int writeGzipBlock(final int compressedSize, final int uncompressedSize, final long crc) {
         // Init gzip header
@@ -262,9 +266,9 @@ public class BlockCompressedOutputStream
                 BlockCompressedStreamConstants.BLOCK_FOOTER_LENGTH;
 
         // I don't know why we store block size - 1, but that is what the spec says
-        codec.writeShort((short)(totalBlockSize - 1));
+        codec.writeShort((short) (totalBlockSize - 1));
         codec.writeBytes(compressedBuffer, 0, compressedSize);
-        codec.writeInt((int)crc);
+        codec.writeInt((int) crc);
         codec.writeInt(uncompressedSize);
         return totalBlockSize;
     }

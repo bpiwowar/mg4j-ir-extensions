@@ -25,7 +25,11 @@ import it.unimi.di.big.mg4j.document.DocumentFactory;
 import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
+import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.SegmentedInputStream;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
@@ -64,10 +68,14 @@ import java.io.InputStream;
  * @author Benjamin Piwowarski
  */
 public class TRECDocumentCollection extends SegmentedDocumentCollection {
-    /** Our static logger */
+    /**
+     * Our static logger
+     */
     static final private Logger LOGGER = LoggerFactory.getLogger(TRECDocumentCollection.class);
 
-    /** Serialization ID */
+    /**
+     * Serialization ID
+     */
     private static final long serialVersionUID = 1;
 
     transient byte buffer[];
@@ -191,7 +199,8 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
     }
 
     static public class EventHandler {
-        public void startDocument() {}
+        public void startDocument() {
+        }
 
         public void endDocument(String docno, long currStart, long currStop) throws IOException {
         }

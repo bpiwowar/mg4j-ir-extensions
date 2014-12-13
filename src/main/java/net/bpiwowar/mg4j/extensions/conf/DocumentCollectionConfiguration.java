@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package net.bpiwowar.mg4j.extensions.conf;
 
@@ -11,17 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DocumentCollectionConfiguration {
-	final static private Logger LOGGER = LoggerFactory.getLogger(DocumentCollectionConfiguration.class);
-	
-	@Argument(name = "sequence", help = "The document collection sequence", required = true)
-	String sequence;
+    final static private Logger LOGGER = LoggerFactory.getLogger(DocumentCollectionConfiguration.class);
 
-	@Argument(name = "encoding", help = "Default encoding")
-	String encoding = "UTF-8";
+    @Argument(name = "sequence", help = "The document collection sequence", required = true)
+    String sequence;
 
-	public DocumentCollection init() throws Throwable {
-		return (DocumentCollection) Scan.getSequence(sequence,
-				IdentityDocumentFactory.class, new String[] { "encoding="
-						+ encoding }, Scan.DEFAULT_DELIMITER, LOGGER);
-	}
+    @Argument(name = "encoding", help = "Default encoding")
+    String encoding = "UTF-8";
+
+    public DocumentCollection init() throws Throwable {
+        return (DocumentCollection) Scan.getSequence(sequence,
+                IdentityDocumentFactory.class, new String[]{"encoding="
+                        + encoding}, Scan.DEFAULT_DELIMITER, LOGGER);
+    }
 }

@@ -4,6 +4,7 @@ import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.process.DocumentPreprocessor;
 import it.unimi.dsi.io.WordReader;
 import it.unimi.dsi.lang.MutableString;
+import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -13,8 +14,8 @@ import java.util.List;
 /**
  * A tokenizer using core NLP utils from Standford
  */
+@ClassChooserInstance(name = "standford")
 public class StandfordWordReader implements WordReader {
-
     private StandfordTokenStream stream;
 
     @Override

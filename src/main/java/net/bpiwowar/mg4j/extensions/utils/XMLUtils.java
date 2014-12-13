@@ -13,13 +13,16 @@ import java.util.Iterator;
  * @date 15/10/12
  */
 public class XMLUtils {
-    /** Iterates over elements in a node list */
+    /**
+     * Iterates over elements in a node list
+     */
     public static Iterable<? extends Element> elements(final NodeList nodes) {
         return new Iterable<Element>() {
             @Override
             public Iterator<Element> iterator() {
                 return new AbstractIterator<Element>() {
                     int i = -1;
+
                     @Override
                     protected boolean storeNext() {
                         while (++i < nodes.getLength()) {

@@ -4,10 +4,12 @@
  */
 package net.sf.samtools.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**
- *
  * @author jrobinso
  */
 public class SeekableFileStream extends SeekableStream {
@@ -31,7 +33,7 @@ public class SeekableFileStream extends SeekableStream {
     public void seek(final long position) throws IOException {
         fis.seek(position);
     }
-    
+
     public int read(final byte[] buffer, final int offset, final int length) throws IOException {
         if (length < 0) {
             throw new IndexOutOfBoundsException();
@@ -55,6 +57,6 @@ public class SeekableFileStream extends SeekableStream {
     }
 
     public int read() throws IOException {
-        return fis.read();  
+        return fis.read();
     }
 }

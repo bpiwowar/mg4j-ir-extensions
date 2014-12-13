@@ -30,7 +30,7 @@ import java.io.IOException;
 /**
  * A wrapper class to provide buffered read access to a SeekableStream.  Just wrapping such a stream with
  * a BufferedInputStream will not work as it does not support seeking.  In this implementation a
- * seek call is delegated to the wrapped stream, and the buffer reset. 
+ * seek call is delegated to the wrapped stream, and the buffer reset.
  */
 public class SeekableBufferedStream extends SeekableStream {
 

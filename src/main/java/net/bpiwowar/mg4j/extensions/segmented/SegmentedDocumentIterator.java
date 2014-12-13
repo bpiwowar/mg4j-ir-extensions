@@ -11,9 +11,10 @@ import java.io.IOException;
 
 /**
  * Iterator over documents
-* @author B. Piwowarski <benjamin@bpiwowar.net>
-* @date 20/6/12
-*/
+ *
+ * @author B. Piwowarski <benjamin@bpiwowar.net>
+ * @date 20/6/12
+ */
 public class SegmentedDocumentIterator extends AbstractDocumentIterator {
     static final private Logger LOGGER = LoggerFactory.getLogger(SegmentedDocumentIterator.class);
 
@@ -22,11 +23,17 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
      * enveloping collection.
      */
     private final ObjectIterator<SegmentedDocumentDescriptor> descriptorIterator;
-    /** The current stream. */
+    /**
+     * The current stream.
+     */
     private SegmentedInputStream siStream;
-    /** The current document. */
+    /**
+     * The current document.
+     */
     private int currentDocument = 0;
-    /** The last returned document. */
+    /**
+     * The last returned document.
+     */
     private Document last;
     /**
      * The first descriptor of the next files, if any, or
@@ -37,6 +44,7 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
 
     /**
      * Initialiaze a new document iterator on a segmented document collection
+     *
      * @param collection
      */
     public SegmentedDocumentIterator(SegmentedDocumentCollection collection) {
@@ -46,6 +54,7 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
 
     /**
      * Initialiaze a new document iterator on a segmented document collection
+     *
      * @param collection
      */
     public SegmentedDocumentIterator(SegmentedDocumentCollection collection, int start) {
@@ -56,10 +65,10 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
 
     @Override
     public void close() throws IOException {
+        super.close();
         if (siStream != null) {
             if (last != null)
                 last.close();
-            super.close();
             siStream.close();
             siStream = null;
         }

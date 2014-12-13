@@ -25,8 +25,8 @@ package net.sf.samtools.util;
 
 
 import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.io.File;
+import java.io.InputStream;
 
 /**
  * Miscellaneous stateless static IO-oriented methods.
@@ -34,6 +34,7 @@ import java.io.File;
 public class IOUtil {
     /**
      * Wrap the given stream in a BufferedInputStream, if it isn't already wrapper
+     *
      * @param stream stream to be wrapped
      * @return A BufferedInputStream wrapping stream, or stream itself if stream instanceof BufferedInputStream.
      */
@@ -47,6 +48,7 @@ public class IOUtil {
 
     /**
      * Delete a list of files, and write a warning message if one could not be deleted.
+     *
      * @param files Files to be deleted.
      */
     public static void deleteFiles(final File... files) {

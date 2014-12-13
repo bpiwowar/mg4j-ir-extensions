@@ -25,18 +25,18 @@ package net.sf.samtools.util;
 
 import net.sf.samtools.SAMFormatException;
 
-import java.util.zip.Inflater;
-import java.util.zip.CRC32;
-import java.util.zip.DataFormatException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.zip.CRC32;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 /**
  * Alternative to GZIPInputStream, for decompressing GZIP blocks that are already loaded into a byte[].
  * The main advantage is that this object can be used over and over again to decompress many blocks,
  * whereas a new GZIPInputStream and ByteArrayInputStream would otherwise need to be created for each
  * block to be decompressed.
- *
+ * <p/>
  * This code requires that the GZIP header conform to the GZIP blocks written to BAM files, with
  * a specific subfield and no other optional stuff.
  *
@@ -48,9 +48,10 @@ public class BlockGunzipper {
 
     /**
      * Decompress GZIP-compressed data
+     *
      * @param uncompressedBlock must be big enough to hold decompressed output.
-     * @param compressedBlock compressed data starting at offset 0
-     * @param compressedLength size of compressed data, possibly less than the size of the buffer.
+     * @param compressedBlock   compressed data starting at offset 0
+     * @param compressedLength  size of compressed data, possibly less than the size of the buffer.
      */
     void unzipBlock(byte[] uncompressedBlock, byte[] compressedBlock, int compressedLength) {
         try {
@@ -59,7 +60,7 @@ public class BlockGunzipper {
 
             // Validate GZIP header
             if (byteBuffer.get() != BlockCompressedStreamConstants.GZIP_ID1 ||
-                    byteBuffer.get() != (byte)BlockCompressedStreamConstants.GZIP_ID2 ||
+                    byteBuffer.get() != (byte) BlockCompressedStreamConstants.GZIP_ID2 ||
                     byteBuffer.get() != BlockCompressedStreamConstants.GZIP_CM_DEFLATE ||
                     byteBuffer.get() != BlockCompressedStreamConstants.GZIP_FLG
                     ) {
@@ -96,7 +97,7 @@ public class BlockGunzipper {
             crc32.reset();
             crc32.update(uncompressedBlock, 0, uncompressedSize);
             final long crc = crc32.getValue();
-            if ((int)crc != expectedCrc) {
+            if ((int) crc != expectedCrc) {
                 throw new SAMFormatException("CRC mismatch");
             }
         } catch (DataFormatException e) {

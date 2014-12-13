@@ -46,7 +46,13 @@ import net.bpiwowar.mg4j.extensions.trec.TRECParsingFactory;
 import net.bpiwowar.mg4j.extensions.utils.StructuredTextExtractor;
 import net.sf.samtools.util.BlockCompressedInputStream;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -142,7 +148,7 @@ public class WarcRecord {
      * Gets the difference between the start and stop marker
      *
      * @return the difference between start and stop marker or -1 if this value
-     *         is undefined
+     * is undefined
      */
     public int getStopMarkerDiff() {
         return stopMarkerDiff;
