@@ -3,8 +3,6 @@
  */
 package net.bpiwowar.mg4j.extensions.conf;
 
-import bpiwowar.argparser.Argument;
-import bpiwowar.argparser.checkers.IOChecker.ValidDirectory;
 import it.unimi.di.big.mg4j.index.DiskBasedIndex;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.dsi.fastutil.ints.IntBigList;
@@ -12,7 +10,6 @@ import it.unimi.dsi.fastutil.longs.LongBigArrayBigList;
 import it.unimi.dsi.fastutil.longs.LongBigList;
 import it.unimi.dsi.fastutil.objects.ObjectBigList;
 import it.unimi.dsi.io.InputBitStream;
-import net.bpiwowar.mg4j.extensions.tasks.Collection;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 
@@ -21,8 +18,6 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static java.lang.String.format;
 

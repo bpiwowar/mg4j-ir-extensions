@@ -9,6 +9,9 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
 
+/**
+ * Provides a MG4J scorer
+ */
 public interface RetrievalModel {
 
     /**
@@ -31,5 +34,4 @@ public interface RetrievalModel {
      * @param results
      */
     public void process(String topicId, String topic, int capacity, TaskTimer timer, ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results) throws Exception;
-
 }

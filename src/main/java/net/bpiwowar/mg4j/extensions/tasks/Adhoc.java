@@ -4,14 +4,11 @@ import bpiwowar.argparser.GenericHelper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import edu.stanford.nlp.io.EncodingPrintWriter;
 import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
@@ -142,6 +139,7 @@ public class Adhoc extends AbstractTask {
 
                 // Ask for results (add some documents in case we discard some
                 // after)
+                model.init(collection, _index);
                 model.process(topicId,
                         topic_processor.process(index.getTerm_processor(), _index, topic), capacity
                                 + (discardedDocuments == null ? 0
