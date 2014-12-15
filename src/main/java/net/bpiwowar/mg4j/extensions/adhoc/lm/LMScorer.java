@@ -24,9 +24,6 @@ import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.search.DocumentIterator;
 import it.unimi.di.big.mg4j.search.score.AbstractWeightedScorer;
 import it.unimi.di.big.mg4j.search.score.DelegatingScorer;
-import it.unimi.di.big.mg4j.search.score.Scorer;
-import it.unimi.di.big.mg4j.search.visitor.CounterCollectionVisitor;
-import it.unimi.di.big.mg4j.search.visitor.CounterSetupVisitor;
 import it.unimi.di.big.mg4j.search.visitor.TermCollectionVisitor;
 import it.unimi.dsi.fastutil.ints.IntBigList;
 import org.slf4j.Logger;
@@ -78,6 +75,7 @@ abstract public class LMScorer extends AbstractWeightedScorer implements Delegat
     protected int[] size;
 
     public LMScorer() {
+        super();
         termVisitor = new TermCollectionVisitor();
         setupVisitor = new CounterSetupVisitor(termVisitor);
         counterCollectionVisitor = new CounterCollectionVisitor(setupVisitor);
@@ -121,7 +119,6 @@ abstract public class LMScorer extends AbstractWeightedScorer implements Delegat
         setupVisitor.prepare();
         d.accept(setupVisitor);
         size = new int[index.length];
-
     }
 
     public boolean usesIntervals() {

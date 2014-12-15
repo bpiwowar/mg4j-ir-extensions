@@ -13,27 +13,27 @@ import static java.lang.String.format;
 /**
  * A LM with Jelinek Mercer smoothing
  */
-@ClassChooserInstance(name = "jelinek-mercer")
-public class JelinekMercerScorer extends LMScorer implements LMModel {
+@ClassChooserInstance(name = "dirichlet")
+public class DirichletScorer extends LMScorer implements LMModel {
     @JsonArgument
-    double lambda = 0.05;
+    double mu = 1000;
 
     /**
      * An array indexed by offsets that caches the inverse document-frequency part of the formula, multiplied by the index weight.
      */
-    private double[] lambdaTimesPrColl;
     private double[] indexWeights;
+    private double[] prColl;
 
-    public JelinekMercerScorer() {
+    public DirichletScorer() {
     }
 
-    public JelinekMercerScorer(JelinekMercerScorer other) {
+    public DirichletScorer(DirichletScorer other) {
         super(other);
-        this.lambda = other.lambda;
+        this.mu = other.mu;
     }
 
     public synchronized LMScorer copy() {
-        return new JelinekMercerScorer(this);
+        return new DirichletScorer(this);
     }
 
 
@@ -43,7 +43,6 @@ public class JelinekMercerScorer extends LMScorer implements LMModel {
         final long document = documentIterator.document();
         final int[] count = setupVisitor.count;
         final int[] indexNumber = setupVisitor.indexNumber;
-        final double[] lambdaTimesPrColl = this.lambdaTimesPrColl;
         final int[] size = this.size;
 
         for (int i = size.length; i-- != 0; ) size[i] = sizes[i].getInt(document);
@@ -53,8 +52,10 @@ public class JelinekMercerScorer extends LMScorer implements LMModel {
         for (int i = count.length; i-- != 0; ) {
             k = indexNumber[i];
             score += indexWeights[i] * Math.log(
-                    (1. - lambda) * ((double) count[i] / size[k])
-                            + lambdaTimesPrColl[i]);
+                    (((double) count[i] / size[k]) + mu * prColl[i])
+                    /
+                    ((double) size[k] + mu)
+            );
         }
         return score;
 
@@ -68,13 +69,12 @@ public class JelinekMercerScorer extends LMScorer implements LMModel {
         final long[] occurrences = setupVisitor.occurrences;
         final int[] indexNumber = setupVisitor.indexNumber;
 
-        lambdaTimesPrColl = new double[occurrences.length];
         indexWeights = new double[occurrences.length];
+        prColl = new double[occurrences.length];
 
-        for (int i = lambdaTimesPrColl.length; i-- != 0; ) {
+        for (int i = indexWeights.length; i-- != 0; ) {
             final Index termIndex = index[indexNumber[i]];
-
-            lambdaTimesPrColl[i] = lambda * (double) occurrences[i] / (double) termIndex.numberOfOccurrences;
+            prColl[i] = (double) occurrences[i] / (double) termIndex.numberOfOccurrences;
             indexWeights[i] = index2Weight.getDouble(index[indexNumber[i]]);
         }
 
@@ -83,7 +83,7 @@ public class JelinekMercerScorer extends LMScorer implements LMModel {
 
     @Override
     public String toString() {
-        return format("Jelinek-Mercer(%.3g)", lambda);
+        return format("Dirichlet(%.3g)", mu);
     }
 
 
