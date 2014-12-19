@@ -283,7 +283,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         return new SegmentedDocumentIterator(this);
     }
 
-    public DocumentIterator iterator(int start) throws IOException {
+    public DocumentIterator iterator(long start) throws IOException {
         ensureDocumentIndex(start);
         return new SegmentedDocumentIterator(this, start);
     }

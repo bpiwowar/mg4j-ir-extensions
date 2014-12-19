@@ -15,7 +15,9 @@ import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
+import net.bpiwowar.mg4j.extensions.utils.CollectionInformation;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
+import net.bpiwowar.mg4j.extensions.utils.Streams;
 import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,13 +32,13 @@ import java.util.stream.Stream;
  *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
-@TaskDescription(id = "mg4j:cat", output = "xp:file", description = "Outputs a document collection as a stream",
+@TaskDescription(id = "mg4j:cat", output = "xp:file", description = "Outputs one or more document collections as a stream",
         registry = Registry.class)
 public class CatCollection extends AbstractTask {
     static final Logger LOGGER = LoggerFactory.getLogger(CatCollection.class);
 
-    @JsonArgument(help = "Sequence to index", required = true)
-    Collection collection;
+    @JsonArgument(name = "collections", help = "Collections to output", required = true)
+    ArrayList<Collection> collectionPaths;
 
     @JsonArgument(required = true)
     TextToolChain toolchain;
@@ -44,40 +46,42 @@ public class CatCollection extends AbstractTask {
     @JsonArgument(name = "fields", help = "The fields to output", required = true)
     ArrayList<String> fieldNames = new ArrayList<>();
 
-    @JsonArgument(help = "File with one document ID per line (empty = standard input)")
+    @JsonArgument(help = "File with one document ID per line (empty = output all documents)")
     File documents;
 
     @Override
     public JsonObject execute(JsonObject r) throws Throwable {
-        DocumentCollection collection = (DocumentCollection) Scan.getSequence(this.collection.path.getAbsolutePath(),
-                IdentityDocumentFactory.class, new String[]{},
-                Scan.DEFAULT_DELIMITER, LOGGER);
-        DocumentFactory factory = collection.factory();
+        CollectionInformation[] collections = this.collectionPaths.stream()
+                .map(Streams.propagateFunction(c -> new CollectionInformation(c, fieldNames)))
+                .toArray(n -> new CollectionInformation[n]);
 
 
         LOGGER.info(String.format("Term processor class is %s", toolchain.termProcessor.getClass()));
 
-        int[] fields = new int[fieldNames.size()];
-        DocumentFactory.FieldType[] types = new DocumentFactory.FieldType[fields.length];
-        for (int i = fields.length; --i >= 0; ) {
-            fields[i] = factory.fieldIndex(fieldNames.get(i));
-            types[i] = factory.fieldType(i);
-        }
-
         if (documents == null) {
-            final DocumentIterator iterator = collection.iterator();
-            long docid = 0;
-            for (Document document = iterator.nextDocument(); document != null; document = iterator.nextDocument()) {
-                outputDocument(fields, types, docid, document);
-                docid++;
+            for (CollectionInformation collection : collections) {
+                try (final DocumentIterator iterator = collection.iterator()) {
+                    long docid = 0;
+                    for (Document document = iterator.nextDocument(); document != null; document = iterator.nextDocument()) {
+                        outputDocument(collection.fields, collection.types, docid, document);
+                        docid++;
+                    }
+                }
+
             }
+
         } else {
+            if (collections.length != 1) {
+                throw new IllegalArgumentException("Outputing specific documents requires having only one collection");
+            }
+
+            CollectionInformation collection = collections[0];
             try (Stream<String> lines = documents.getName().equals("") ?
-                 new BufferedReader(new InputStreamReader(System.in)).lines() : Files.lines(documents.toPath())) {
+                    new BufferedReader(new InputStreamReader(System.in)).lines() : Files.lines(documents.toPath())) {
                 lines.map(Long::parseLong).sorted().forEach(
                         index -> {
                             try {
-                                outputDocument(fields, types, index, collection.document(index));
+                                outputDocument(collection.fields, collection.types, index, collection.document(index));
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }

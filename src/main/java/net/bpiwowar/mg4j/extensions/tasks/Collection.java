@@ -18,7 +18,7 @@ public class Collection {
     @JsonArgument()
     File path;
 
-    DocumentCollection get() throws IllegalAccessException, IOException, InstantiationException, NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
+    public DocumentCollection get() throws IllegalAccessException, IOException, InstantiationException, NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
         return (DocumentCollection) Scan.getSequence(path.getAbsolutePath(),
                 IdentityDocumentFactory.class, new String[]{},
                 Scan.DEFAULT_DELIMITER, org.slf4j.LoggerFactory.getLogger(Collection.class));

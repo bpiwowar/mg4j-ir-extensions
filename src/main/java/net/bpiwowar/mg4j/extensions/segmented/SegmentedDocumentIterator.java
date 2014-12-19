@@ -30,7 +30,7 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
     /**
      * The current document.
      */
-    private int currentDocument = 0;
+    private long currentDocument = 0;
     /**
      * The last returned document.
      */
@@ -56,8 +56,9 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
      * Initialiaze a new document iterator on a segmented document collection
      *
      * @param collection
+     * @param start
      */
-    public SegmentedDocumentIterator(SegmentedDocumentCollection collection, int start) {
+    public SegmentedDocumentIterator(SegmentedDocumentCollection collection, long start) {
         this.collection = collection;
         this.currentDocument = start;
         descriptorIterator = collection.descriptors.subList(start, collection.descriptors.size64()).iterator();
