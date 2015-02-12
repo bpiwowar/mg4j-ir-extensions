@@ -33,6 +33,10 @@ public class CollectionInformation {
         this.size = this.collection.size();
     }
 
+    public long getSize() {
+        return size;
+    }
+
     /**
      * Returns an iterator over a range
      *
@@ -45,7 +49,7 @@ public class CollectionInformation {
         // In a segmented collection, prefer the iterator way
         if (collection instanceof SegmentedDocumentCollection) {
             assert start >= 0;
-            final DocumentIterator iterator = ((SegmentedDocumentCollection) collection).iterator(start);
+            final DocumentIterator iterator = ((SegmentedDocumentCollection) collection).iterator(start, end);
             return new CloseableIterator<DocumentInformation>() {
                 long position = start;
 
@@ -87,6 +91,8 @@ public class CollectionInformation {
     public Document document(Long index) throws IOException {
         return collection.document(index);
     }
+
+
 
 
     public class DocumentInformation implements AutoCloseable {

@@ -5,7 +5,8 @@ import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
 
 /**
- * Term normalization: handle numbers
+ * Term normalization:
+ * - handle numbers by changing all the digits to 9
  */
 @ClassChooserInstance(name = "normalization")
 public class TermNormalization implements TermProcessor {
@@ -16,6 +17,12 @@ public class TermNormalization implements TermProcessor {
                 term.setCharAt(i, '9');
             }
         }
+
+        if (term.equals('.') || term.equals("``") || term.equals(",")) {
+            return false;
+        }
+
+        term.toLowerCase();
         return true;
     }
 

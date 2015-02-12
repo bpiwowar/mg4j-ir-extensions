@@ -1,8 +1,7 @@
 package net.bpiwowar.mg4j.extensions.tasks;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
-import it.unimi.di.big.mg4j.document.*;
+import it.unimi.di.big.mg4j.document.DocumentFactory;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
@@ -23,7 +22,6 @@ import static java.lang.String.format;
  * Wrapper for Index in MG4J
  *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
- * @date 13/7/12
  */
 @TaskDescription(id = "mg4j:cat-batches", output = "xp:null", description = "Outputs a document collection as a stream",
         registry = Registry.class)
@@ -42,11 +40,19 @@ public class CatCollectionBatches extends AbstractTask {
     @JsonArgument(name = "batch_size", required = true, help = "Number of elements in each batch")
     long batchSize;
 
-    @JsonArgument(name = "batches", required = true, help = "Number of batches")
+    @JsonArgument(required = false, help = "Whether the document number and ID should be printed (default true)")
+    boolean header = true;
+
+    @JsonArgument(name = "batches", required = true, help = "Number of batches (positive number) or " +
+            "number of iterations (negative number)")
     long batches = 0;
+
+    // Just for debug
+    final static boolean noOutput = false;
 
     transient boolean stop;
 
+    /** Iterator for a range */
     public CloseableIterator<CollectionInformation.DocumentInformation> range(CollectionInformation[] collections, long start, long end) throws IOException {
         if (end - start == 0) {
             return new CloseableIterator<CollectionInformation.DocumentInformation>() {
@@ -68,6 +74,9 @@ public class CatCollectionBatches extends AbstractTask {
             // Remaining documents
             long remaining = end - start;
 
+            // Number of remaining documents for the current iterator (debug)
+            long iteratorRemaining;
+
             // Current index
             int ix = 0;
 
@@ -83,20 +92,25 @@ public class CatCollectionBatches extends AbstractTask {
             @Override
             protected CollectionInformation.DocumentInformation computeNext() {
                 if (iterator != null) {
-                    if (iterator.hasNext()) return iterator.next();
+                    if (iterator.hasNext()) {
+                        --iteratorRemaining;
+                        return iterator.next();
+                    }
+                    assert iteratorRemaining == 0;
                     Exceptions.propagateStatement(() -> iterator.close());
                 }
 
                 if (remaining == 0) {
-                    System.err.format("%n");
+//                    System.err.format("%n");
                     return endOfData();
                 }
 
                 final long size = Long.min(collections[ix].size - 1 - position, remaining);
+                iteratorRemaining = size - 1;
                 iterator = Exceptions.propagate(() -> collections[ix].range(offset, position, position + size));
-                //System.err.format("Range[ix=%d{size=%d}, offset=%d, position=%d, size=%d, remaining=%d]%n",
-                //        ix,collections[ix].size,
-                //        offset, position, size, remaining-size);
+//                System.err.format("Range[ix=%d{size=%d}, offset=%d, position=%d, size=%d, remaining=%d]%n",
+//                        ix,collections[ix].size,
+//                        offset, position, size, remaining-size);
 
                 position = 0;
                 remaining -= size;
@@ -140,19 +154,34 @@ public class CatCollectionBatches extends AbstractTask {
         MutableString word = new MutableString();
         MutableString delimiter = new MutableString();
 
-        while (!stop && batch < batches) {
+        if (batches < 0) {
+            long totalSize = Arrays.stream(collections).mapToLong(CollectionInformation::getSize).sum();
+            long old = batches;
+            batches = - totalSize / batchSize * batches;
+            LOGGER.info(format("Total size is %d: outputing %d batches of size %d (%d times)",
+                    totalSize,  batchSize, batches, -old));
+        }
+
+        while (!stop && (batch < batches || batches == 0)) {
             batch++;
-            LOGGER.debug(format("Batch %d / %d", batch, batches));
             // Select a starting document
             final int start = (int) (Math.random() * (numberOfDocuments - batchSize));
+            LOGGER.debug(format("Batch %d / %d [start = %d]", batch, batches, start));
             try (final CloseableIterator<CollectionInformation.DocumentInformation> iterator = range(collections, start, start + batchSize)) {
                 int count = 0;
                 while (iterator.hasNext()) {
                     try (final CollectionInformation.DocumentInformation info = iterator.next()) {
                         ++count;
-                        System.out.format("%d\t%s", info.docid, info.document.uri());
+                        if (!noOutput) {
+//                            System.out.format("%d\t", count);
+                            if (header) {
+                                System.out.format("%d\t%s\t", info.docid, info.document.uri());
+                            }
+                        }
+
                         final int[] fields = info.fields();
                         DocumentFactory.FieldType[] types = info.types();
+                        boolean first = true;
                         for (int i = 0; i < fields.length; i++) {
                             final Object content = info.document.content(0);
                             switch (types[i]) {
@@ -160,8 +189,11 @@ public class CatCollectionBatches extends AbstractTask {
                                     toolchain.wordReader.setReader((FastBufferedReader) content);
                                     while (toolchain.wordReader.next(word, delimiter) && toolchain.termProcessor.processTerm(word)) {
                                         if (word != null && !word.isEmpty()) {
-                                            System.out.print('\t');
-                                            System.out.print(word);
+                                            if (!noOutput) {
+                                                if (!first) System.out.print('\t');
+                                                else first = false;
+                                                System.out.print(word);
+                                            }
                                         }
                                     }
                                     break;
@@ -172,13 +204,13 @@ public class CatCollectionBatches extends AbstractTask {
 
                         }
 
-                        System.out.println();
+                        if (!noOutput) System.out.println();
                     }
                 }
 
                 if (count != batchSize) {
-                    throw new AssertionError(format("Batch size was not respected (%d required, %d given)",
-                            batchSize, count));
+                    throw new AssertionError(format("Batch size was not respected (%d required, %d given / start %d)",
+                            batchSize, count, start));
                 }
             }
         }

@@ -1,7 +1,11 @@
 package net.bpiwowar.mg4j.extensions.tokenizer;
 
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.DocumentPreprocessor;
+import edu.stanford.nlp.process.PTBTokenizer;
+import edu.stanford.nlp.process.TokenizerFactory;
 import it.unimi.dsi.io.WordReader;
 import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
@@ -45,9 +49,12 @@ public class StandfordWordReader implements WordReader {
         private final Iterator<List<HasWord>> sentenceIterator;
         private Iterator<HasWord> tokenIterator;
         boolean eos = false;
+        static final TokenizerFactory<CoreLabel> factory = PTBTokenizer.factory(new CoreLabelTokenFactory(),
+                "americanize=true,normalizeAmpersandEntity=false,latexQuotes=false,normalizeParentheses=false,normalizeOtherBrackets=false,unicodeQuotes=true");
 
         public StandfordTokenStream(Reader reader) {
             DocumentPreprocessor dp = new DocumentPreprocessor(reader);
+            dp.setTokenizerFactory(factory);
             sentenceIterator = dp.iterator();
         }
 

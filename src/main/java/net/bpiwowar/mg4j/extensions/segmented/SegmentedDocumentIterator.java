@@ -2,6 +2,7 @@ package net.bpiwowar.mg4j.extensions.segmented;
 
 import it.unimi.di.big.mg4j.document.AbstractDocumentIterator;
 import it.unimi.di.big.mg4j.document.Document;
+import it.unimi.dsi.fastutil.objects.ObjectBigListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.io.SegmentedInputStream;
 import org.slf4j.Logger;
@@ -10,10 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Iterator over documents
+ * Iterator over documents in a segmented file
  *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
- * @date 20/6/12
  */
 public class SegmentedDocumentIterator extends AbstractDocumentIterator {
     static final private Logger LOGGER = LoggerFactory.getLogger(SegmentedDocumentIterator.class);
@@ -22,7 +22,7 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
      * An iterator returning the descriptors of the documents in the
      * enveloping collection.
      */
-    private final ObjectIterator<SegmentedDocumentDescriptor> descriptorIterator;
+    private final ObjectBigListIterator<SegmentedDocumentDescriptor> descriptorIterator;
     /**
      * The current stream.
      */
@@ -53,15 +53,27 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
     }
 
     /**
-     * Initialiaze a new document iterator on a segmented document collection
+     * Initialize a new document iterator on a segmented document collection
      *
-     * @param collection
-     * @param start
+     * @param collection The document collection
+     * @param start The starting point in the
      */
     public SegmentedDocumentIterator(SegmentedDocumentCollection collection, long start) {
         this.collection = collection;
         this.currentDocument = start;
         descriptorIterator = collection.descriptors.subList(start, collection.descriptors.size64()).iterator();
+    }
+
+    /**
+     * Initialize a new document iterator on a segmented document collection
+     *
+     * @param collection The document collection
+     * @param start The starting point in the
+     */
+    public SegmentedDocumentIterator(SegmentedDocumentCollection collection, long start, long end) {
+        this.collection = collection;
+        this.currentDocument = start;
+        descriptorIterator = collection.descriptors.subList(start, end).iterator();
     }
 
     @Override
@@ -70,6 +82,11 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
         if (siStream != null) {
             if (last != null)
                 last.close();
+            while (siStream.hasMoreBlocks()) {
+                LOGGER.debug("Skipping one block [to close properly]");
+                siStream.nextBlock();
+            }
+            LOGGER.debug("Closing");
             siStream.close();
             siStream = null;
         }
@@ -90,8 +107,9 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
                     return last = null;
             } else
                 siStream.nextBlock();
-        } else if (!nextFile())
+        } else if (!nextFile()) {
             return null; // First call
+        }
 
         return last = collection.factory.getDocument(siStream,
                 collection.metadata(currentDocument++));
@@ -102,19 +120,20 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
             return false;
         if (siStream != null)
             siStream.close();
+
         if (!descriptorIterator.hasNext())
             return false;
 
         // We assume documents contained in the same files are
         // contiguous so we collect all of them until we find a different
         // files index.
-        SegmentedDocumentDescriptor currentDescriptor = firstNextDescriptor != null ? firstNextDescriptor
-                : descriptorIterator.next();
+        SegmentedDocumentDescriptor currentDescriptor = descriptorIterator.next();
         int currentFileIndex = currentDescriptor.fileIndex;
 
         // We create the segmented input stream with all just collected descriptors
         siStream = new SegmentedInputStream(collection.openFileStream(collection.files[currentFileIndex]));
 
+        // Add all the blocks from this file
         do {
             siStream.addBlock(currentDescriptor.toSegments());
             if (!descriptorIterator.hasNext())
@@ -122,7 +141,7 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
             currentDescriptor = descriptorIterator.next();
         } while (currentDescriptor.fileIndex == currentFileIndex);
 
-        firstNextDescriptor = currentDescriptor; // The last assignment
+        descriptorIterator.previous();
         // will be
         // meaningless, but
         // it won't be used
