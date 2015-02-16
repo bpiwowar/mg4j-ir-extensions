@@ -200,12 +200,16 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         // Creates a Segmented Input Stream with only one segment in (the
         // requested one).
         ensureDocumentIndex(n);
-        if (lastStream != null)
+        if (lastStream != null) {
+            while (lastStream.hasMoreBlocks()) {
+                lastStream.nextBlock();
+            }
             lastStream.close();
+        }
 
         // FIXME: not efficient at all
         final SegmentedDocumentDescriptor descr = descriptors.get(n);
-        return new SegmentedInputStream(openFileStream(files[descr.fileIndex]), descr.toSegments());
+        return lastStream = new SegmentedInputStream(openFileStream(files[descr.fileIndex]), descr.toSegments());
     }
 
     /**

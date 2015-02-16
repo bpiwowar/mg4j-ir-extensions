@@ -136,16 +136,14 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
         // Add all the blocks from this file
         do {
             siStream.addBlock(currentDescriptor.toSegments());
-            if (!descriptorIterator.hasNext())
-                break;
+            if (!descriptorIterator.hasNext()) {
+                return true;
+            }
             currentDescriptor = descriptorIterator.next();
         } while (currentDescriptor.fileIndex == currentFileIndex);
 
+        // Go back to the previous descriptor since we changed the file index
         descriptorIterator.previous();
-        // will be
-        // meaningless, but
-        // it won't be used
-        // anyway
         return true;
     }
 }

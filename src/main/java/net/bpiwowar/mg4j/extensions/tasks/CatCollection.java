@@ -51,6 +51,7 @@ public class CatCollection extends AbstractTask {
 
     @Override
     public JsonObject execute(JsonObject r) throws Throwable {
+        // Get the list of collections
         CollectionInformation[] collections = this.collectionPaths.stream()
                 .map(Streams.propagateFunction(c -> new CollectionInformation(c, fieldNames)))
                 .toArray(n -> new CollectionInformation[n]);
@@ -59,6 +60,7 @@ public class CatCollection extends AbstractTask {
         LOGGER.info(String.format("Term processor class is %s", toolchain.termProcessor.getClass()));
 
         if (documents == null) {
+            // We just output everything
             for (CollectionInformation collection : collections) {
                 try (final DocumentIterator iterator = collection.iterator()) {
                     long docid = 0;
@@ -76,16 +78,20 @@ public class CatCollection extends AbstractTask {
             }
 
             CollectionInformation collection = collections[0];
+            // Loop over document IDs
             try (Stream<String> lines = documents.getName().equals("") ?
                     new BufferedReader(new InputStreamReader(System.in)).lines() : Files.lines(documents.toPath())) {
-                lines.map(Long::parseLong).sorted().forEach(
-                        index -> {
-                            try {
-                                outputDocument(collection.fields, collection.types, index, collection.document(index));
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                lines.map(Long::parseLong)
+                        .sorted() // Sort in order to minimize random seeking
+                        .forEach(
+                                index -> {
+                                    try {
+                                        outputDocument(collection.fields, collection.types, index, collection.document(index));
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                        );
 
             }
         }
