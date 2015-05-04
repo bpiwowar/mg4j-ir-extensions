@@ -22,7 +22,7 @@ public interface Topic {
      * used as the actual query
      *
      * @param type the topic part/type
-     * @return a {@link Query} object representing the topic part
+     * @return a {@link Query} object representing the topic part, or null if no such object exists
      * @see #getTypes
      */
     public Query getTopicPart(String type);

@@ -38,8 +38,6 @@ public class TermUtil {
             IndexedField index) {
         if (query instanceof COQuery)
             getPositiveTerms((COQuery) query, terms, processor, index);
-//		else if (query instanceof TopicOperator)
-//			getPositiveTerms((TopicOperator) query, terms, processor, index);
         else if (query instanceof StringQuery)
             getPositiveTerms((StringQuery) query, terms, processor, index);
         else

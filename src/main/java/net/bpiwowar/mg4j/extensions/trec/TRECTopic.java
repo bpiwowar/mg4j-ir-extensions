@@ -221,10 +221,10 @@ public class TRECTopic implements Topic {
     @Override
     public Query getTopicPart(String type) {
         if ("title".equals(type))
-            return new StringQuery(title);
+            return title != null ? new StringQuery(title) : null;
 
         if ("desc".equals(type))
-            return new StringQuery(description);
+            return description != null ? new StringQuery(description) : null;
 
         return null;
     }
