@@ -7,11 +7,7 @@ import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
-import it.unimi.dsi.fastutil.longs.Long2DoubleLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArraySet;
-import it.unimi.dsi.fastutil.longs.LongBigList;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.WordReader;
@@ -148,9 +144,9 @@ public class RelevanceModel implements RetrievalModel {
     }
 
     @Override
-    public void process(String topicId, String topic, int capacity, TaskTimer timer, ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results) throws Exception {
+    public void process(String topicId, String topic, int capacity, TaskTimer timer, ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results, LongSet onlyDocuments) throws Exception {
         // TODO: capacity should depend on the relevance feedback method
-        baseModel.process(topicId, topic, capacity, timer, results);
+        baseModel.process(topicId, topic, capacity, timer, results, onlyDocuments);
 
         final Collection<MG4JRelevanceFeedback.MG4JDocument> feedback =
                 relevanceFeedbackMethod.process(topicId, null /* FIXME: should not be null */, factory);

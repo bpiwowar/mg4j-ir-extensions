@@ -9,13 +9,18 @@ import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.adhoc.RetrievalModel;
+import net.bpiwowar.mg4j.extensions.adhoc.Run;
 import net.bpiwowar.mg4j.extensions.adhoc.TRECJudgments;
+import net.bpiwowar.mg4j.extensions.adhoc.TRECRun;
 import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.query.QuerySet;
@@ -30,6 +35,7 @@ import sf.net.experimaestro.tasks.Path;
 
 import java.io.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -68,6 +74,9 @@ public class Adhoc extends AbstractTask {
 
     @JsonArgument()
     TopicProcessor topic_processor;
+
+    @JsonArgument(name = "baserun", help = "Use a base run to re-rank results instead of looking at all documents")
+    Run baseRun;
 
     @Path(copy = "path")
     File run;
@@ -114,10 +123,32 @@ public class Adhoc extends AbstractTask {
             throw new RuntimeException("No topics to be answered");
         }
 
+
+        Object2ObjectLinkedOpenHashMap<String, LongSet> baseRunMap = null;
+        if (baseRun != null) {
+            baseRunMap = new Object2ObjectLinkedOpenHashMap<>();
+            TRECRun trecRun = new TRECRun(baseRun.path);
+            for (Map.Entry<String, List<TRECRun.ScoreInfo>> entry : trecRun.runs().entrySet()) {
+                final String qid = entry.getKey();
+                LongSet set = new LongOpenHashSet();
+
+                for (TRECRun.ScoreInfo info : entry.getValue()) {
+                    // FIXME: HACK HACK HACK (but protected)
+                    final long docid = info.iter;
+                    final String docno = (String) collection.metadata(docid).get(PropertyBasedDocumentFactory.MetadataKeys.URI);
+                    if (!docno.equals(info.docno)) {
+                        throw new AssertionError(format("Docnos don't match (mg4j=%s vs run=%s) for document ID %d", docno, info.docno, docid));
+                    }
+                    set.add(docid);
+                }
+                baseRunMap.put(qid, set);
+            }
+
+        }
+
         // Iterates on topics
         $timer.start();
-        try(PrintStream output = new PrintStream(new FileOutputStream(run)))
-        {
+        try (PrintStream output = new PrintStream(new FileOutputStream(run))) {
             TaskTimer.Task task = $timer.new Task("Answering topics", "topics", topicIds.size());
 
             model.init(collection, _index);
@@ -125,6 +156,8 @@ public class Adhoc extends AbstractTask {
             // Loop over topics
             for (String topicId : topicIds) {
                 LOGGER.info(format("Answering topic %s", topicId));
+
+                final LongSet documentRestriction = baseRunMap != null ? baseRunMap.get(topicId) : null;
 
                 Topic topic = topics.get(topicId);
                 ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results = new ObjectArrayList<>();
@@ -141,9 +174,10 @@ public class Adhoc extends AbstractTask {
                 // after)
                 model.init(collection, _index);
                 model.process(topicId,
-                        topic_processor.process(index.getTerm_processor(), _index, topic), capacity
-                                + (discardedDocuments == null ? 0
-                                : discardedDocuments.size()), $timer, results);
+                        topic_processor.process(index.getTerm_processor(), _index, topic),
+                        capacity + (discardedDocuments == null ? 0 : discardedDocuments.size()),
+                        $timer, results, documentRestriction
+                );
 
                 final int retrieved = results.size();
                 LOGGER.info(format("Returned %d results", retrieved));

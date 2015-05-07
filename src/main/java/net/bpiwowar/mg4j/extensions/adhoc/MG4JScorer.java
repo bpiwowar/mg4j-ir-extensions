@@ -7,13 +7,13 @@ import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.index.NullTermProcessor;
 import it.unimi.di.big.mg4j.index.TermProcessor;
 import it.unimi.di.big.mg4j.query.Query;
-import it.unimi.di.big.mg4j.query.QueryEngine;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
 import it.unimi.di.big.mg4j.query.parser.SimpleParser;
 import it.unimi.di.big.mg4j.search.DocumentIteratorBuilderVisitor;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
 import it.unimi.di.big.mg4j.search.score.Scorer;
 import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.*;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
@@ -80,9 +80,11 @@ public abstract class MG4JScorer implements RetrievalModel {
     }
 
     @Override
-    public void process(String topicId, String topic, int capacity, TaskTimer timer, ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results) throws Exception {
+    public void process(String topicId, String topic, int capacity, TaskTimer timer,
+                        ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results,
+                        LongSet onlyDocuments) throws Exception {
         logger.info(String.format("Topic %s", mg4jTopic));
-        queryEngine.process(topic, 0, pseudoRF == null ? capacity : pseudoRF.k, results);
+        queryEngine.process(topic, 0, pseudoRF == null ? capacity : pseudoRF.k, results, onlyDocuments);
 
         // --- Handling relevance feedback
         if (pseudoRF != null) {

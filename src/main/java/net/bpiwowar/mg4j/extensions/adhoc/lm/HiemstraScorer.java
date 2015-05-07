@@ -80,7 +80,7 @@ public class HiemstraScorer extends LMScorer implements LMModel {
             indexWeights[i] = index2Weight.getDouble(index[indexNumber[i]]);
         }
 
-        System.err.format("Setup visitor = %s%n", setupVisitor);
+//        System.err.format("Setup visitor = %s%n", setupVisitor);
     }
 
     @Override

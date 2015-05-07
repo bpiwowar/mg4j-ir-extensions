@@ -1,5 +1,6 @@
 package net.bpiwowar.mg4j.extensions.query;
 
+import com.google.common.collect.Sets;
 import it.unimi.di.big.mg4j.index.TermProcessor;
 import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
@@ -17,6 +18,8 @@ import static net.bpiwowar.mg4j.extensions.utils.Output.Formatter;
  */
 @ClassChooserInstance(name = "part")
 public class PartTopicProcessor implements TopicProcessor {
+    final private static org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(PartTopicProcessor.class);
+
     @JsonArgument(name = "parts", help = "The parts of the query that we use", required = true)
     private ArrayList<Set<String>> queryTypes = new ArrayList<>();
 
