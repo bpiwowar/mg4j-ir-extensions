@@ -27,32 +27,27 @@ import static java.lang.String.format;
         registry = Registry.class)
 public class CatCollectionBatches extends AbstractTask {
     static final Logger LOGGER = LoggerFactory.getLogger(CatCollectionBatches.class);
-
-    @JsonArgument(name = "collections", required = true)
-    ArrayList<Collection> collectionPaths;
-
-    @JsonArgument(name = "fields", help = "The fields to output", required = true)
-    ArrayList<String> fieldNames = new ArrayList<>();
-
-    @JsonArgument(required = true)
-    TextToolChain toolchain;
-
-    @JsonArgument(name = "batch_size", required = true, help = "Number of elements in each batch")
-    long batchSize;
-
-    @JsonArgument(required = false, help = "Whether the document number and ID should be printed (default true)")
-    boolean header = true;
-
-    @JsonArgument(name = "batches", required = true, help = "Number of batches (positive number) or " +
-            "number of iterations (negative number)")
-    long batches = 0;
-
     // Just for debug
     final static boolean noOutput = false;
 
+    @JsonArgument(name = "collections", required = true)
+    ArrayList<Collection> collectionPaths;
+    @JsonArgument(name = "fields", help = "The fields to output", required = true)
+    ArrayList<String> fieldNames = new ArrayList<>();
+    @JsonArgument(required = true)
+    TextToolChain toolchain;
+    @JsonArgument(name = "batch_size", required = true, help = "Number of elements in each batch")
+    long batchSize;
+    @JsonArgument(required = false, help = "Whether the document number and ID should be printed (default true)")
+    boolean header = true;
+    @JsonArgument(name = "batches", required = true, help = "Number of batches (positive number) or " +
+            "number of iterations (negative number)")
+    long batches = 0;
     transient boolean stop;
 
-    /** Iterator for a range */
+    /**
+     * Iterator for a range
+     */
     public CloseableIterator<CollectionInformation.DocumentInformation> range(CollectionInformation[] collections, long start, long end) throws IOException {
         if (end - start == 0) {
             return new CloseableIterator<CollectionInformation.DocumentInformation>() {
@@ -71,7 +66,7 @@ public class CatCollectionBatches extends AbstractTask {
             // The offset for the next collection
             long offset = start;
 
-            // Remaining documents
+            // Remaining number of documents to output
             long remaining = end - start;
 
             // Number of remaining documents for the current iterator (debug)
@@ -105,12 +100,13 @@ public class CatCollectionBatches extends AbstractTask {
                     return endOfData();
                 }
 
-                final long size = Long.min(collections[ix].size - 1 - position, remaining);
+                // Number of documents that we take from this iterator
+                final long size = Long.min(collections[ix].size - position, remaining);
                 iteratorRemaining = size - 1;
                 iterator = Exceptions.propagate(() -> collections[ix].range(offset, position, position + size));
-//                System.err.format("Range[ix=%d{size=%d}, offset=%d, position=%d, size=%d, remaining=%d]%n",
-//                        ix,collections[ix].size,
-//                        offset, position, size, remaining-size);
+                LOGGER.info(format("Range[ix=%d{size=%d}, offset=%d, position=%d, size=%d, remaining=%d]",
+                        ix, collections[ix].size,
+                        offset, position, size, remaining - size));
 
                 position = 0;
                 remaining -= size;
@@ -157,9 +153,9 @@ public class CatCollectionBatches extends AbstractTask {
         if (batches < 0) {
             long totalSize = Arrays.stream(collections).mapToLong(CollectionInformation::getSize).sum();
             long old = batches;
-            batches = - totalSize / batchSize * batches;
+            batches = -totalSize / batchSize * batches;
             LOGGER.info(format("Total size is %d: outputing %d batches of size %d (%d times)",
-                    totalSize,  batchSize, batches, -old));
+                    totalSize, batchSize, batches, -old));
         }
 
         while (!stop && (batch < batches || batches == 0)) {
@@ -170,6 +166,7 @@ public class CatCollectionBatches extends AbstractTask {
             try (final CloseableIterator<CollectionInformation.DocumentInformation> iterator = range(collections, start, start + batchSize)) {
                 int count = 0;
                 while (iterator.hasNext()) {
+
                     try (final CollectionInformation.DocumentInformation info = iterator.next()) {
                         ++count;
                         if (!noOutput) {
@@ -212,10 +209,16 @@ public class CatCollectionBatches extends AbstractTask {
                     throw new AssertionError(format("Batch size was not respected (%d required, %d given / start %d)",
                             batchSize, count, start));
                 }
+            } catch (Throwable t) {
+                LOGGER.error(format("Error outputing batch %d / %d [start = %d]", batch, batches, start));
+                throw t;
             }
         }
 
+        // no output
+//        throw new AssertionError("This should not have been committed... I told you (above)!!!");
         return r;
+
     }
 
 
