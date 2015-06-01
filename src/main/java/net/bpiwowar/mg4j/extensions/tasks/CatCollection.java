@@ -2,15 +2,9 @@ package net.bpiwowar.mg4j.extensions.tasks;
 
 import com.google.gson.JsonObject;
 import it.unimi.di.big.mg4j.document.Document;
-import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.document.DocumentFactory;
 import it.unimi.di.big.mg4j.document.DocumentIterator;
-import it.unimi.di.big.mg4j.document.IdentityDocumentFactory;
-import it.unimi.di.big.mg4j.index.NullTermProcessor;
-import it.unimi.di.big.mg4j.index.TermProcessor;
-import it.unimi.di.big.mg4j.tool.Scan;
 import it.unimi.dsi.io.FastBufferedReader;
-import it.unimi.dsi.io.WordReader;
 import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
@@ -22,7 +16,10 @@ import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.stream.Stream;
@@ -49,6 +46,9 @@ public class CatCollection extends AbstractTask {
     @JsonArgument(help = "File with one document ID per line (empty = output all documents)")
     File documents;
 
+    @JsonArgument(help = "JSON array of documents to output")
+    ArrayList<String> ids;
+
     @Override
     public JsonObject execute(JsonObject r) throws Throwable {
         // Get the list of collections
@@ -59,7 +59,7 @@ public class CatCollection extends AbstractTask {
 
         LOGGER.info(String.format("Term processor class is %s", toolchain.termProcessor.getClass()));
 
-        if (documents == null) {
+        if (documents == null && ids.isEmpty()) {
             // We just output everything
             for (CollectionInformation collection : collections) {
                 try (final DocumentIterator iterator = collection.iterator()) {
@@ -69,7 +69,6 @@ public class CatCollection extends AbstractTask {
                         docid++;
                     }
                 }
-
             }
 
         } else {
@@ -79,8 +78,21 @@ public class CatCollection extends AbstractTask {
 
             CollectionInformation collection = collections[0];
             // Loop over document IDs
-            try (Stream<String> lines = documents.getName().equals("") ?
-                    new BufferedReader(new InputStreamReader(System.in)).lines() : Files.lines(documents.toPath())) {
+
+            ArrayList<Stream<String>> streams = new ArrayList<>();
+
+            if (!documents.getName().equals("")) {
+                streams.add(Files.lines(documents.toPath()));
+            }
+
+            if (!ids.isEmpty()) {
+                streams.add(ids.stream());
+            }
+
+            final Stream<String> docIdStream = streams.stream().reduce(Stream::concat)
+                    .orElse(new BufferedReader(new InputStreamReader(System.in)).lines());
+
+            try (Stream<String> lines = docIdStream) {
                 lines.map(Long::parseLong)
                         .sorted() // Sort in order to minimize random seeking
                         .forEach(
