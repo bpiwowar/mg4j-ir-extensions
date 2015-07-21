@@ -47,7 +47,7 @@ public class CatCollection extends AbstractTask {
     File documents;
 
     @JsonArgument(help = "JSON array of documents to output")
-    ArrayList<String> ids;
+    ArrayList<String> ids = new ArrayList<>();
 
     @Override
     public JsonObject execute(JsonObject r) throws Throwable {
