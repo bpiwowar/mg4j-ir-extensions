@@ -20,6 +20,10 @@ dependencies {
     compile group: 'net.bpiwowar', name: 'experimaestro-helper', version: '1.0.0-SNAPSHOT'
 }
 
+//configurations {
+//    runtime.exclude group: "org.slf4j", name: "slf4j-simple"
+//}
+
 // Outputs the classpath (one line per path)
 task show << {
    println tasks.jar.archivePath
@@ -46,4 +50,13 @@ task(generateTasks, dependsOn: 'classes', type: JavaExec) {
     def outputFile = new File(buildDir, "resources/main/META-INF/net.bpiwowar.experimaestro/tasks.json")
     classpath = sourceSets.main.runtimeClasspath
     args outputFile.toString(), sourceSets.main.runtimeClasspath.getAsPath()
+}
+
+task(runTask, type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = 'net.bpiwowar.experimaestro.tasks.Runner'
+    if (System.getProperty("exec.args") != null) {
+        args System.getProperty("exec.args").split()
+    }
 }
