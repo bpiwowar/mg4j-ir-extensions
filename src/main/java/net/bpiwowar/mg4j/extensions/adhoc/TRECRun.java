@@ -2,9 +2,13 @@ package net.bpiwowar.mg4j.extensions.adhoc;
 
 import bpiwowar.argparser.GenericHelper;
 import bpiwowar.argparser.utils.ReadLineIterator;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +19,7 @@ import java.util.Map;
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
 public class TRECRun {
-    final static private Logger LOGGER = Logger.getLogger(TRECRun.class);
+    final static private Logger LOGGER = LoggerFactory.getLogger(TRECRun.class);
 
     public Map<String, List<ScoreInfo>> runs() {
         return runs;

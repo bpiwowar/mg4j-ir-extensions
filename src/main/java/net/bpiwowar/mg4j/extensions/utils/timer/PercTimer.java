@@ -2,7 +2,7 @@ package net.bpiwowar.mg4j.extensions.utils.timer;
 
 import net.bpiwowar.mg4j.extensions.utils.LazyString;
 import net.bpiwowar.mg4j.extensions.utils.Memory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * A simple timer that only reports
@@ -29,6 +29,6 @@ public class PercTimer extends Timer {
     protected void report() {
         long newTime = System.currentTimeMillis();
         double hours = (newTime - getStart()) / (double) (1000 * 60 * 60);
-        logger.info(LazyString.format(message, count, count / hours, count * 100. / (double) total, Memory.percAvailableMemory()));
+        logger.info(message, count, count / hours, count * 100. / (double) total, Memory.percAvailableMemory());
     }
 }

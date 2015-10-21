@@ -2,7 +2,8 @@ package net.bpiwowar.mg4j.extensions.adhoc;
 
 import bpiwowar.argparser.GenericHelper;
 import bpiwowar.argparser.utils.ReadLineIterator;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,7 +23,7 @@ import java.util.Set;
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
 public class TRECJudgments {
-    final static private Logger LOGGER = Logger.getLogger(TRECJudgments.class);
+    final static private Logger LOGGER = LoggerFactory.getLogger(TRECJudgments.class);
 
     /**
      * our judgments
@@ -46,8 +47,7 @@ public class TRECJudgments {
 
             Integer put = map.put(docno, rel);
             if (put != null)
-                LOGGER.warn(String.format("Duplicate judgment for document %s and topic %s",
-                        docno, qid));
+                LOGGER.warn("Duplicate judgment for document {} and topic {}", docno, qid);
         }
     }
 

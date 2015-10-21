@@ -3,7 +3,6 @@ package net.bpiwowar.mg4j.extensions.segmented;
 import it.unimi.di.big.mg4j.document.AbstractDocumentIterator;
 import it.unimi.di.big.mg4j.document.Document;
 import it.unimi.dsi.fastutil.objects.ObjectBigListIterator;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.io.SegmentedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +53,7 @@ public class SegmentedDocumentIterator extends AbstractDocumentIterator {
 
     /**
      * Initialize a new document iterator on a segmented document collection
-     *
+     *x
      * @param collection The document collection
      * @param start The starting point in the
      */

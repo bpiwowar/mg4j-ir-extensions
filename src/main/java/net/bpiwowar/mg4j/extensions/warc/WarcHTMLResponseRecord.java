@@ -46,7 +46,8 @@ import it.unimi.dsi.parser.Element;
 import it.unimi.dsi.parser.HTMLFactory;
 import it.unimi.dsi.parser.callback.Callback;
 import net.bpiwowar.mg4j.extensions.utils.ByteMatch;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -106,7 +107,7 @@ public class WarcHTMLResponseRecord {
 
     private boolean isHTMLResponse = false;
 
-    final static private Logger LOGGER = Logger.getLogger(WarcHTMLResponseRecord.class);
+    final static private Logger LOGGER = LoggerFactory.getLogger(WarcHTMLResponseRecord.class);
 
     /**
      * Default constructor

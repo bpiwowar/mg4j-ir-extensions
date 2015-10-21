@@ -15,7 +15,8 @@ import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
 import net.bpiwowar.mg4j.extensions.utils.HTMLDocumentFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -37,7 +38,7 @@ import java.io.InputStream;
 public class WARCDocumentCollection extends SegmentedDocumentCollection {
 
     private static final long serialVersionUID = 1;
-    private static final Logger LOGGER = Logger.getLogger(WARCDocumentCollection.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WARCDocumentCollection.class);
     final boolean debugEnabled = LOGGER.isDebugEnabled();
 
 

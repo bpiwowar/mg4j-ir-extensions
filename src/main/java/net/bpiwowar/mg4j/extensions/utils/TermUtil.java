@@ -20,7 +20,8 @@ import net.bpiwowar.mg4j.extensions.query.Term;
 import net.bpiwowar.mg4j.extensions.query.Text;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.mutable.MutableInt;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -30,7 +31,7 @@ import java.util.Map;
  * @author <a href="mailto:benjamin@bpiwowar.net">Benjamin Piwowarski</a>
  */
 public class TermUtil {
-    final static Logger logger = Logger.getLogger(TermUtil.class);
+    final static Logger logger = LoggerFactory.getLogger(TermUtil.class);
 
     static public void getPositiveTerms(
             Query query,

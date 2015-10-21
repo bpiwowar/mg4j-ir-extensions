@@ -2,7 +2,7 @@ package net.bpiwowar.mg4j.extensions.utils.timer;
 
 import net.bpiwowar.mg4j.extensions.utils.LazyString;
 import net.bpiwowar.mg4j.extensions.utils.Memory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * A simple timer that only reports
@@ -42,9 +42,9 @@ public class CountTimer extends Timer {
         long newTime = System.currentTimeMillis();
         double hours = (newTime - getStart()) / (double) (1000 * 60 * 60);
         if (showMemory)
-            logger.info(LazyString.format(message, count, count / hours, Memory
-                    .percAvailableMemory()));
+            logger.info(message, count, count / hours, Memory
+                    .percAvailableMemory());
         else
-            logger.info(LazyString.format(message, count, count / hours));
+            logger.info(message, count, count / hours);
     }
 }

@@ -3,7 +3,8 @@
  */
 package net.bpiwowar.mg4j.extensions.utils;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,7 +22,7 @@ import java.util.NoSuchElementException;
  */
 final public class MapIntersectionIterator<Key, Value, Result> implements
         Iterator<Pair<Key, Result>> {
-    final static private Logger logger = Logger.getLogger(MapIntersectionIterator.class);
+    final static private Logger logger = LoggerFactory.getLogger(MapIntersectionIterator.class);
 
     final Comparator<Key> comparator;
 
@@ -245,8 +246,8 @@ final public class MapIntersectionIterator<Key, Value, Result> implements
             do {
                 // Set the value
                 list.set(entry.entryIndex, entry.current);
-                logger.debug(LazyString.format("(%d) %s: %s => %s", entry.entryIndex, u,
-                        entry.current.getKey(), entry.current.getValue()));
+                logger.debug("({}) {}: {} => {}", entry.entryIndex, u,
+                        entry.current.getKey(), entry.current.getValue());
 
                 // get the next value from this stream and update
                 entry.next();
@@ -258,7 +259,7 @@ final public class MapIntersectionIterator<Key, Value, Result> implements
                 entry = heap.isEmpty() ? null : heap.peek();
                 N++;
             } while (entry != null && compare(entry.current.getKey(), u) == 0);
-            logger.debug(LazyString.format("End of loop N=%d/%d", N, size));
+            logger.debug("End of loop N=%d/%d", N, size);
         } while (entry != null && N != size);
 
         if (N != size)
@@ -268,8 +269,8 @@ final public class MapIntersectionIterator<Key, Value, Result> implements
         for (int i = 0; i < N; i++)
             aggregator.set(i, list.get(i));
 
-        logger.debug(LazyString.format("Returns a new pair for %s, heap is empty = %b", u, heap
-                .isEmpty()));
+        logger.debug("Returns a new pair for {}, heap is empty = {}", u, heap
+                .isEmpty());
 
         return new Pair<Key, Result>(u, aggregator.aggregate());
     }

@@ -19,7 +19,8 @@ import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.mutable.MutableInt;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -27,7 +28,7 @@ import java.util.Map;
  * A wrapper for all the MG4j models
  */
 public abstract class MG4JScorer implements RetrievalModel {
-    final static Logger logger = Logger.getLogger(MG4JScorer.class);
+    final static Logger logger = LoggerFactory.getLogger(MG4JScorer.class);
 
     @Argument(name = "term-processor", help = "The file that contains the term processor description")
     TermProcessor processor = NullTermProcessor.getInstance();
@@ -83,7 +84,7 @@ public abstract class MG4JScorer implements RetrievalModel {
     public void process(String topicId, String topic, int capacity, TaskTimer timer,
                         ObjectArrayList<DocumentScoreInfo<Reference2ObjectMap<Index, SelectedInterval[]>>> results,
                         LongSet onlyDocuments) throws Exception {
-        logger.info(String.format("Topic %s", mg4jTopic));
+        logger.info("Topic {}", mg4jTopic);
         queryEngine.process(topic, 0, pseudoRF == null ? capacity : pseudoRF.k, results, onlyDocuments);
 
         // --- Handling relevance feedback

@@ -6,14 +6,15 @@ package net.bpiwowar.mg4j.extensions.conf;
 import it.unimi.di.big.mg4j.index.TermProcessor;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
 import net.bpiwowar.mg4j.extensions.tasks.Collection;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 final public class IndexedCollection {
-    final static private Logger LOGGER = Logger.getLogger(IndexedCollection.class);
+    final static private Logger LOGGER = LoggerFactory.getLogger(IndexedCollection.class);
 
     @JsonArgument(name = "path", help = "Index basename", required = true)
     public File path;

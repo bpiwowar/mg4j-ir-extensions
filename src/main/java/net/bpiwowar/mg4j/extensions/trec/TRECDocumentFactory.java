@@ -36,7 +36,8 @@ import net.bpiwowar.mg4j.extensions.MarkedUpDocument;
 import net.bpiwowar.mg4j.extensions.TagPointer;
 import net.bpiwowar.mg4j.extensions.utils.StructuredTextExtractor;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +52,7 @@ import java.util.Iterator;
  */
 
 public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
-    final static private Logger LOGGER = Logger.getLogger(TRECDocumentFactory.class);
+    final static private Logger LOGGER = LoggerFactory.getLogger(TRECDocumentFactory.class);
 
     private static final long serialVersionUID = 1L;
 

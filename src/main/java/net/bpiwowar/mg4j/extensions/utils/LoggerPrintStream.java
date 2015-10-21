@@ -3,8 +3,7 @@
  */
 package net.bpiwowar.mg4j.extensions.utils;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.io.PrintStream;
 
@@ -16,7 +15,7 @@ public class LoggerPrintStream extends PrintStream {
     /**
      * Creates a PrintStream for a given logger at a given output level
      */
-    public LoggerPrintStream(Logger logger, Level level) {
+    public LoggerPrintStream(Logger logger, LogLevel level) {
         super(new LoggerOutputStream(logger, level));
     }
 }

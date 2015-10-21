@@ -30,7 +30,8 @@ import net.bpiwowar.mg4j.extensions.trec.TRECTopic;
 import net.bpiwowar.mg4j.extensions.utils.LazyString;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sf.net.experimaestro.tasks.Path;
 
 import java.io.*;
@@ -46,7 +47,7 @@ import static java.lang.String.format;
         description = "Runs an ad-hoc task",
         registry = Registry.class)
 public class Adhoc extends AbstractTask {
-    final private static Logger LOGGER = Logger.getLogger(Adhoc.class);
+    final private static Logger LOGGER = LoggerFactory.getLogger(Adhoc.class);
 
     @JsonArgument(help = "The timer configuration")
     TaskTimer $timer = new TaskTimer(LOGGER);
@@ -110,9 +111,9 @@ public class Adhoc extends AbstractTask {
         Set<String> topicIds = GenericHelper.newHashSet();
         Map<String, ? extends Topic> topics = querySet.queries();
         for (String id : topics.keySet()) {
-            LOGGER.debug(new LazyString("Considering topic %s (%b/%b/%b)", id, topics.keySet()
+            LOGGER.debug("Considering topic %s (%b/%b/%b)", id, topics.keySet()
                     .contains(id), onlyTopics.isEmpty(), onlyTopics
-                    .contains(id)));
+                    .contains(id));
             if (topics.keySet().contains(id)
                     && (onlyTopics.isEmpty() || onlyTopics.contains(id))) {
                 topicIds.add(id);

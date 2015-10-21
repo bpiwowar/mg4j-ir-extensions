@@ -25,6 +25,7 @@ import java.util.HashSet;
 
 import static java.lang.Math.log;
 import static java.lang.Math.min;
+import static java.lang.String.format;
 
 /**
 * Created by bpiwowar on 15/12/14.
@@ -96,8 +97,7 @@ public abstract class PseudoRF {
 
             fieldIndex = collection.factory().fieldIndex(index.field);
             if (fieldIndex < 0)
-                throw new RuntimeException(String.format(
-                        "Could not find field %s in index", index.field));
+                throw new RuntimeException(format("Could not find field %d in index", index.field));
 
         }
 
@@ -111,7 +111,7 @@ public abstract class PseudoRF {
             // Get a subspace representation of the K first documents
             if (k > results.size()) {
                 MG4JScorer.logger
-                        .warn(String.format(
+                        .warn(format(
                                 "The number of returned documents (%d) is inferior to the number of documents (%d) for blind RF",
                                 results.size(), k));
             }
@@ -130,11 +130,11 @@ public abstract class PseudoRF {
                     final CharSequence term = index.getTerm(entry
                             .getLongKey());
                     newTerms.add(term);
-                    MG4JScorer.logger.info(String.format("Adding term %s", term));
+                    MG4JScorer.logger.info("Adding term {}", term);
                 } else {
                     if (MG4JScorer.logger.isDebugEnabled())
-                        MG4JScorer.logger.debug(String.format("Not adding term %s (%g <= %g)", index
-                                .getTerm(entry.getLongKey()), termScore, c));
+                        MG4JScorer.logger.debug("Not adding term {} ({} <= {})", index
+                                .getTerm(entry.getLongKey()), termScore, c);
                 }
 
             }

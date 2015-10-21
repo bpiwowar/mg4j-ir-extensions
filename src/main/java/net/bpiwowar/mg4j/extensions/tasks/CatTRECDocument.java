@@ -11,7 +11,8 @@ import it.unimi.dsi.parser.Element;
 import it.unimi.dsi.parser.callback.Callback;
 import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
 import net.bpiwowar.mg4j.extensions.trec.TRECParsingFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,7 +34,7 @@ import java.util.Map;
 @TaskDescription(name = "cat-trec-document", project = {"ir", "mg4j"},
         description = "Outputs a TREC document in an easy to handle format")
 public class CatTRECDocument extends AbstractTask {
-    static final Logger logger = Logger.getLogger(CatTRECDocument.class);
+    static final Logger logger = LoggerFactory.getLogger(CatTRECDocument.class);
 
     @Override
     public int execute() throws Throwable {

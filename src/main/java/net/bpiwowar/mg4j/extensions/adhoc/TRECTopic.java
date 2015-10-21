@@ -11,8 +11,8 @@ import net.bpiwowar.mg4j.extensions.query.Query;
 import net.bpiwowar.mg4j.extensions.query.StringQuery;
 import net.bpiwowar.mg4j.extensions.query.Topic;
 import net.bpiwowar.mg4j.extensions.trec.TRECParsingFactory;
-import net.bpiwowar.mg4j.extensions.utils.LazyString;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import java.util.Map;
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
 public class TRECTopic implements Topic {
-    final static private Logger logger = Logger.getLogger(Topic.class);
+    final static private Logger logger = LoggerFactory.getLogger(Topic.class);
 
     protected String id;
 
@@ -182,8 +182,7 @@ public class TRECTopic implements Topic {
                     if (topic.id == null) {
                         logger.warn("Topic had no identifier - skipping");
                     } else {
-                        logger.debug(new LazyString("Adding topic %s with title [%s]",
-                                topic.id, topic.title));
+                        logger.debug("Adding topic {} with title [{}]", topic.id, topic.title);
 
                         querySet.put(topic.id, topic);
                     }

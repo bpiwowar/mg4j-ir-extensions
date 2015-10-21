@@ -3,7 +3,8 @@
  */
 package net.bpiwowar.mg4j.extensions.utils;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -18,7 +19,7 @@ import java.util.NoSuchElementException;
  * @date Nov 19, 2007
  */
 public class JoinIterator<Key, Value> implements Iterator<Pair<Key, Value>> {
-    final static private Logger logger = Logger.getLogger(JoinIterator.class);
+    final static private Logger logger = LoggerFactory.getLogger(JoinIterator.class);
 
     /**
      * The heap used when joining.
@@ -180,9 +181,8 @@ public class JoinIterator<Key, Value> implements Iterator<Pair<Key, Value>> {
 
             do {
                 // Set the value
-                logger
-                        .debug(LazyString.format("(%d) %s: %s", entry.streamIndex, u,
-                                entry.current));
+                logger.debug("({}) {}: {}", entry.streamIndex, u,
+                                entry.current);
                 aggregator.set(entry.streamIndex, entry.current);
 
                 // get the next value from this stream and update
@@ -197,14 +197,14 @@ public class JoinIterator<Key, Value> implements Iterator<Pair<Key, Value>> {
                 N++;
             } while (entry != null && comparator.compare(entry.current, u) == 0);
 
-            logger.debug(LazyString.format("End of loop N=%d/%d", N, size));
+            logger.debug("End of loop N={}/{}", N, size);
         } while (entry != null && !aggregator.accept(N, size));
 
         if (!aggregator.accept(N, size))
             return null;
 
-        logger.debug(LazyString.format("Returns a new pair for %s, heap is empty = %b", u, heap
-                .isEmpty()));
+        logger.debug("Returns a new pair for {}, heap is empty = {}", u, heap
+                .isEmpty());
 
         return Pair.create(u, aggregator.aggregate());
     }

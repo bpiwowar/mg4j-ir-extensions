@@ -12,7 +12,8 @@ import it.unimi.di.big.mg4j.search.visitor.CounterSetupVisitor;
 import it.unimi.di.big.mg4j.search.visitor.TermCollectionVisitor;
 import it.unimi.dsi.fastutil.ints.IntBigList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,7 +23,7 @@ import java.util.Arrays;
  *         Based on the {@linkplain it.unimi.di.big.mg4j.search.score.BM25Scorer} class
  */
 public class RelevanceModelScorer extends AbstractWeightedScorer implements DelegatingScorer {
-    public static final Logger LOGGER = Logger.getLogger(RelevanceModelScorer.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(RelevanceModelScorer.class);
     public static final boolean DEBUG = true;
 
     private static final class Visitor extends AbstractDocumentIteratorVisitor {

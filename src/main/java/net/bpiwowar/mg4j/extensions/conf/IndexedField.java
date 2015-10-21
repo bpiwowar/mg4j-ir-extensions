@@ -11,7 +11,8 @@ import it.unimi.dsi.fastutil.longs.LongBigList;
 import it.unimi.dsi.fastutil.objects.ObjectBigList;
 import it.unimi.dsi.io.InputBitStream;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +23,7 @@ import java.net.URISyntaxException;
 import static java.lang.String.format;
 
 final public class IndexedField {
-    final static private Logger LOGGER = Logger.getLogger(IndexedField.class);
+    final static private Logger LOGGER = LoggerFactory.getLogger(IndexedField.class);
     private final File basedir;
     private final String basename;
     public final Index index;

@@ -1,21 +1,22 @@
 package net.bpiwowar.mg4j.extensions.utils;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
 
 /**
  * An OutputStream that flushes out to a Category.
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * Note that no data is written out to the Category until the stream is flushed
  * or closed.
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * Example:
- * <p/>
+ * <p>
  * <pre>
  *  // make sure everything sent to System.err is logged
  *  System.setErr(new PrintStream(new
@@ -34,7 +35,7 @@ import java.io.OutputStream;
 //
 public class LoggerOutputStream extends OutputStream {
 
-    static Logger myLogger = Logger.getLogger(LoggerOutputStream.class
+    static Logger myLogger = LoggerFactory.getLogger(LoggerOutputStream.class
             .getName());
 
     /**
@@ -72,7 +73,7 @@ public class LoggerOutputStream extends OutputStream {
     /**
      * The priority to use when writing to the Category.
      */
-    protected Level level;
+    protected LogLevel level;
 
     /**
      * Protection against construction
@@ -89,7 +90,7 @@ public class LoggerOutputStream extends OutputStream {
      * @param level the Level to use when writing to the Logger
      * @throws IllegalArgumentException if cat == null or priority == null
      */
-    public LoggerOutputStream(Logger log, Level level)
+    public LoggerOutputStream(Logger log, LogLevel level)
             throws IllegalArgumentException {
         if (log == null) {
             throw new IllegalArgumentException("cat == null");
@@ -174,7 +175,10 @@ public class LoggerOutputStream extends OutputStream {
         // Let's go
         final byte[] theBytes = new byte[count];
         System.arraycopy(buf, 0, theBytes, 0, count);
-        logger.log(level, new String(theBytes));
+
+        // FIXME: Should depend on the level
+        logger.debug(new String(theBytes));
+
         reset();
 
     }

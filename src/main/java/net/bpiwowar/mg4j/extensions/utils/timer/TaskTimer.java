@@ -1,10 +1,10 @@
 package net.bpiwowar.mg4j.extensions.utils.timer;
 
+import net.bpiwowar.mg4j.extensions.utils.LogLevel;
 import net.bpiwowar.mg4j.extensions.utils.LoggerPrintStream;
 import net.bpiwowar.mg4j.extensions.utils.Memory;
 import net.bpiwowar.mg4j.extensions.utils.Time;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.io.PrintStream;
 import java.text.DateFormat;
@@ -205,11 +205,11 @@ final public class TaskTimer extends Timer {
     @Override
     protected void report() {
         long ts = System.currentTimeMillis();
-        logger.info(String.format("%s -- %d%% memory available (total %d Mb)", formatter
+        logger.info("{} -- {}% memory available (total %d Mb)", formatter
                         .format(Calendar.getInstance().getTime()), Memory.percAvailableMemory(),
-                Memory.maxMemory() / (1024 * 1024)));
+                Memory.maxMemory() / (1024 * 1024));
         int i = 0;
-        LoggerPrintStream out = new LoggerPrintStream(logger, Level.INFO);
+        LoggerPrintStream out = new LoggerPrintStream(logger, LogLevel.INFO);
         synchronized (tasks) {
             for (Task task : tasks) {
                 i++;

@@ -2,7 +2,7 @@ package net.bpiwowar.mg4j.extensions.utils.timer;
 
 
 import bpiwowar.argparser.Argument;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * A timer is a thread that reports to the logger the advance of a specific task

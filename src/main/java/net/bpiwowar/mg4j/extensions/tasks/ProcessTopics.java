@@ -7,7 +7,8 @@ import net.bpiwowar.experimaestro.tasks.JsonArgument;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ import static java.lang.String.format;
         registry = Registry.class,
         description = "Get the queries as list of tokens")
 public class ProcessTopics extends AbstractTask {
-    protected static final Logger LOGGER = Logger.getLogger(ProcessTopics.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(ProcessTopics.class);
 
     @JsonArgument(name = "toolchain", required = true)
     TextToolChain toolchain;
