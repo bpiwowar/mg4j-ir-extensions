@@ -21,6 +21,7 @@ import net.bpiwowar.mg4j.extensions.warc.WARCDocumentCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sf.net.experimaestro.tasks.Path;
+import sf.net.experimaestro.tasks.Type;
 
 import javax.xml.namespace.NamespaceContext;
 import java.io.*;
@@ -38,7 +39,6 @@ public class BuildCollection extends AbstractTask {
     public static final String IRCOLLECTIONS_NS = "http://ircollections.sourceforge.net";
     final static private Logger LOGGER = LoggerFactory.getLogger(BuildCollection.class);
 
-    @JsonArgument(type = "irc:documents")
     DocumentsConfiguration documents;
 
     @Path(copy = "path")
@@ -127,6 +127,7 @@ public class BuildCollection extends AbstractTask {
         }
     }
 
+    @Type(type = "irc:documents")
     static public class DocumentsConfiguration {
         @JsonArgument(name = "path")
         @JsonAdapter(XPMPathAdapter.class)

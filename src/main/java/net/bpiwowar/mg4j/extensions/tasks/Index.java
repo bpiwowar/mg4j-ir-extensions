@@ -34,10 +34,10 @@ import java.io.File;
 public class Index extends AbstractTask {
     static final Logger LOGGER = LoggerFactory.getLogger(Index.class);
 
-    @JsonArgument(name = "collection", help = "MG4J collection to index", required = true)
+    @JsonArgument(name = "collection", type="mg4j:collection", help = "MG4J collection to index", required = true)
     Collection collection;
 
-    @JsonArgument(name = "term_processor", help = "The term processor used to process documents (default: no processor)")
+    @JsonArgument(name = "term_processor", type = "mg4j:text-toolchain", help = "The term processor used to process documents (default: no processor)")
     TermProcessor termProcessor = NullTermProcessor.getInstance();
 
     @JsonArgument(name = "$batch_size", help = "Maximum number of documents per batch")
