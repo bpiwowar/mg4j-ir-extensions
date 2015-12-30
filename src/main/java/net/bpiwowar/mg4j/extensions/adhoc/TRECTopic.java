@@ -214,8 +214,7 @@ public class TRECTopic implements Topic {
         return id;
     }
 
-    final static List<String> list = Arrays.asList(new String[]{
-            "title", "desc"});
+    final static List<String> list = Arrays.asList("title", "desc");
 
     @Override
     public Query getTopicPart(String type) {

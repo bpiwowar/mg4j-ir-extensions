@@ -38,7 +38,7 @@ import java.util.Set;
 @ClassChooserInstance(name = "RM", description = "Relevance model from Lavrenko")
 public class RelevanceModel implements RetrievalModel {
 
-    static public enum Method {
+    public enum Method {
         IID,
         CONDITIONAL
     }

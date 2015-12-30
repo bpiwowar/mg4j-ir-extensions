@@ -16,7 +16,7 @@ import java.util.Iterator;
 public class Output {
 
     // ===== Using a print stream output =====
-    static public interface PrintFormatter<T> {
+    public interface PrintFormatter<T> {
         void print(PrintStream out, T t);
     }
 
@@ -302,7 +302,7 @@ public class Output {
         }
     };
 
-    static public interface Formatter<T> {
-        public String format(T t);
+    public interface Formatter<T> {
+        String format(T t);
     }
 }

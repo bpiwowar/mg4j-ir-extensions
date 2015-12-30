@@ -15,7 +15,7 @@ public interface Topic {
      *
      * @return the topic ID
      */
-    public String getId();
+    String getId();
 
     /**
      * Gets a CO representation of the given topic part/type which can be
@@ -25,12 +25,12 @@ public interface Topic {
      * @return a {@link Query} object representing the topic part, or null if no such object exists
      * @see #getTypes
      */
-    public Query getTopicPart(String type);
+    Query getTopicPart(String type);
 
     /**
      * Gets the available topic parts or types
      *
      * @return a String list of available topic types
      */
-    public List<String> getTypes();
+    List<String> getTypes();
 }

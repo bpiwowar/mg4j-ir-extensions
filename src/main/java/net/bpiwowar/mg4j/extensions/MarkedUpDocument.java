@@ -16,5 +16,5 @@ public interface MarkedUpDocument {
      * @param field the field
      * @return iterator over tag pointers
      */
-    public Iterator<TagPointer> tags(int field);
+    Iterator<TagPointer> tags(int field);
 }

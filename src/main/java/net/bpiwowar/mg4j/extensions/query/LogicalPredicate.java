@@ -11,9 +11,7 @@ public class LogicalPredicate extends Predicate {
         this.operator = operator;
     }
 
-    public static enum Operator {AND, OR}
-
-    ;
+    public enum Operator {AND, OR}
 
     public Operator operator;
     public Predicate left, right;

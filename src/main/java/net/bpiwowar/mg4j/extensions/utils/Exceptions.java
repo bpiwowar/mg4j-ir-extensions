@@ -12,7 +12,7 @@ public class Exceptions {
         }
     }
 
-    public static interface ExceptionalStatement {
+    public interface ExceptionalStatement {
         void evaluate() throws Exception;
     }
 

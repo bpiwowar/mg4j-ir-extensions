@@ -12,7 +12,7 @@ public interface Aggregator<Input, Output> {
     /**
      * Called before a new key appears
      */
-    public void reset();
+    void reset();
 
     /**
      * Called to add a new value
@@ -20,12 +20,12 @@ public interface Aggregator<Input, Output> {
      * @param index The iterator index
      * @param k     The corresponding key
      */
-    public void set(int index, Input k);
+    void set(int index, Input k);
 
     /**
      * Called to retrieve the value
      */
-    public Output aggregate();
+    Output aggregate();
 
     /**
      * Should the result be accepted
@@ -34,7 +34,7 @@ public interface Aggregator<Input, Output> {
      * @param size The number of joined collections
      * @return True if the result should be accepted
      */
-    public boolean accept(int n, int size);
+    boolean accept(int n, int size);
 
 
     /**
@@ -42,7 +42,7 @@ public interface Aggregator<Input, Output> {
      *
      * @author B. Piwowarski <benjamin@bpiwowar.net>
      */
-    static class MapValueArray<Key, Value> implements
+    class MapValueArray<Key, Value> implements
             Aggregator<Entry<Key, Value>, Value[]> {
         private final Class<Value> valueClass;
         private final int length;

@@ -52,11 +52,9 @@ public class SimpleQuery {
      * @author bpiwowar
      * @date Nov 19, 2007
      */
-    static public enum Operator {
+    public enum Operator {
         PLUS, NONE, MINUS
     }
-
-    ;
 
     static abstract public class Component {
         Operator operator = Operator.NONE;

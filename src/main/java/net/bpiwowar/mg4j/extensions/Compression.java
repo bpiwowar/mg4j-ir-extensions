@@ -7,7 +7,6 @@ import com.google.gson.annotations.SerializedName;
  * Sets the compression
  *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
- * @date 20/6/12
  */
 public enum Compression {
     @EnumValue("none")

@@ -15,8 +15,6 @@ public class TagPointer extends Pointer {
         START, END
     }
 
-    ;
-
     private Element element;
     private final TagType tagtype;
 

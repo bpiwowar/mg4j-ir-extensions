@@ -65,7 +65,7 @@ public class TRECJudgments {
         return judgments.get(qid);
     }
 
-    static public enum Fields {
+    public enum Fields {
         QID, ITER, DOCNO, REL
     }
 

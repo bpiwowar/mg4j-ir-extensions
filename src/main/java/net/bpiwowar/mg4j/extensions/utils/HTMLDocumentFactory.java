@@ -165,14 +165,14 @@ public class HTMLDocumentFactory extends PropertyBasedDocumentFactory {
         return Fields.values().length;
     }
 
-    public static enum Fields {
+    public enum Fields {
         TEXT, TITLE
     }
 
     /**
      * Type of collection
      */
-    public static enum CollectionType {
+    public enum CollectionType {
         // collections in WARC 0.18 format
         WARC018
     }

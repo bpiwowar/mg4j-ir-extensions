@@ -33,7 +33,7 @@ final public class DefaultMap<K extends Object, V extends Object> implements Map
     public DefaultMap(Class<? extends Map> mapClass, Class<V> valueClass) {
         try {
             map = mapClass.newInstance();
-            valueConstructor = valueClass.getConstructor(new Class[]{});
+            valueConstructor = valueClass.getConstructor();
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {

@@ -89,7 +89,6 @@ public class WarcHTMLResponseRecord {
             sb.append(uc.charAt(i));
             sb.append(']');
         }
-        ;
         return sb.toString();
     }
 

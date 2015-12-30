@@ -162,7 +162,7 @@ public class TRECDocumentFactory extends PropertyBasedDocumentFactory {
     /**
      * Fields that can be returned
      */
-    public static enum Fields {
+    public enum Fields {
         TEXT, TITLE
     }
 

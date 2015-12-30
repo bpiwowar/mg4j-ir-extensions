@@ -215,8 +215,7 @@ public class TRECTopic implements Topic {
         return id;
     }
 
-    final static List<String> list = ListAdaptator.create(new String[]{
-            "title", "desc"});
+    final static List<String> list = ListAdaptator.create("title", "desc");
 
     @Override
     public Query getTopicPart(String type) {

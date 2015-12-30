@@ -72,7 +72,7 @@ final public class TaskTimer extends Timer {
          */
         synchronized public void print(long timestamp, PrintStream out) {
             long elapsed = timestamp - start;
-            float itemPerMinute = (float) (count * 1000f * 60f)
+            float itemPerMinute = count * 1000f * 60f
                     / (float) (elapsed);
             if (total > 0) {
                 if (count > 0) {

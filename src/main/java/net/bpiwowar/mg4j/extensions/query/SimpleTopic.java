@@ -24,8 +24,7 @@ public class SimpleTopic implements Topic {
     /**
      * The list of types in the topic description
      */
-    final static List<String> typeList = ListAdaptator.create(new String[]{
-            "simple"});
+    final static List<String> typeList = ListAdaptator.create("simple");
 
     /**
      * Provide query, take default id

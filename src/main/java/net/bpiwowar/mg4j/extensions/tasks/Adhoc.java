@@ -125,6 +125,7 @@ public class Adhoc extends AbstractTask {
         }
 
 
+        // Handles base run
         Object2ObjectLinkedOpenHashMap<String, LongSet> baseRunMap = null;
         if (baseRun != null) {
             baseRunMap = new Object2ObjectLinkedOpenHashMap<>();

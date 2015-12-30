@@ -25,5 +25,5 @@ public class CollectionBuilderOptions {
     public int bufferSize = TRECDocumentCollection.DEFAULT_BUFFER_SIZE;
 
     @Argument(name = "property", help = "A property (name=value)")
-    public ArrayList<String> properties = new ArrayList<String>();
+    public ArrayList<String> properties = new ArrayList<>();
 }
