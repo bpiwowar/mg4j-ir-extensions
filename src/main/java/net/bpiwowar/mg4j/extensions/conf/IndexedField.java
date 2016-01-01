@@ -5,6 +5,7 @@ package net.bpiwowar.mg4j.extensions.conf;
 
 import it.unimi.di.big.mg4j.index.DiskBasedIndex;
 import it.unimi.di.big.mg4j.index.Index;
+import it.unimi.di.big.mg4j.index.IndexReader;
 import it.unimi.dsi.fastutil.ints.IntBigList;
 import it.unimi.dsi.fastutil.longs.LongBigArrayBigList;
 import it.unimi.dsi.fastutil.longs.LongBigList;
@@ -99,8 +100,8 @@ final public class IndexedField {
     /**
      * Get term
      *
-     * @param i
-     * @return
+     * @param i The term id
+     * @return The string corresponding to this term
      */
     public CharSequence getTerm(long i) {
         checkTermMap(true);
@@ -171,4 +172,7 @@ final public class IndexedField {
         return new File(basedir, format("%s%s", basename, extension));
     }
 
+    public IndexReader getReader() throws IOException {
+        return index.getReader();
+    }
 }

@@ -52,4 +52,6 @@ final public class IndexedCollection {
     public TermProcessor getTerm_processor() {
         return term_processor;
     }
+
+
 }
