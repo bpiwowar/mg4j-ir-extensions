@@ -8,11 +8,9 @@ repositories {
 }
 
 dependencies {
-    compile group: 'it.unimi.di', name: 'mg4j-big', version: '5.2.1'
+    compile group: 'it.unimi.di', name: 'mg4j-big', version: '5.4.1'
     compile group: 'org.tukaani', name: 'xz', version: '1.5'
     compile group: 'net.bpiwowar', name: 'argj', version: '1.1.4'
-    compile group: 'it.unimi.dsi', name: 'fastutil', version: '6.5.15'
-    compile group: 'it.unimi.dsi', name: 'dsiutils', version: '2.2.2'
     compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
     compile group: 'commons-configuration', name: 'commons-configuration', version: '1.10'
     compile group: 'com.martiansoftware', name: 'jsap', version: '2.1'
