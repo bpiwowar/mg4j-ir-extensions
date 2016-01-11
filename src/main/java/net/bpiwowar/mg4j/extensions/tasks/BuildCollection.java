@@ -39,6 +39,7 @@ public class BuildCollection extends AbstractTask {
     public static final String IRCOLLECTIONS_NS = "http://ircollections.sourceforge.net";
     final static private Logger LOGGER = LoggerFactory.getLogger(BuildCollection.class);
 
+    @JsonArgument
     DocumentsConfiguration documents;
 
     @Path(copy = "path")
