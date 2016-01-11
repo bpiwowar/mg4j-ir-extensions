@@ -22,13 +22,8 @@ import java.util.Set;
  *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */
-public class TRECJudgments {
+public class TRECJudgments extends Judgments {
     final static private Logger LOGGER = LoggerFactory.getLogger(TRECJudgments.class);
-
-    /**
-     * our judgments
-     */
-    Map<String, Map<String, Integer>> judgments = GenericHelper.newTreeMap();
 
     public TRECJudgments(Reader in) {
         for (String line : new ReadLineIterator(in)) {
@@ -55,29 +50,6 @@ public class TRECJudgments {
         this(new FileReader(file));
     }
 
-    /**
-     * Get a set of topics (or null)
-     *
-     * @param qid
-     * @return
-     */
-    public Map<String, Integer> get(String qid) {
-        return judgments.get(qid);
-    }
-
-    public enum Fields {
-        QID, ITER, DOCNO, REL
-    }
-
-    public Set<String> getTopics() {
-        return judgments.keySet();
-    }
-
-    static final public void writeQrel(PrintStream out, String qid,
-                                       String docno, int rel) {
-        out.format("%s 0 %s %d%n", qid, docno, rel);
-
-    }
 
     public void write(File file) throws IOException {
         PrintStream out = new PrintStream(file);
@@ -87,5 +59,8 @@ public class TRECJudgments {
             }
         out.close();
     }
-
+    static final public void writeQrel(PrintStream out, String qid,
+                                       String docno, int rel) {
+        out.format("%s 0 %s %d%n", qid, docno, rel);
+    }
 }

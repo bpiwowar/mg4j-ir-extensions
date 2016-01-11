@@ -24,10 +24,10 @@ import net.bpiwowar.mg4j.extensions.adhoc.TRECRun;
 import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.query.QuerySet;
+import net.bpiwowar.mg4j.extensions.query.Tokenizer;
 import net.bpiwowar.mg4j.extensions.query.Topic;
 import net.bpiwowar.mg4j.extensions.query.TopicProcessor;
-import net.bpiwowar.mg4j.extensions.trec.TRECTopic;
-import net.bpiwowar.mg4j.extensions.utils.LazyString;
+import net.bpiwowar.mg4j.extensions.query.Topics;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
 import org.slf4j.Logger;
@@ -96,16 +96,7 @@ public class Adhoc extends AbstractTask {
         File discardedQRELFile = null;
         TRECJudgments discarded = discardedQRELFile == null ? null : new TRECJudgments(discardedQRELFile);
 
-        QuerySet querySet;
-        switch (topics.$format) {
-            case "trec":
-                try (BufferedReader reader = new BufferedReader(new FileReader(topics.path))) {
-                    querySet = TRECTopic.readTopics(reader, false);
-                }
-                break;
-            default:
-                throw new RuntimeException(format("Cannot handle topics of type %s", topics.$format));
-        }
+        QuerySet querySet = topics.getQuerySet();
 
         // Do something
         Set<String> topicIds = GenericHelper.newHashSet();
@@ -148,6 +139,9 @@ public class Adhoc extends AbstractTask {
 
         }
 
+        // Use default token
+        final Tokenizer tokenizer = new Tokenizer(index.getTextToolchain().wordReader);
+
         // Iterates on topics
         $timer.start();
         try (PrintStream output = new PrintStream(new FileOutputStream(run))) {
@@ -176,7 +170,7 @@ public class Adhoc extends AbstractTask {
                 // after)
                 model.init(collection, _index);
                 model.process(topicId,
-                        topic_processor.process(index.getTerm_processor(), _index, topic),
+                        topic_processor.process(tokenizer, index.getTermProcessor(), _index, topic),
                         capacity + (discardedDocuments == null ? 0 : discardedDocuments.size()),
                         $timer, results, documentRestriction
                 );
@@ -211,14 +205,4 @@ public class Adhoc extends AbstractTask {
         return JsonNull.INSTANCE;
     }
 
-    static public class Topics {
-        @JsonArgument(help = "Path to topic file")
-        File path;
-
-        @JsonArgument(help = "Format of the topics")
-        String $format;
-
-        @JsonArgument(help = "The ID of the topics")
-        String id;
-    }
 }

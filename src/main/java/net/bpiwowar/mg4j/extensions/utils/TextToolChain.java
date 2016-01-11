@@ -5,10 +5,10 @@ import it.unimi.dsi.io.WordReader;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
 
 public class TextToolChain {
-    @JsonArgument(name = "tokenizer")
+    @JsonArgument(name = "tokenizer", required = true)
     public WordReader wordReader;
 
-    @JsonArgument(name = "term_processor")
+    @JsonArgument(name = "term_processor", required = true)
     public TermProcessor termProcessor;
 
 }

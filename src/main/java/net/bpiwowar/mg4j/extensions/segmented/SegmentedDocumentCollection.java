@@ -9,34 +9,31 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.SegmentedInputStream;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.bpiwowar.mg4j.extensions.Compression;
+import net.bpiwowar.mg4j.extensions.trec.IdentifiableCollection;
 import net.sf.samtools.util.BlockCompressedInputStream;
+import org.mapdb.BTreeKeySerializer;
+import org.mapdb.BTreeMap;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.SeekableFileInputStream;
 import org.tukaani.xz.SeekableXZInputStream;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
-import java.io.Serializable;
+import java.io.*;
 import java.util.zip.GZIPInputStream;
 
 /**
  * A collection of documents that are concatenated in files.
- * <p/>
+ * <p>
  * It is assumed that while the number of documents is big, and may not fit easily in memory,
  * the number of files is low.
  *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  * @date 17/7/12
  */
-public abstract class SegmentedDocumentCollection extends AbstractDocumentCollection implements Serializable {
+public abstract class SegmentedDocumentCollection extends AbstractDocumentCollection implements Serializable, IdentifiableCollection {
     /**
      * The serialization ID
      */
@@ -47,6 +44,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
      * Default buffer size, set up after some experiments.
      */
     public static final int DEFAULT_BUFFER_SIZE = 64000;
+    public static final Long UNKNOWN_DOCUMENT = new Long(-1);
 
     /**
      * The list of the files containing the documents.
@@ -98,23 +96,48 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
     transient private int lastStreamIndex;
 
     /**
+     * The metadata file
+     */
+    protected final File uriToDocumentFile;
+
+    /**
+     * URI to document id map
+     */
+    protected transient BTreeMap<String, Long> uriToDocument;
+
+    /**
      * Creates a new TREC collection by parsing the given files.
      *
-     * @param files        an array of files names containing documents in TREC
-     *                     format.
-     * @param factory      the document factory (usually, a composite one).
-     * @param bufferSize   the buffer size.
-     * @param compression  Compression model.
-     * @param metadataFile The file where metadata will be stored
+     * @param files             an array of files names containing documents in TREC
+     *                          format.
+     * @param factory           the document factory (usually, a composite one).
+     * @param bufferSize        the buffer size.
+     * @param compression       Compression model.
+     * @param metadataFile      The file where metadata will be stored
+     * @param uriToDocumentFile
      */
     public SegmentedDocumentCollection(String[] files, DocumentFactory factory,
-                                       int bufferSize, Compression compression, File metadataFile) throws IOException {
+                                       int bufferSize, Compression compression, File metadataFile,
+                                       File uriToDocumentFile) throws IOException {
         this.files = files;
         this.factory = factory;
         this.bufferSize = bufferSize;
+        this.uriToDocumentFile = uriToDocumentFile;
         this.descriptors = new ObjectBigArrayBigList<>();
         this.compression = compression;
         this.metadataFile = metadataFile;
+
+
+        DB db = null;
+        if (this.uriToDocumentFile != null) {
+            // Destroy if exist
+            DBMaker.newFileDB(this.uriToDocumentFile).deleteFilesAfterClose().make().close();
+            db = DBMaker.newFileDB(this.uriToDocumentFile).transactionDisable().make();
+            this.uriToDocument = db.createTreeMap("uri")
+                    .keySerializer(BTreeKeySerializer.STRING)
+                    .valueSerializer(Serializer.LONG).make();
+        }
+
 
         final ProgressLogger progressLogger = new ProgressLogger(LOGGER);
         progressLogger.expectedUpdates = files.length;
@@ -132,7 +155,21 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
 
         metadataRandomAccess = new RandomAccessFile(metadataFile, "r");
 
-        progressLogger.done();
+        if (this.uriToDocumentFile != null) {
+            db.close();
+            openDb();
+        }
+    }
+
+    /** Open database in read-only mode */
+    private void openDb() {
+        if (this.uriToDocumentFile != null) {
+            DB db = DBMaker.newFileDB(this.uriToDocumentFile).readOnly().make();
+            this.uriToDocument = db.createTreeMap("uri")
+                    .keySerializer(BTreeKeySerializer.STRING)
+                    .valueSerializer(Serializer.LONG)
+                    .makeOrGet();
+        }
     }
 
     /**
@@ -141,13 +178,14 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
      */
     protected SegmentedDocumentCollection(String[] files, DocumentFactory factory,
                                           ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
-                                          int bufferSize, Compression compression, File metadataFile) {
+                                          int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile) {
         this.compression = compression;
         this.files = files;
         this.bufferSize = bufferSize;
         this.factory = factory;
         this.descriptors = descriptors;
         this.metadataFile = metadataFile;
+        this.uriToDocumentFile = uriToDocumentFile;
     }
 
     @Override
@@ -232,6 +270,9 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         this.descriptors = descriptors;
 
         this.metadataRandomAccess = new RandomAccessFile(this.metadataFile, "r");
+
+        // Open database if needed
+        openDb();
     }
 
     /**
@@ -295,5 +336,11 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
     public DocumentIterator iterator(long start, long end) throws IOException {
         ensureDocumentIndex(start);
         return new SegmentedDocumentIterator(this, start, end);
+    }
+
+    @Override
+    public long getDocumentFromURI(String uri) {
+        if (uriToDocument == null) return UNKNOWN_DOCUMENT;
+        return uriToDocument.getOrDefault(uri, UNKNOWN_DOCUMENT);
     }
 }

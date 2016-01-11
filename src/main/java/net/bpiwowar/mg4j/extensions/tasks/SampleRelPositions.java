@@ -1,31 +1,42 @@
 package net.bpiwowar.mg4j.extensions.tasks;
 
 import com.google.gson.JsonObject;
+import it.unimi.di.big.mg4j.document.AbstractDocumentCollection;
+import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.index.IndexIterator;
-import it.unimi.di.big.mg4j.index.IndexReader;
 import it.unimi.di.big.mg4j.search.DocumentIterator;
 import it.unimi.dsi.fastutil.ints.IntBigList;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
+import net.bpiwowar.mg4j.extensions.adhoc.Judgments;
 import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
+import net.bpiwowar.mg4j.extensions.query.QuerySet;
+import net.bpiwowar.mg4j.extensions.query.Tokenizer;
+import net.bpiwowar.mg4j.extensions.query.Topic;
+import net.bpiwowar.mg4j.extensions.query.TopicProcessor;
+import net.bpiwowar.mg4j.extensions.query.Topics;
+import net.bpiwowar.mg4j.extensions.tasks.SamplePositions.Source;
+import net.bpiwowar.mg4j.extensions.trec.IdentifiableCollection;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
+import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.misc.Signal;
 
 import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Sample term positions
  */
-@TaskDescription(id = "mg4j:sample-relevant-positions", output = "mg4j:positions-stream",
+@TaskDescription(id = "mg4j:document-positions", output = "mg4j:positions-stream",
         description = "Outputs a tab-separated value stream with" +
-                "<pre>TERM TID DID DOC_LENGHT POSITION_1 POSITION_2 ...</pre>",
+                "<pre>QID TID DID DOC_LENGHT POSITION_1 POSITION_2 ...</pre>",
         registry = Registry.class)
 public class SampleRelPositions extends AbstractTask {
     public static final Logger LOGGER = LoggerFactory.getLogger(SampleRelPositions.class);
@@ -33,31 +44,20 @@ public class SampleRelPositions extends AbstractTask {
     @JsonArgument(required = true)
     IndexedCollection index;
 
-    @JsonArgument(name = "fields", help = "The fields to output, associated to a weight (for sampling)." +
-            "If the weight is < 0, then it is initialized to the number of values", required = true)
-    Map<String, Double> fieldNames = new HashMap<>();
+    @JsonArgument(name = "fields", help = "The fields to get the positions from", required = true)
+    Set<String> fieldNames = new HashSet<>();
 
-    @JsonArgument(help = "Maximum (approximate through sampling) number of documents to output for each sampled term",
-            required = false)
-    long maxdocuments = Long.MAX_VALUE;
+    @JsonArgument(name = "toolchain", required = true)
+    TextToolChain toolchain;
 
-    @JsonArgument(required = false)
-    long seed = new Random().nextLong();
+    @JsonArgument(required = true)
+    Topics topics;
 
-    // Used to detect a PIPE broken event
-    transient boolean stop = false;
+    @JsonArgument(required = true)
+    TopicProcessor topic_processor;
 
-    static class Source {
-        IndexedField indexedField;
-        double weight;
-        IndexReader indexReader;
-
-        public Source(IndexedField indexedField, double weight, IndexReader indexReader) {
-            this.indexedField = indexedField;
-            this.weight = weight;
-            this.indexReader = indexReader;
-        }
-    }
+    @JsonArgument(required = true)
+    Judgments.MG4JAssessments qrels;
 
     public JsonObject execute(JsonObject json) throws Exception {
         if (fieldNames.isEmpty()) {
@@ -68,13 +68,9 @@ public class SampleRelPositions extends AbstractTask {
         final Source[] sources = new Source[fieldNames.size()];
 
         int i = 0;
-        for (Map.Entry<String, Double> entry : fieldNames.entrySet()) {
-            String fieldName = entry.getKey();
+        for (String fieldName : fieldNames) {
             IndexedField _index = index.get(fieldName);
-            double v = entry.getValue();
-            if (v <= 0) v = _index.getNumberOfPostings();
-            if (i > 0) v += sources[i - 1].weight;
-            sources[i] = new Source(_index, v, _index.getReader());
+            sources[i] = new Source(_index, 1., _index.getReader());
             if (!_index.index.hasPositions) {
                 throw new RuntimeException("No positions for index " + fieldName + "!");
             }
@@ -86,53 +82,61 @@ public class SampleRelPositions extends AbstractTask {
             source.weight /= totalWeight;
         }
 
-        // Infinite stream
-        final Random random = new Random(seed);
-        LOGGER.info("Random seed is {}", seed);
+        // Get the queries
+        QuerySet querySet = topics.getQuerySet();
+        for (Topic topic : querySet.queries().values()) {
+            final Set<String> terms = topic_processor.getPositiveTerms(new Tokenizer(toolchain.wordReader), toolchain.termProcessor, null, topic).keySet();
+
+        }
+
+        // Get the qrels
+        final Judgments judgments = qrels.get();
+
 
         long docid;
         int position;
         final PrintStream out = System.out;
 
         // Finish
-        Signal pipeSignal = new Signal("PIPE");
-        Signal.handle(pipeSignal, signal -> stop = true);
 
-        while (!stop) {
-            // Choose index and term
-            final double v = random.nextDouble();
-            int ix = 0;
-            for (; ix < sources.length; ++ix) {
-                if (sources[ix].weight >= v) {
-                    break;
-                }
-            }
-            assert ix < sources.length;
+        final DocumentCollection collection = index.getCollection().get();
+        IdentifiableCollection uriCollection = (IdentifiableCollection) collection;
 
-            final Source source = sources[ix];
-            long termId = (long) (random.nextFloat() * source.indexedField.index.numberOfTerms);
-            final IntBigList sizes = source.indexedField.index.sizes;
-
-            // Outputs
-            final IndexIterator documents = source.indexReader.documents(termId);
-
-            String prefix = String.format("%s\t%d\t", source.indexedField.getTerm(termId), termId);
-            final double samplingRate = maxdocuments / (double) documents.frequency();
-
-            while ((docid = documents.nextDocument()) != DocumentIterator.END_OF_LIST) {
-                if (samplingRate >= 1. || random.nextDouble() < samplingRate) {
-                    out.print(prefix);
-                    out.print(docid);
-                    out.print('\t');
-                    out.print(sizes.get(docid));
-                    while ((position = documents.nextPosition()) != IndexIterator.END_OF_POSITIONS) {
-                        out.print('\t');
-                        out.print(position);
-                    }
-                    out.println();
-                }
-            }
-        }
+//        while (!stop) {
+//            // Choose index and term
+//            final double v = random.nextDouble();
+//            int ix = 0;
+//            for (; ix < sources.length; ++ix) {
+//                if (sources[ix].weight >= v) {
+//                    break;
+//                }
+//            }
+//            assert ix < sources.length;
+//
+//            final Source source = sources[ix];
+//            long termId = (long) (random.nextFloat() * source.indexedField.index.numberOfTerms);
+//            final IntBigList sizes = source.indexedField.index.sizes;
+//
+//            // Outputs
+//            final IndexIterator documents = source.indexReader.documents(termId);
+//
+//            String prefix = String.format("%s\t%d\t", source.indexedField.getTerm(termId), termId);
+//            final double samplingRate = maxdocuments / (double) documents.frequency();
+//
+//            while ((docid = documents.nextDocument()) != DocumentIterator.END_OF_LIST) {
+//                if (samplingRate >= 1. || random.nextDouble() < samplingRate) {
+//                    out.print(prefix);
+//                    out.print(docid);
+//                    out.print('\t');
+//                    out.print(sizes.get(docid));
+//                    while ((position = documents.nextPosition()) != IndexIterator.END_OF_POSITIONS) {
+//                        out.print('\t');
+//                        out.print(position);
+//                    }
+//                    out.println();
+//                }
+//            }
+//        }
 
         LOGGER.info("Finished outputing samples");
         return null;

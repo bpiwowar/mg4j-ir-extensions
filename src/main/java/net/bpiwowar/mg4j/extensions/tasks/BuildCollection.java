@@ -69,6 +69,7 @@ public class BuildCollection extends AbstractTask {
         final DocumentCollection collection;
         String docType = documents.format;
         File metadataFile = new File(this.collection.getAbsolutePath() + ".metadata");
+        File uriToDocumentFile = new File(this.collection.getAbsolutePath() + ".uri2doc");
 
         switch (docType) {
             case "trec":
@@ -77,11 +78,11 @@ public class BuildCollection extends AbstractTask {
                 final TRECDocumentFactory documentFactory = new TRECDocumentFactory(properties);
 
                 collection = new TRECDocumentCollection(files,
-                        documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile);
+                        documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile, uriToDocumentFile);
                 break;
 
             case "warc/0.18":
-                collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile);
+                collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile, uriToDocumentFile);
                 break;
             default:
                 LOGGER.error(String.format("Unknown document type [%s]", docType));

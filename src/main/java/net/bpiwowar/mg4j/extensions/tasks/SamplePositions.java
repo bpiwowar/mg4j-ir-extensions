@@ -47,7 +47,7 @@ public class SamplePositions extends AbstractTask {
     // Used to detect a PIPE broken event
     transient boolean stop = false;
 
-    static class Source {
+    static public class Source {
         IndexedField indexedField;
         double weight;
         IndexReader indexReader;

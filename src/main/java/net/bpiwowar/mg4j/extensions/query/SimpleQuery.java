@@ -1,6 +1,9 @@
 package net.bpiwowar.mg4j.extensions.query;
 
 import bpiwowar.argparser.utils.Output;
+import it.unimi.dsi.io.FastBufferedReader;
+import it.unimi.dsi.io.WordReader;
+import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.mg4j.extensions.utils.Aggregator;
 import net.bpiwowar.mg4j.extensions.utils.DefaultMap;
 import net.bpiwowar.mg4j.extensions.utils.JoinIterator;
@@ -9,9 +12,11 @@ import net.bpiwowar.mg4j.extensions.utils.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
 
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -38,7 +43,7 @@ public class SimpleQuery {
     /**
      * The query representation (sequence of {@link Component}s)
      */
-    ArrayList<Component> sequence = new ArrayList<Component>();
+    ArrayList<Component> sequence = new ArrayList<>();
 
     private int numberOfWords;
 
@@ -111,7 +116,7 @@ public class SimpleQuery {
      * @author bpiwowar
      */
     static public class Phrase extends Component {
-        ArrayList<Term> terms = new ArrayList<Term>();
+        ArrayList<Term> terms = new ArrayList<>();
 
         /**
          * @param words
@@ -196,7 +201,7 @@ public class SimpleQuery {
         }
     }
 
-    public SimpleQuery(String query) {
+    public SimpleQuery(Tokenizer tokenizer, String query) {
         this.query = query;
 
         // Parse the query into a tree
@@ -216,11 +221,12 @@ public class SimpleQuery {
             s = RE_B_SPACES.matcher(s).replaceFirst("");
             s = RE_E_SPACES.matcher(s).replaceFirst("");
             if (!s.equals("")) {
-                String[] words = s.split("\\s+");
-                if (words.length > 0) {
-                    if (isPhrase && words.length > 1) {
-                        final Phrase phrase = new Phrase(words);
-                        numberOfWords += words.length;
+
+                List<String> words = tokenizer.tokenize(s);
+                if (words.size() > 0) {
+                    if (isPhrase && words.size() > 1) {
+                        final Phrase phrase = new Phrase(words.toArray(new String[words.size()]));
+                        numberOfWords += words.size();
                         phrase.operator = operator;
                         sequence.add(phrase);
                     } else {
@@ -259,56 +265,51 @@ public class SimpleQuery {
     }
 
     public Iterable<String> terms() {
-        return new Iterable<String>() {
-            public Iterator<String> iterator() {
-                return new Iterator<String>() {
-                    // Iterator on components
-                    final Iterator<Component> componentIterator = sequence
-                            .iterator();
+        return () -> new Iterator<String>() {
+            // Iterator on components
+            final Iterator<Component> componentIterator = sequence
+                    .iterator();
 
-                    // Iterator on terms in a phrase
-                    Iterator<Term> termIterator;
+            // Iterator on terms in a phrase
+            Iterator<Term> termIterator;
 
-                    // Current term
-                    String currentTerm;
+            // Current term
+            String currentTerm;
 
-                    {
-                        doNext();
-                    }
+            {
+                doNext();
+            }
 
-                    private void doNext() {
-                        currentTerm = null;
+            private void doNext() {
+                currentTerm = null;
 
-                        if (termIterator == null || !termIterator.hasNext()) {
-                            if (componentIterator.hasNext()) {
-                                Component c = componentIterator.next();
-                                if (c instanceof Term)
-                                    currentTerm = ((Term) c).term;
-                                else {
-                                    termIterator = ((Phrase) c).terms
-                                            .iterator();
-                                    currentTerm = termIterator.next().term;
-                                }
-                            }
-                        } else
+                if (termIterator == null || !termIterator.hasNext()) {
+                    if (componentIterator.hasNext()) {
+                        Component c = componentIterator.next();
+                        if (c instanceof Term)
+                            currentTerm = ((Term) c).term;
+                        else {
+                            termIterator = ((Phrase) c).terms
+                                    .iterator();
                             currentTerm = termIterator.next().term;
+                        }
                     }
+                } else
+                    currentTerm = termIterator.next().term;
+            }
 
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
 
-                    public String next() {
-                        String next = currentTerm;
-                        doNext();
-                        return next;
-                    }
+            public String next() {
+                String next = currentTerm;
+                doNext();
+                return next;
+            }
 
-                    public boolean hasNext() {
-                        return currentTerm != null;
-                    }
-
-                };
+            public boolean hasNext() {
+                return currentTerm != null;
             }
 
         };
@@ -372,7 +373,8 @@ public class SimpleQuery {
     }
 
     public static void main(String[] args) {
-        SimpleQuery query = new SimpleQuery(args[0]);
+
+        SimpleQuery query = new SimpleQuery(new Tokenizer(), args[0]);
         java.lang.System.out.println("Normalised query: " + query);
         query.printTree(System.out);
 
@@ -382,7 +384,7 @@ public class SimpleQuery {
         }
 
         if (args.length >= 2) {
-            SimpleQuery q2 = new SimpleQuery(args[1]);
+            SimpleQuery q2 = new SimpleQuery(new Tokenizer(), args[1]);
             System.out.format("stats(%s,%s)=%s%n", query, q2, ngramSimilarties(
                     3, query, q2));
 
@@ -432,7 +434,7 @@ public class SimpleQuery {
         int[] l = {0, 0};
 
         for (int k = 0; k < 2; k++) {
-            maps[k] = new DefaultMap<String, MutableInt>(TreeMap.class,
+            maps[k] = new DefaultMap<>(TreeMap.class,
                     MutableInt.class);
             for (int i = 0; i <= s[k].length() - n; i++) {
                 maps[k].get(s[k].substring(i, i + n)).increment();
@@ -464,8 +466,8 @@ public class SimpleQuery {
     }
 
     static final public class WordDifferences {
-        TreeSet<String> onlyQ1 = new TreeSet<String>(),
-                onlyQ2 = new TreeSet<String>(), both = new TreeSet<String>();
+        TreeSet<String> onlyQ1 = new TreeSet<>(),
+                onlyQ2 = new TreeSet<>(), both = new TreeSet<>();
     }
 
     /**

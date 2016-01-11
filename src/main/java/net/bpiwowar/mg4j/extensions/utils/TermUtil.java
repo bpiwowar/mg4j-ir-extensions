@@ -8,7 +8,6 @@ package net.bpiwowar.mg4j.extensions.utils;
 
 import it.unimi.di.big.mg4j.index.TermProcessor;
 import it.unimi.dsi.lang.MutableString;
-import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.query.COQuery;
 import net.bpiwowar.mg4j.extensions.query.Phrase;
@@ -18,6 +17,7 @@ import net.bpiwowar.mg4j.extensions.query.SimpleQuery;
 import net.bpiwowar.mg4j.extensions.query.StringQuery;
 import net.bpiwowar.mg4j.extensions.query.Term;
 import net.bpiwowar.mg4j.extensions.query.Text;
+import net.bpiwowar.mg4j.extensions.query.Tokenizer;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.slf4j.Logger;
@@ -34,24 +34,24 @@ public class TermUtil {
     final static Logger logger = LoggerFactory.getLogger(TermUtil.class);
 
     static public void getPositiveTerms(
-            Query query,
+            Tokenizer tokenizer, Query query,
             Map<String, MutableInt> terms, TermProcessor processor,
             IndexedField index) {
         if (query instanceof COQuery)
             getPositiveTerms((COQuery) query, terms, processor, index);
         else if (query instanceof StringQuery)
-            getPositiveTerms((StringQuery) query, terms, processor, index);
+            getPositiveTerms(tokenizer, (StringQuery) query, terms, processor, index);
         else
             throw new NotImplementedException(String.format(
                     "Cannot handle query of class %s", query.getClass()));
     }
 
-    static public void getPositiveTerms(StringQuery query,
+    static public void getPositiveTerms(Tokenizer tokenizer, StringQuery query,
                                         Map<String, MutableInt> termMap, TermProcessor processor,
                                         IndexedField index) {
         // Transform into a CO query
         COQuery coQuery = new COQuery();
-        final Requirement req = new Requirement(new SimpleQuery(query.getQuery()));
+        final Requirement req = new Requirement(new SimpleQuery(tokenizer, query.getQuery()));
         coQuery.add(req);
 
         // ... and then perform!
@@ -75,8 +75,8 @@ public class TermUtil {
     /**
      * Get query terms which are not negative
      *
-     * @param text
-     * @param terms
+     * @param text The text to parse
+     * @param terms The terms map that will be updated (out)
      */
     static private void getPositiveTerms(Text text,
                                          Map<String, MutableInt> terms, TermProcessor processor,
@@ -130,7 +130,7 @@ public class TermUtil {
         // TODO: Annalina - when the query transformer is implemented, remove
         // the following and just keep the "update" line
         if (processor.processTerm(word)) {
-            if (index.getTermId(word) != -1) {
+            if (index == null || index.getTermId(word) != -1) {
                 update(terms, word.toString());
                 return;
             }

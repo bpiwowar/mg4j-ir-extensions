@@ -1,6 +1,5 @@
 package net.bpiwowar.mg4j.extensions.query;
 
-import com.google.common.collect.Sets;
 import it.unimi.di.big.mg4j.index.TermProcessor;
 import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
@@ -31,21 +30,27 @@ public class PartTopicProcessor implements TopicProcessor {
 
 
     @Override
-    public String process(TermProcessor processor, IndexedField index, Topic topic) {
-        // --- Get the MG4J topic
-        TreeMap<String, MutableInt> terms = new TreeMap<>();
-
-        // Iterates over query types until we get something
-        Iterator<Set<String>> fallbackIterator = queryTypes.iterator();
-        while (terms.isEmpty() && fallbackIterator.hasNext()) {
-            getPositiveTerms(processor, index, topic, terms, fallbackIterator.next());
-        }
+    public String process(Tokenizer tokenizer, TermProcessor processor, IndexedField index, Topic topic) {
+        TreeMap<String, MutableInt> terms = getPositiveTerms(tokenizer, processor, index, topic);
 
         return Output.toString(" | ", terms.entrySet(), weightedWordFormatter);
 
     }
 
-    static private void getPositiveTerms(TermProcessor processor, IndexedField index, Topic topic, TreeMap<String, MutableInt> terms, Set<String> queryTypes) {
+    @Override
+    public TreeMap<String, MutableInt> getPositiveTerms(Tokenizer tokenizer, TermProcessor processor, IndexedField index, Topic topic) {
+        TreeMap<String, MutableInt> terms = new TreeMap<>();
+
+        // Iterates over query types until we get something
+        Iterator<Set<String>> fallbackIterator = queryTypes.iterator();
+        while (terms.isEmpty() && fallbackIterator.hasNext()) {
+            getPositiveTerms(tokenizer, processor, index, topic, terms, fallbackIterator.next());
+        }
+
+        return terms;
+    }
+
+    static private void getPositiveTerms(Tokenizer tokenizer, TermProcessor processor, IndexedField index, Topic topic, TreeMap<String, MutableInt> terms, Set<String> queryTypes) {
         for (String queryType : queryTypes) {
             // Retrieve the query part
             Query query = topic.getTopicPart(queryType);
@@ -54,7 +59,7 @@ public class PartTopicProcessor implements TopicProcessor {
 
             // Take all the words from the topic and construct the query for
             // MG4J
-            TermUtil.getPositiveTerms(query, terms, processor, index);
+            TermUtil.getPositiveTerms(tokenizer, query, terms, processor, index);
         }
     }
 }

@@ -51,8 +51,8 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
      * @param compression true if the files are gzipped.
      */
     public WARCDocumentCollection(String[] file,
-                                  int bufferSize, Compression compression, File metadataFile) throws IOException {
-        super(file, new HTMLDocumentFactory(), bufferSize, compression, metadataFile);
+                                  int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile) throws IOException {
+        super(file, new HTMLDocumentFactory(), bufferSize, compression, metadataFile, uriToDocumentFile);
     }
 
     /**
@@ -61,8 +61,8 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
      */
     public WARCDocumentCollection(String[] file, DocumentFactory factory,
                                   ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
-                                  int bufferSize, Compression compression, File metadataFile) {
-        super(file, factory, descriptors, bufferSize, compression, metadataFile);
+                                  int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile) {
+        super(file, factory, descriptors, bufferSize, compression, metadataFile, uriToDocumentFile);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
     @Override
     public WARCDocumentCollection copy() {
         return new WARCDocumentCollection(files, factory().copy(), descriptors,
-                bufferSize, compression, metadataFile);
+                bufferSize, compression, metadataFile, uriToDocumentFile);
     }
 
 

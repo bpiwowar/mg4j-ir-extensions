@@ -45,19 +45,19 @@ import java.io.InputStream;
 
 /**
  * A collection for the TREC data set.
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * The documents are stored as a set of descriptors, representing the (possibly
  * gzipped) files they are contained in and the start and stop position in that
  * files. To manage descriptors later we rely on {@link SegmentedInputStream}.
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * To interpret a files, we read up to <samp>&lt;DOC&gt;</samp> and place a start
  * marker there, we advance to the header and store the URI. An intermediate
  * marker is placed at the end of the doc header tag and a stop marker just
  * before <samp>&lt;/DOC&gt;</samp>.
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * The collection provides both sequential access to all documents via the
  * iterator and random access to a given document. However, the two operations
  * are performed very differently as the sequential operation is much more
@@ -82,12 +82,13 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
 
     transient byte docnoBuffer[];
 
-    public TRECDocumentCollection(String[] files, DocumentFactory factory, int bufferSize, Compression compression, File metadataFile) throws IOException {
-        super(files, factory, bufferSize, compression, metadataFile);
+    public TRECDocumentCollection(String[] files, DocumentFactory factory, int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile) throws IOException {
+        super(files, factory, bufferSize, compression, metadataFile, uriToDocumentFile);
     }
 
-    public TRECDocumentCollection(String[] files, DocumentFactory factory, ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors, int bufferSize, Compression compression, File metadataFile) {
-        super(files, factory, descriptors, bufferSize, compression, metadataFile);
+    public TRECDocumentCollection(String[] files, DocumentFactory factory, ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
+                                  int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile) {
+        super(files, factory, descriptors, bufferSize, compression, metadataFile, uriToDocumentFile);
     }
 
     public void checkBuffers() {
@@ -115,7 +116,7 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
     @Override
     public TRECDocumentCollection copy() {
         return new TRECDocumentCollection(files, factory().copy(), descriptors,
-                bufferSize, compression, metadataFile);
+                bufferSize, compression, metadataFile, uriToDocumentFile);
     }
 
     @Override
@@ -138,7 +139,7 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
      * Merges a new collection in this one, by rebuilding the gzFile array and
      * appending the other object one, concatenating the descriptors while
      * rebuilding all.
-     * <p/>
+     * <p>
      * It is supposed that the passed object contains no duplicates for the
      * local collection.
      */
@@ -191,8 +192,12 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
                 if (debugEnabled)
                     LOGGER.debug("Setting markers {%s, %d, %d}", docno,
                             currStart, currStop);
+                final long docId = descriptors.size64();
                 descriptors.add(SegmentedDocumentDescriptor.create(fileIndex, currStart, currStop, metadataPosition));
-
+                if (uriToDocument != null) {
+                    // Add to index
+                    uriToDocument.put(docno, docId);
+                }
             }
         };
         parseContent(fbis, buffer, docnoBuffer, handler);
