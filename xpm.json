@@ -1,0 +1,11 @@
+{
+  "jars": [
+    "lib/mg4j-ir-extensions-1.0.0-SNAPSHOT.jar"
+  ],
+  "binaries": {
+    "unix": {
+      "path": "bin/mg4j-ir-extensions",
+      "jvm_options": "JAVA_OPTS"
+    }
+  }
+}

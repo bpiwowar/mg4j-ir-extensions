@@ -1,6 +1,5 @@
 apply plugin: 'java'
 
-apply plugin: 'application'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -23,21 +22,7 @@ dependencies {
     compile group: 'net.bpiwowar', name: 'experimaestro-helper', version: '1.0.0-SNAPSHOT'
 }
 
-
-mainClassName = "net.bpiwowar.experimaestro.tasks.Runner"
 version='1.0.0-SNAPSHOT'
-distributions {
-    main {
-        contents {
-            from { 'xpm.json' }
-        }
-    }
-}
-
-//configurations {
-//    runtime.exclude group: "org.slf4j", name: "slf4j-simple"
-//}
-
 
 // Outputs the classpath (one line per path)
 task show << {
@@ -45,27 +30,7 @@ task show << {
    configurations.runtime.each { println it }
 }
 
-// Creates a big fat jar
-task fatJar(type: Jar, dependsOn: 'generateTasks') {
-    baseName = project.name + '-all'
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    {
-        exclude "META-INF/*.SF"
-        exclude "META-INF/*.DSA"
-        exclude "META-INF/*.RSA"
-    }
-    with jar
-}
 
-
-task(generateTasks, dependsOn: 'classes', type: JavaExec) {
-    main = 'net.bpiwowar.experimaestro.tasks.Analyze'
-    def outputFile = new File(buildDir, "resources/main/META-INF/net.bpiwowar.experimaestro/tasks.json")
-    classpath = sourceSets.main.runtimeClasspath
-    args outputFile.toString(), sourceSets.main.runtimeClasspath.getAsPath()
-}
 
 task(runTask, type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
@@ -76,6 +41,43 @@ task(runTask, type: JavaExec) {
     }
 }
 
+// --- experimaestro specific tasks
+
+apply plugin: 'application'
+mainClassName = "net.bpiwowar.experimaestro.tasks.Runner"
+distributions {
+    main {
+        contents {
+            // Adds the xpm.json that specifies where to look
+            from { 'xpm.json' }
+        }
+    }
+}
+
+// Generate the list of tasks
+task(generateTasks, dependsOn: 'classes', type: JavaExec) {
+    main = 'net.bpiwowar.experimaestro.tasks.Analyze'
+    def outputFile = new File(buildDir, "resources/main/META-INF/net.bpiwowar.experimaestro/tasks.json")
+    classpath = sourceSets.main.runtimeClasspath
+    args outputFile.toString(), sourceSets.main.runtimeClasspath.getAsPath()
+}
+
+// Makes the jar depends on the generation of the tasks
 jar {
     dependsOn generateTasks;
+}
+
+
+// Creates a big fat jar (second alternative)
+task fatJar(type: Jar, dependsOn: 'generateTasks') {
+    baseName = project.name + '-all'
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+            {
+                exclude "META-INF/*.SF"
+                exclude "META-INF/*.DSA"
+                exclude "META-INF/*.RSA"
+            }
+    with jar
 }
