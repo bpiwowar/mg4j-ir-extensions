@@ -23,12 +23,12 @@ import java.util.Random;
 /**
  * Sample term positions
  */
-@TaskDescription(id = "mg4j:sample-positions", output = "mg4j:positions-stream",
+@TaskDescription(id = "mg4j:sample-relevant-positions", output = "mg4j:positions-stream",
         description = "Outputs a tab-separated value stream with" +
                 "<pre>TERM TID DID DOC_LENGHT POSITION_1 POSITION_2 ...</pre>",
         registry = Registry.class)
-public class SamplePositions extends AbstractTask {
-    public static final Logger LOGGER = LoggerFactory.getLogger(SamplePositions.class);
+public class SampleRelPositions extends AbstractTask {
+    public static final Logger LOGGER = LoggerFactory.getLogger(SampleRelPositions.class);
 
     @JsonArgument(required = true)
     IndexedCollection index;
