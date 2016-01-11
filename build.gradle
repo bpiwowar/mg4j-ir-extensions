@@ -1,4 +1,7 @@
 apply plugin: 'java'
+
+apply plugin: 'application'
+
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -20,9 +23,21 @@ dependencies {
     compile group: 'net.bpiwowar', name: 'experimaestro-helper', version: '1.0.0-SNAPSHOT'
 }
 
+
+mainClassName = "net.bpiwowar.experimaestro.tasks.Runner"
+version='1.0.0-SNAPSHOT'
+distributions {
+    main {
+        contents {
+            from { 'xpm.json' }
+        }
+    }
+}
+
 //configurations {
 //    runtime.exclude group: "org.slf4j", name: "slf4j-simple"
 //}
+
 
 // Outputs the classpath (one line per path)
 task show << {
@@ -59,4 +74,8 @@ task(runTask, type: JavaExec) {
     if (System.getProperty("exec.args") != null) {
         args System.getProperty("exec.args").split()
     }
+}
+
+jar {
+    dependsOn generateTasks;
 }
