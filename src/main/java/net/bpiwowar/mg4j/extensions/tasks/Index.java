@@ -12,6 +12,7 @@ import it.unimi.di.big.mg4j.tool.Scan;
 import it.unimi.dsi.io.FastBufferedReader;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.experimaestro.tasks.ProgressListener;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
@@ -52,7 +53,7 @@ public class Index extends AbstractTask {
     File index;
 
     @Override
-    public JsonElement execute(JsonObject r) throws Throwable {
+    public JsonElement execute(JsonObject r, ProgressListener progress) throws Throwable {
         // Retrieve the collection
         DocumentSequence documentSequence = Scan.getSequence(collection.path.getAbsolutePath(),
                 IdentityDocumentFactory.class, new String[]{},

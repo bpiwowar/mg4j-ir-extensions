@@ -16,6 +16,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.experimaestro.tasks.ProgressListener;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.adhoc.RetrievalModel;
 import net.bpiwowar.mg4j.extensions.adhoc.Run;
@@ -83,7 +84,7 @@ public class Adhoc extends AbstractTask {
     File run;
 
     @Override
-    public JsonElement execute(JsonObject r) throws Throwable {
+    public JsonElement execute(JsonObject r, ProgressListener progress) throws Throwable {
         // Get collection + index
         DocumentCollection collection = index.getCollection().get();
         IndexedField _index = index.get(field);

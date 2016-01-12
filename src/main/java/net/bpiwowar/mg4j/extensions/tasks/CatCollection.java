@@ -8,6 +8,7 @@ import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.experimaestro.tasks.ProgressListener;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.utils.CollectionInformation;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
@@ -50,7 +51,7 @@ public class CatCollection extends AbstractTask {
     ArrayList<String> ids = new ArrayList<>();
 
     @Override
-    public JsonObject execute(JsonObject r) throws Throwable {
+    public JsonObject execute(JsonObject r, ProgressListener progress) throws Throwable {
         // Get the list of collections
         CollectionInformation[] collections = this.collectionPaths.stream()
                 .map(Streams.propagateFunction(c -> new CollectionInformation(c, fieldNames)))

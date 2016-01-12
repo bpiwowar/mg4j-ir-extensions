@@ -8,6 +8,7 @@ import it.unimi.di.big.mg4j.search.DocumentIterator;
 import it.unimi.dsi.fastutil.ints.IntBigList;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.experimaestro.tasks.ProgressListener;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.adhoc.Judgments;
 import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
@@ -59,7 +60,8 @@ public class SampleRelPositions extends AbstractTask {
     @JsonArgument(required = true)
     Judgments.MG4JAssessments qrels;
 
-    public JsonObject execute(JsonObject json) throws Exception {
+    @Override
+    public JsonObject execute(JsonObject json, ProgressListener progress) throws Exception {
         if (fieldNames.isEmpty()) {
             throw new RuntimeException("At least one field name should be given");
         }

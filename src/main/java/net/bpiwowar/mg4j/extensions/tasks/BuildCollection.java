@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.util.Properties;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.experimaestro.tasks.ProgressListener;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
@@ -46,7 +47,7 @@ public class BuildCollection extends AbstractTask {
     File collection;
 
     @Override
-    public JsonObject execute(JsonObject r) throws Throwable {
+    public JsonObject execute(JsonObject r, ProgressListener progress) throws Throwable {
         // Create the file now
         OutputStream out = new FileOutputStream(collection);
 

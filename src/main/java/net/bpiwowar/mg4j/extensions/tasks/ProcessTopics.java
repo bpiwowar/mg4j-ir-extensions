@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.experimaestro.tasks.ProgressListener;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
@@ -31,7 +32,7 @@ public class ProcessTopics extends AbstractTask {
     ArrayList<Query> queries;
 
     @Override
-    public JsonObject execute(JsonObject r) throws Throwable {
+    public JsonObject execute(JsonObject r, ProgressListener progress) throws Throwable {
         MutableString word = new MutableString();
         MutableString delimiter = new MutableString();
 

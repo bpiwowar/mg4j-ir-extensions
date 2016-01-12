@@ -6,6 +6,7 @@ import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.experimaestro.tasks.AbstractTask;
 import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.experimaestro.tasks.ProgressListener;
 import net.bpiwowar.experimaestro.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.utils.*;
 import org.slf4j.Logger;
@@ -126,7 +127,7 @@ public class CatCollectionBatches extends AbstractTask {
     }
 
     @Override
-    public JsonObject execute(JsonObject r) throws Throwable {
+    public JsonObject execute(JsonObject r, ProgressListener progress) throws Throwable {
         if (batchSize <= 0) {
             throw new IllegalArgumentException("Batch size should be greater than 0");
         }
