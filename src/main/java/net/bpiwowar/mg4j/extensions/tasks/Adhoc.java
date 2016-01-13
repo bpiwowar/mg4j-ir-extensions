@@ -14,10 +14,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import net.bpiwowar.xpm.manager.tasks.AbstractTask;
-import net.bpiwowar.xpm.manager.tasks.JsonArgument;
-import net.bpiwowar.xpm.manager.tasks.ProgressListener;
-import net.bpiwowar.xpm.manager.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.adhoc.RetrievalModel;
 import net.bpiwowar.mg4j.extensions.adhoc.Run;
 import net.bpiwowar.mg4j.extensions.adhoc.TRECJudgments;
@@ -31,11 +27,17 @@ import net.bpiwowar.mg4j.extensions.query.TopicProcessor;
 import net.bpiwowar.mg4j.extensions.query.Topics;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
+import net.bpiwowar.xpm.manager.tasks.AbstractTask;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.JsonPath;
+import net.bpiwowar.xpm.manager.tasks.ProgressListener;
+import net.bpiwowar.xpm.manager.tasks.TaskDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.bpiwowar.xpm.manager.tasks.Path;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +82,7 @@ public class Adhoc extends AbstractTask {
     @JsonArgument(name = "baserun", help = "Use a base run to re-rank results instead of looking at all documents")
     Run baseRun;
 
-    @Path(copy = "path")
+    @JsonPath(copy = "path")
     File run;
 
     @Override

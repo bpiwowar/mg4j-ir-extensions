@@ -18,7 +18,7 @@ import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.bpiwowar.xpm.manager.tasks.Path;
+import net.bpiwowar.xpm.manager.tasks.JsonPath;
 
 import java.io.File;
 
@@ -49,7 +49,7 @@ public class Index extends AbstractTask {
     @JsonArgument(name = "$temporary_directory", help = "Temporary directory for batch files")
     File tmpDirectory;
 
-    @Path(copy = "path")
+    @JsonPath(copy = "path")
     File index;
 
     @Override

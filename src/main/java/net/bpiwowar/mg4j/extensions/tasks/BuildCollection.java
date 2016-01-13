@@ -21,7 +21,7 @@ import net.bpiwowar.mg4j.extensions.trec.TRECDocumentFactory;
 import net.bpiwowar.mg4j.extensions.warc.WARCDocumentCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.bpiwowar.xpm.manager.tasks.Path;
+import net.bpiwowar.xpm.manager.tasks.JsonPath;
 import net.bpiwowar.xpm.manager.tasks.JsonType;
 
 import javax.xml.namespace.NamespaceContext;
@@ -43,7 +43,7 @@ public class BuildCollection extends AbstractTask {
     @JsonArgument
     DocumentsConfiguration documents;
 
-    @Path(copy = "path")
+    @JsonPath(copy = "path")
     File collection;
 
     @Override
