@@ -10,10 +10,10 @@ import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.util.Properties;
-import net.bpiwowar.experimaestro.tasks.AbstractTask;
-import net.bpiwowar.experimaestro.tasks.JsonArgument;
-import net.bpiwowar.experimaestro.tasks.ProgressListener;
-import net.bpiwowar.experimaestro.tasks.TaskDescription;
+import net.bpiwowar.xpm.manager.tasks.AbstractTask;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.ProgressListener;
+import net.bpiwowar.xpm.manager.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
@@ -21,8 +21,8 @@ import net.bpiwowar.mg4j.extensions.trec.TRECDocumentFactory;
 import net.bpiwowar.mg4j.extensions.warc.WARCDocumentCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sf.net.experimaestro.tasks.Path;
-import sf.net.experimaestro.tasks.Type;
+import net.bpiwowar.xpm.manager.tasks.Path;
+import net.bpiwowar.xpm.manager.tasks.JsonType;
 
 import javax.xml.namespace.NamespaceContext;
 import java.io.*;
@@ -130,7 +130,7 @@ public class BuildCollection extends AbstractTask {
         }
     }
 
-    @Type(type = "irc:documents")
+    @JsonType(type = "irc:documents")
     static public class DocumentsConfiguration {
         @JsonArgument(name = "path")
         @JsonAdapter(XPMPathAdapter.class)

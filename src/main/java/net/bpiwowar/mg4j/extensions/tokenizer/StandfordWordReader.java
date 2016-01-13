@@ -8,7 +8,7 @@ import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.TokenizerFactory;
 import it.unimi.dsi.io.WordReader;
 import it.unimi.dsi.lang.MutableString;
-import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
+import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
 
 import java.io.IOException;
 import java.io.Reader;

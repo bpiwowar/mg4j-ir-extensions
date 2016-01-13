@@ -3,8 +3,8 @@ package net.bpiwowar.mg4j.extensions.tasks;
 import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.document.IdentityDocumentFactory;
 import it.unimi.di.big.mg4j.tool.Scan;
-import net.bpiwowar.experimaestro.tasks.JsonArgument;
-import sf.net.experimaestro.tasks.Type;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.JsonType;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * A collection resource
  */
-@Type(type = "mg4j:collection", resource = true)
+@JsonType(type = "mg4j:collection", resource = true)
 public class Collection {
     @JsonArgument()
     File path;

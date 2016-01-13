@@ -1,6 +1,6 @@
 package net.bpiwowar.mg4j.extensions.tasks;
 
-import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 
 import static java.lang.String.format;
 

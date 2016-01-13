@@ -2,7 +2,7 @@ package net.bpiwowar.mg4j.extensions.tokenizer;
 
 import it.unimi.di.big.mg4j.index.TermProcessor;
 import it.unimi.dsi.lang.MutableString;
-import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
+import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
 
 /**
  * Term normalization:

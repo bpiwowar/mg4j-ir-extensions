@@ -37,7 +37,7 @@ task show << {
 task(runTask, type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 
-    main = 'net.bpiwowar.experimaestro.tasks.Runner'
+    main = 'net.bpiwowar.xpm.manager.tasks.Runner'
     if (System.getProperty("exec.args") != null) {
         args System.getProperty("exec.args").split()
     }
@@ -46,7 +46,7 @@ task(runTask, type: JavaExec) {
 // --- experimaestro specific tasks
 
 apply plugin: 'application'
-mainClassName = "net.bpiwowar.experimaestro.tasks.Runner"
+mainClassName = "net.bpiwowar.xpm.manager.tasks.Runner"
 distributions {
     main {
         contents {
@@ -58,7 +58,7 @@ distributions {
 
 // Generate the list of tasks
 task(generateTasks, dependsOn: 'classes', type: JavaExec) {
-    main = 'net.bpiwowar.experimaestro.tasks.Analyze'
+    main = 'net.bpiwowar.xpm.manager.tasks.Analyze'
     def outputFile = new File(buildDir, "resources/main/META-INF/net.bpiwowar.experimaestro/tasks.json")
     classpath = sourceSets.main.runtimeClasspath
     args outputFile.toString(), sourceSets.main.runtimeClasspath.getAsPath()

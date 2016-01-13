@@ -1,7 +1,7 @@
 package net.bpiwowar.mg4j.extensions.adhoc;
 
 import bpiwowar.argparser.GenericHelper;
-import sf.net.experimaestro.tasks.Type;
+import net.bpiwowar.xpm.manager.tasks.JsonType;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,7 +35,7 @@ public abstract class Judgments {
         return judgments.keySet();
     }
 
-    @Type(type = "mg4j:qrels")
+    @JsonType(type = "mg4j:qrels")
     static public class MG4JAssessments {
         File path;
         String format;

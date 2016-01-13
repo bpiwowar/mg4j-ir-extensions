@@ -10,15 +10,15 @@ import it.unimi.di.big.mg4j.index.TermProcessor;
 import it.unimi.di.big.mg4j.tool.IndexBuilder;
 import it.unimi.di.big.mg4j.tool.Scan;
 import it.unimi.dsi.io.FastBufferedReader;
-import net.bpiwowar.experimaestro.tasks.AbstractTask;
-import net.bpiwowar.experimaestro.tasks.JsonArgument;
-import net.bpiwowar.experimaestro.tasks.ProgressListener;
-import net.bpiwowar.experimaestro.tasks.TaskDescription;
+import net.bpiwowar.xpm.manager.tasks.AbstractTask;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.ProgressListener;
+import net.bpiwowar.xpm.manager.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sf.net.experimaestro.tasks.Path;
+import net.bpiwowar.xpm.manager.tasks.Path;
 
 import java.io.File;
 

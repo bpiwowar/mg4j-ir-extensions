@@ -2,8 +2,8 @@ package net.bpiwowar.mg4j.extensions.adhoc.lm;
 
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.search.DocumentIterator;
-import net.bpiwowar.experimaestro.tasks.ClassChooserInstance;
-import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import net.bpiwowar.mg4j.extensions.adhoc.LMModel;
 
 import java.io.IOException;

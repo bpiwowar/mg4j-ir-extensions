@@ -2,7 +2,7 @@ package net.bpiwowar.mg4j.extensions.utils;
 
 import it.unimi.di.big.mg4j.index.TermProcessor;
 import it.unimi.dsi.io.WordReader;
-import net.bpiwowar.experimaestro.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 
 public class TextToolChain {
     @JsonArgument(name = "tokenizer", required = true)
