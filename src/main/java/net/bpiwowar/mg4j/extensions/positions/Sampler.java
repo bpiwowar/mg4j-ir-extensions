@@ -128,8 +128,8 @@ final public class Sampler {
                 }
                 assert ix < sources.length;
 
-                final Sampler.Source source = sources[ix];
-                long termId = (long) (random.nextFloat() * source.indexedField.index.numberOfTerms);
+                source = sources[ix];
+                termId = (long) (random.nextFloat() * source.indexedField.index.numberOfTerms);
                 sizes = source.indexedField.index.sizes;
                 // Outputs
                 documents = source.indexReader.documents(termId);
@@ -144,6 +144,8 @@ final public class Sampler {
                     return false;
                 }
             }
+
+            source = null;
         }
     }
 }
