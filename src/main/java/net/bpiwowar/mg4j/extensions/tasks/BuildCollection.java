@@ -37,7 +37,7 @@ import java.util.Iterator;
  */
 @TaskDescription(id = "mg4j:collection", output = "mg4j:collection")
 public class BuildCollection extends AbstractTask {
-    public static final String IRCOLLECTIONS_NS = "http://ircollections.sourceforge.net";
+    public static final String IRCOLLECTIONS_NS = "net.bpiwowar.irc";
     final static private Logger LOGGER = LoggerFactory.getLogger(BuildCollection.class);
 
     @JsonArgument

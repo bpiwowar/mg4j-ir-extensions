@@ -3,6 +3,6 @@
 
     "namespaces": {
         "mg4j" : "net.bpiwowar.mg4j",
-        "irc": "http://ircollections.sourceforge.net"
+        "irc": "net.bpiwowar.irc"
     }
 }
