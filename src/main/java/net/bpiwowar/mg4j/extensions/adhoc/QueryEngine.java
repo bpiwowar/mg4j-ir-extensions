@@ -20,8 +20,6 @@ package net.bpiwowar.mg4j.extensions.adhoc;
  *
  */
 
-import static it.unimi.di.big.mg4j.search.DocumentIterator.END_OF_LIST;
-
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.query.IntervalSelector;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
@@ -32,29 +30,20 @@ import it.unimi.di.big.mg4j.query.nodes.QueryTransformer;
 import it.unimi.di.big.mg4j.query.parser.QueryParser;
 import it.unimi.di.big.mg4j.query.parser.QueryParserException;
 import it.unimi.di.big.mg4j.search.DocumentIterator;
-import it.unimi.di.big.mg4j.search.score.AbstractAggregator;
-import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
-import it.unimi.di.big.mg4j.search.score.LinearAggregator;
-import it.unimi.di.big.mg4j.search.score.ScoredDocumentBoundedSizeQueue;
-import it.unimi.di.big.mg4j.search.score.Scorer;
+import it.unimi.di.big.mg4j.search.score.*;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.*;
 import it.unimi.dsi.lang.FlyweightPrototype;
 import it.unimi.dsi.lang.FlyweightPrototypes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static it.unimi.di.big.mg4j.search.DocumentIterator.END_OF_LIST;
 
 
 /**

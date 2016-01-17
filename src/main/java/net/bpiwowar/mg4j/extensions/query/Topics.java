@@ -1,7 +1,7 @@
 package net.bpiwowar.mg4j.extensions.query;
 
-import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import net.bpiwowar.mg4j.extensions.trec.TRECTopic;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 
 import java.io.BufferedReader;
 import java.io.File;

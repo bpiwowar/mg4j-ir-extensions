@@ -29,7 +29,7 @@ public class Tokenizer {
         ArrayList<String> tokens = new ArrayList<>();
         reader.setReader(new StringReader(s));
         try {
-            while (reader.next(sep, word)) {
+            while (reader.next(word, sep)) {
                 tokens.add(word.toString());
             }
         } catch (IOException e) {

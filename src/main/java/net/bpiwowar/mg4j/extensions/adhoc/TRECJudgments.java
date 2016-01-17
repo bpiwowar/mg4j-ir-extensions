@@ -5,15 +5,9 @@ import bpiwowar.argparser.utils.ReadLineIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Reader;
+import java.io.*;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * A set of TREC judgments as contained in one TREC file

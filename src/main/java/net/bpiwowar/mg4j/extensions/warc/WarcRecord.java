@@ -46,13 +46,7 @@ import net.bpiwowar.mg4j.extensions.trec.TRECParsingFactory;
 import net.bpiwowar.mg4j.extensions.utils.StructuredTextExtractor;
 import net.sf.samtools.util.BlockCompressedInputStream;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;

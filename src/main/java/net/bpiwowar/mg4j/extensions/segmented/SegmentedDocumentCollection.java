@@ -1,9 +1,6 @@
 package net.bpiwowar.mg4j.extensions.segmented;
 
-import it.unimi.di.big.mg4j.document.AbstractDocumentCollection;
-import it.unimi.di.big.mg4j.document.Document;
-import it.unimi.di.big.mg4j.document.DocumentFactory;
-import it.unimi.di.big.mg4j.document.DocumentIterator;
+import it.unimi.di.big.mg4j.document.*;
 import it.unimi.dsi.fastutil.objects.ObjectBigArrayBigList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.SegmentedInputStream;
@@ -11,11 +8,7 @@ import it.unimi.dsi.logging.ProgressLogger;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.trec.IdentifiableCollection;
 import net.sf.samtools.util.BlockCompressedInputStream;
-import org.mapdb.BTreeKeySerializer;
-import org.mapdb.BTreeMap;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
+import org.mapdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.SeekableFileInputStream;
@@ -342,5 +335,10 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
     public long getDocumentFromURI(String uri) {
         if (uriToDocument == null) return UNKNOWN_DOCUMENT;
         return uriToDocument.getOrDefault(uri, UNKNOWN_DOCUMENT);
+    }
+
+    @Override
+    public String getDocumentURI(long id) throws IOException {
+        return (String)metadata(id).get(PropertyBasedDocumentFactory.MetadataKeys.URI);
     }
 }

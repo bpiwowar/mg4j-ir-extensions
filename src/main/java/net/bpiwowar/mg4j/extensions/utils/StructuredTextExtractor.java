@@ -12,13 +12,7 @@ import net.bpiwowar.mg4j.extensions.TagPointer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A callback extracting text and titles for structured documents. This implementation

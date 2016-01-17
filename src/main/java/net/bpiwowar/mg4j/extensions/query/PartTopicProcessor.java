@@ -1,11 +1,11 @@
 package net.bpiwowar.mg4j.extensions.query;
 
 import it.unimi.di.big.mg4j.index.TermProcessor;
-import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
-import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.utils.Output;
 import net.bpiwowar.mg4j.extensions.utils.TermUtil;
+import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import org.apache.commons.lang.mutable.MutableInt;
 
 import java.util.*;

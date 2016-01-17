@@ -1,6 +1,5 @@
 package net.bpiwowar.mg4j.extensions.utils.timer;
 
-import net.bpiwowar.mg4j.extensions.utils.LazyString;
 import net.bpiwowar.mg4j.extensions.utils.Memory;
 import org.slf4j.Logger;
 

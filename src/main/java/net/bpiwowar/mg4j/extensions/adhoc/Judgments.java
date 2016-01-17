@@ -1,6 +1,7 @@
 package net.bpiwowar.mg4j.extensions.adhoc;
 
 import bpiwowar.argparser.GenericHelper;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import net.bpiwowar.xpm.manager.tasks.JsonType;
 
 import java.io.File;
@@ -35,15 +36,18 @@ public abstract class Judgments {
         return judgments.keySet();
     }
 
-    @JsonType(type = "mg4j:qrels")
+    @JsonType(type = "irc:qrels")
     static public class MG4JAssessments {
+        @JsonArgument
         File path;
+        @JsonArgument
         String format;
+        @JsonArgument
         String id;
 
         public Judgments get() throws FileNotFoundException {
             switch(format) {
-                case "TREC":
+                case "trec":
                     return new TRECJudgments(path);
                 default:
                     throw new IllegalArgumentException("Cannot handle QRELS with format " + format);

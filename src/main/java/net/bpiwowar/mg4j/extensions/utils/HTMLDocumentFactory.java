@@ -40,11 +40,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 

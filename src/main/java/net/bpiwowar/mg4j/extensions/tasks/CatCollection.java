@@ -6,14 +6,14 @@ import it.unimi.di.big.mg4j.document.DocumentFactory;
 import it.unimi.di.big.mg4j.document.DocumentIterator;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.lang.MutableString;
-import net.bpiwowar.xpm.manager.tasks.AbstractTask;
-import net.bpiwowar.xpm.manager.tasks.JsonArgument;
-import net.bpiwowar.xpm.manager.tasks.ProgressListener;
-import net.bpiwowar.xpm.manager.tasks.TaskDescription;
 import net.bpiwowar.mg4j.extensions.utils.CollectionInformation;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.Streams;
 import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
+import net.bpiwowar.xpm.manager.tasks.AbstractTask;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.ProgressListener;
+import net.bpiwowar.xpm.manager.tasks.TaskDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

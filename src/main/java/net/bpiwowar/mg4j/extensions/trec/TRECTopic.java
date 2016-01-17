@@ -7,11 +7,7 @@ import it.unimi.dsi.parser.Attribute;
 import it.unimi.dsi.parser.BulletParser;
 import it.unimi.dsi.parser.Element;
 import it.unimi.dsi.parser.callback.DefaultCallback;
-import net.bpiwowar.mg4j.extensions.query.DefaultQuerySet;
-import net.bpiwowar.mg4j.extensions.query.Query;
-import net.bpiwowar.mg4j.extensions.query.QuerySet;
-import net.bpiwowar.mg4j.extensions.query.StringQuery;
-import net.bpiwowar.mg4j.extensions.query.Topic;
+import net.bpiwowar.mg4j.extensions.query.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,10 +1,10 @@
 package net.bpiwowar.mg4j.extensions.adhoc;
 
 import it.unimi.di.big.mg4j.search.score.Scorer;
+import net.bpiwowar.mg4j.extensions.adhoc.lm.LMScorer;
 import net.bpiwowar.xpm.manager.tasks.ClassChooser;
 import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
 import net.bpiwowar.xpm.manager.tasks.JsonArgument;
-import net.bpiwowar.mg4j.extensions.adhoc.lm.LMScorer;
 
 /**
  * Represent a language model

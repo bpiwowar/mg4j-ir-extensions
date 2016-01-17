@@ -18,11 +18,7 @@ import net.bpiwowar.mg4j.extensions.utils.HTMLDocumentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * Managing TREC collections provided in a WARC format, as used for instance
@@ -118,6 +114,5 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
         return new WARCDocumentCollection(files, factory().copy(), descriptors,
                 bufferSize, compression, metadataFile, uriToDocumentFile);
     }
-
 
 }

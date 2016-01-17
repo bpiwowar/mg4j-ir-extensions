@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.logging.Level;
 
 /**
  * An OutputStream that flushes out to a Category.

@@ -6,13 +6,13 @@ import it.unimi.di.big.mg4j.index.TermProcessor;
 import it.unimi.di.big.mg4j.index.snowball.EnglishStemmer;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.io.WordReader;
-import net.bpiwowar.xpm.manager.tasks.ClassChooser;
-import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
 import net.bpiwowar.mg4j.extensions.adhoc.BM25;
 import net.bpiwowar.mg4j.extensions.adhoc.RetrievalModel;
 import net.bpiwowar.mg4j.extensions.query.TopicProcessor;
 import net.bpiwowar.mg4j.extensions.tokenizer.StandfordWordReader;
 import net.bpiwowar.mg4j.extensions.tokenizer.TermNormalization;
+import net.bpiwowar.xpm.manager.tasks.ClassChooser;
+import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
 
 /**
  * Registry for the different types of objects that can be found in the tasks

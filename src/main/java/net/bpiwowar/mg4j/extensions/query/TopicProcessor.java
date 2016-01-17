@@ -10,8 +10,19 @@ import java.util.TreeMap;
  * Transform topics into MG4J query language
  */
 public interface TopicProcessor {
-    /** Process a topic */
+    /**
+     * Process a topic
+     */
     String process(Tokenizer tokenizer, TermProcessor processor, IndexedField index, Topic topic);
 
+    /**
+     * Returns a bag of word representation of the topics
+     *
+     * @param tokenizer     The string tokenizer
+     * @param termProcessor The term processor used to pre-process query terms
+     * @param index         The index to be used (or null if no index should be used) to filter out non existent terms
+     * @param topic         The topic to process
+     * @return A map between positive query terms and their number of occurrences
+     */
     TreeMap<String, MutableInt> getPositiveTerms(Tokenizer tokenizer, TermProcessor termProcessor, IndexedField index, Topic topic);
 }

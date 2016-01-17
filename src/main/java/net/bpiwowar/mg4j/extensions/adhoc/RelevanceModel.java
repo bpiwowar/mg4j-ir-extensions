@@ -12,8 +12,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.io.WordReader;
 import it.unimi.dsi.lang.MutableString;
-import net.bpiwowar.xpm.manager.tasks.JsonArgument;
-import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.query.Query;
 import net.bpiwowar.mg4j.extensions.rf.DocumentFactory;
@@ -21,6 +19,8 @@ import net.bpiwowar.mg4j.extensions.rf.MG4JFactory;
 import net.bpiwowar.mg4j.extensions.rf.MG4JRelevanceFeedback;
 import net.bpiwowar.mg4j.extensions.rf.RelevanceFeedbackMethod;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
+import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import org.apache.commons.lang.NotImplementedException;
 
 import java.io.IOException;

@@ -4,9 +4,9 @@
 package net.bpiwowar.mg4j.extensions.conf;
 
 import it.unimi.di.big.mg4j.index.TermProcessor;
-import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import net.bpiwowar.mg4j.extensions.tasks.Collection;
 import net.bpiwowar.mg4j.extensions.utils.TextToolChain;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

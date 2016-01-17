@@ -4,14 +4,13 @@ import com.google.gson.JsonObject;
 import it.unimi.di.big.mg4j.document.DocumentFactory;
 import it.unimi.dsi.io.FastBufferedReader;
 import it.unimi.dsi.lang.MutableString;
+import net.bpiwowar.mg4j.extensions.utils.*;
 import net.bpiwowar.xpm.manager.tasks.AbstractTask;
 import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import net.bpiwowar.xpm.manager.tasks.ProgressListener;
 import net.bpiwowar.xpm.manager.tasks.TaskDescription;
-import net.bpiwowar.mg4j.extensions.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Signal;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -144,8 +143,7 @@ public class CatCollectionBatches extends AbstractTask {
 
         // Handles broken pipe
         stop = false;
-        Signal pipeSignal = new Signal("PIPE");
-        Signal.handle(pipeSignal, signal -> stop = true);
+        Signals.PIPE.handle(signal -> stop = true);
 
         long batch = 0;
         MutableString word = new MutableString();
