@@ -1,6 +1,7 @@
 package net.bpiwowar.mg4j.extensions.tasks;
 
 import bpiwowar.argparser.GenericHelper;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
@@ -9,6 +10,8 @@ import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
@@ -17,10 +20,10 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import net.bpiwowar.mg4j.extensions.adhoc.RetrievalModel;
 import net.bpiwowar.mg4j.extensions.adhoc.Run;
 import net.bpiwowar.mg4j.extensions.adhoc.TRECJudgments;
-import net.bpiwowar.mg4j.extensions.adhoc.TRECRun;
 import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.query.*;
+import net.bpiwowar.mg4j.extensions.trec.IdentifiableCollection;
 import net.bpiwowar.mg4j.extensions.utils.Registry;
 import net.bpiwowar.mg4j.extensions.utils.timer.TaskTimer;
 import net.bpiwowar.xpm.manager.tasks.*;
@@ -30,8 +33,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -81,6 +84,7 @@ public class Adhoc extends AbstractTask {
     public JsonElement execute(JsonObject r, ProgressListener progress) throws Throwable {
         // Get collection + index
         DocumentCollection collection = index.getCollection().get();
+        IdentifiableCollection identifiableCollection = (IdentifiableCollection) collection;
         IndexedField _index = index.get(field);
 
         if ($run_id == null) {
@@ -112,25 +116,13 @@ public class Adhoc extends AbstractTask {
 
 
         // Handles base run
-        Object2ObjectLinkedOpenHashMap<String, LongSet> baseRunMap = null;
+        Object2ObjectLinkedOpenHashMap<String, LongOpenHashSet> baseRunMap = null;
         if (baseRun != null) {
-            baseRunMap = new Object2ObjectLinkedOpenHashMap<>();
-            TRECRun trecRun = new TRECRun(baseRun.path);
-            for (Map.Entry<String, List<TRECRun.ScoreInfo>> entry : trecRun.runs().entrySet()) {
-                final String qid = entry.getKey();
-                LongSet set = new LongOpenHashSet();
-
-                for (TRECRun.ScoreInfo info : entry.getValue()) {
-                    // FIXME: HACK HACK HACK (but protected)
-                    final long docid = info.iter;
-                    final String docno = (String) collection.metadata(docid).get(PropertyBasedDocumentFactory.MetadataKeys.URI);
-                    if (!docno.equals(info.docno)) {
-                        throw new AssertionError(format("Docnos don't match (mg4j=%s vs run=%s) for document ID %d", docno, info.docno, docid));
-                    }
-                    set.add(docid);
-                }
-                baseRunMap.put(qid, set);
-            }
+            baseRun.load().runs().forEach((qid, list) -> {
+                final LongOpenHashSet docnos = new LongOpenHashSet();
+                list.forEach(item -> docnos.add(identifiableCollection.getDocumentFromURI(item.docno)));
+                baseRunMap.put(qid, docnos);
+            });
 
         }
 

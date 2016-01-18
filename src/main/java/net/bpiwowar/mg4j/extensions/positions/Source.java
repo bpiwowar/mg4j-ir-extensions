@@ -1,6 +1,5 @@
 package net.bpiwowar.mg4j.extensions.positions;
 
-import it.unimi.di.big.mg4j.document.DocumentCollection;
 import it.unimi.di.big.mg4j.index.IndexReader;
 import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
@@ -13,16 +12,18 @@ import java.util.Map;
  */
 public class Source {
     final public IndexedField indexedField;
-    final IndexReader indexReader;
+    public final IndexReader indexReader;
     final IdentifiableCollection collection;
 
     double weight;
+    public final long unknownTermId;
 
     public Source(IndexedField indexedField, double weight, IndexReader indexReader, IdentifiableCollection collection) {
         this.indexedField = indexedField;
         this.weight = weight;
         this.indexReader = indexReader;
         this.collection = collection;
+        this.unknownTermId = indexedField.getUnknownTermId();
     }
 
     public static Source[] getSources(Map<String, Double> fieldNames, IndexedCollection index) throws Exception {

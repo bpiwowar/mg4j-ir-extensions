@@ -2,11 +2,11 @@ package net.bpiwowar.mg4j.extensions.positions;
 
 import it.unimi.di.big.mg4j.search.DocumentIterator;
 import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
-import net.bpiwowar.mg4j.extensions.trec.IdentifiableCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -16,6 +16,10 @@ import java.util.Random;
 final public class Sampler {
     public static final Logger LOGGER = LoggerFactory.getLogger(Sampler.class);
     private final Source[] sources;
+    /**
+     * Restricts to this set of terms
+     */
+    private long[][] termIds;
     private final Random random;
     private final long maxdocuments;
 
@@ -36,6 +40,22 @@ final public class Sampler {
 
         random = new Random(seed);
         LOGGER.info("Random seed is {}", seed);
+    }
+
+    /**
+     * Restrict the sampler to a set of terms
+     *
+     * @param terms Terms that will be used to restrict the sampler
+     */
+    void setTerms(List<String> terms) {
+        termIds = new long[sources.length][];
+        for (int sourceIx = 0; sourceIx < sources.length; ++sourceIx) {
+            long unknown = sources[sourceIx].indexedField.getUnknownTermId();
+            termIds[sourceIx] = terms.stream()
+                    .mapToLong(sources[sourceIx]::getTermId)
+                    .filter(t -> t != unknown)
+                    .toArray();
+        }
 
     }
 
@@ -56,18 +76,30 @@ final public class Sampler {
         while (true) {
             // If source is null, we have to choose
             if (state.source == null) {
-                // Choose index and term
-                final double v = random.nextDouble();
+
+                // Choose source
                 int ix = 0;
-                for (; ix < sources.length; ++ix) {
-                    if (sources[ix].weight >= v) {
-                        break;
+                if (sources.length > 1) {
+                    // Choose index and term
+                    final double v = random.nextDouble();
+                    for (; ix < sources.length; ++ix) {
+                        if (sources[ix].weight >= v) {
+                            break;
+                        }
                     }
+                    assert ix < sources.length;
                 }
-                assert ix < sources.length;
 
                 Source source = sources[ix];
-                long termId = (long) (random.nextFloat() * source.indexedField.index.numberOfTerms);
+
+                // Choose term
+                final long termId;
+                if (termIds == null) {
+                    termId = (long) (random.nextFloat() * source.indexedField.index.numberOfTerms);
+                } else {
+                    termId = termIds[ix][random.nextInt(termIds[ix].length)];
+                }
+
                 state.setSample(source, termId);
                 samplingRate = maxdocuments / (double) state.documents.frequency();
             }

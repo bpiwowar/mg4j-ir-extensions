@@ -15,6 +15,7 @@ public class SamplerState {
     long docId;
     private IntBigList sizes;
     IndexIterator documents;
+    private boolean useURI = false;
 
 
     public Integer getDocumentSize() {
@@ -59,7 +60,12 @@ public class SamplerState {
     public void print(PrintStream out) throws IOException {
         out.print(getTerm());
         out.print('\t');
-        out.print(source.collection.getDocumentURI(docId));
+
+        if (useURI) {
+            out.print(source.collection.getDocumentURI(docId));
+        } else {
+            out.print(docId);
+        }
         out.print('\t');
         out.print(getSource().name());
         out.print('\t');

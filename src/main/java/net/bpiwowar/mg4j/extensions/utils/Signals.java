@@ -8,7 +8,7 @@ import java.util.function.Consumer;
  * Created by bpiwowar on 16/01/16.
  */
 public enum Signals {
-    PIPE("Pipe");
+    PIPE("PIPE");
 
     String name;
 
