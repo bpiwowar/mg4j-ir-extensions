@@ -26,10 +26,10 @@ import java.util.List;
 public class ProcessLocalIDRun extends AbstractTask {
     final private static Logger LOGGER = LoggerFactory.getLogger(ProcessLocalIDRun.class);
 
-    @JsonArgument()
+    @JsonArgument(type = "irc:run")
     Run run;
 
-    @JsonPath(copy = "path")
+    @JsonPath(copy = "path", value = "run")
     File outFile;
 
     @JsonArgument(required = true)
