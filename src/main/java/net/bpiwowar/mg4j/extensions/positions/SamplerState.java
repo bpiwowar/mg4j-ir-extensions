@@ -2,7 +2,6 @@ package net.bpiwowar.mg4j.extensions.positions;
 
 import it.unimi.di.big.mg4j.index.IndexIterator;
 import it.unimi.dsi.fastutil.ints.IntBigList;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -42,8 +41,14 @@ public class SamplerState {
         return docId;
     }
 
+    /** Number of occurrences in document */
     public int count() throws IOException {
         return documents.count();
+    }
+
+    /** Number of documents the term appears in */
+    public long frequency() throws IOException {
+        return documents.frequency();
     }
 
     /**
@@ -54,8 +59,7 @@ public class SamplerState {
     public void print(PrintStream out) throws IOException {
         out.print(getTerm());
         out.print('\t');
-        final long documentId = getDocumentId();
-        out.print(source.collection.getDocumentURI(documentId));
+        out.print(source.collection.getDocumentURI(docId));
         out.print('\t');
         out.print(getSource().name());
         out.print('\t');
@@ -78,6 +82,6 @@ public class SamplerState {
     }
 
     public long nextDocument() throws IOException {
-        return documents.nextDocument();
+        return docId = documents.nextDocument();
     }
 }

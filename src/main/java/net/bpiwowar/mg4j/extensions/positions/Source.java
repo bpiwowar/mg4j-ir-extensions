@@ -36,7 +36,7 @@ public class Source {
             double v = entry.getValue();
             if (v <= 0) v = _index.getNumberOfPostings();
             if (i > 0) v += sources[i - 1].weight;
-            sources[i] = new Source(_index, v, _index.getReader(), (IdentifiableCollection) index.getCollection());
+            sources[i] = new Source(_index, v, _index.getReader(), (IdentifiableCollection) index.getCollection().get());
             if (!_index.index.hasPositions) {
                 throw new RuntimeException("No positions for index " + fieldName + "!");
             }
