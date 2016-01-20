@@ -125,8 +125,8 @@ public class AdhocRun {
     private void saveTREC(PrintStream out) {
         runs.forEach((qid, list) -> {
             list.forEach(si -> {
-                out.format("%s %d %s %d %g %s",
-                        qid, "Q0", si.docno, si.rank, si.score, si.runId
+                out.format("%s 0 %s %d %g %s%n",
+                        qid, si.docno, si.rank, si.score, si.runId
                         );
             });
         });

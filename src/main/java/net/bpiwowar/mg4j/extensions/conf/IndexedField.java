@@ -6,6 +6,8 @@ package net.bpiwowar.mg4j.extensions.conf;
 import it.unimi.di.big.mg4j.index.DiskBasedIndex;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.index.IndexReader;
+import it.unimi.di.big.mg4j.index.QuasiSuccinctIndex;
+import it.unimi.di.big.mg4j.io.IOFactory;
 import it.unimi.dsi.fastutil.ints.IntBigList;
 import it.unimi.dsi.fastutil.longs.LongBigArrayBigList;
 import it.unimi.dsi.fastutil.longs.LongBigList;
@@ -151,18 +153,27 @@ final public class IndexedField {
         LongBigList list = termfrequencies.get();
 
         if (list == null) {
-            File frequenciesFile = getFile(DiskBasedIndex.COUNTS_EXTENSION);
-            LOGGER.info("Loading term frequencies from file " +
-                    frequenciesFile);
-            list = new LongBigArrayBigList(index.numberOfTerms);
+            if (index.hasCounts) {
 
-            final InputBitStream in = new InputBitStream(frequenciesFile);
-            for (long i = 0; i < list.size64(); i++)
-                list.set(i, in.readLongGamma());
-            in.close();
-            termfrequencies = new SoftReference<>(list);
+                final String filename = getFile(DiskBasedIndex.COUNTS_EXTENSION + DiskBasedIndex.OFFSETS_POSTFIX)
+                        .getAbsolutePath();
+                LOGGER.info("Loading term frequencies from file " +
+                        filename);
+                list = DiskBasedIndex.offsets(IOFactory.FILESYSTEM_FACTORY,
+                        filename,
+                        index.numberOfTerms, 0 );
+//                list = new LongBigArrayBigList(index.numberOfTerms);
+//
+//                final InputBitStream in = new InputBitStream(frequenciesFile);
+//                for (long i = 0; i < index.numberOfTerms; i++)
+//                    list.add(i, in.readLongGamma());
+//                in.close();
+                termfrequencies = new SoftReference<>(list);
 
-            LOGGER.info("Completed.");
+                LOGGER.info("Completed.");
+                throw new AssertionError("Does not work anymore...  to be fixed!");
+            }
+
         }
         return list;
 
