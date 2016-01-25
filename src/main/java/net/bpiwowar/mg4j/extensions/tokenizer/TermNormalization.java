@@ -1,6 +1,7 @@
 package net.bpiwowar.mg4j.extensions.tokenizer;
 
 import it.unimi.di.big.mg4j.index.TermProcessor;
+import it.unimi.di.big.mg4j.query.nodes.Term;
 import it.unimi.dsi.lang.MutableString;
 import net.bpiwowar.xpm.manager.tasks.ClassChooserInstance;
 
@@ -34,5 +35,10 @@ public class TermNormalization implements TermProcessor {
     @Override
     public TermProcessor copy() {
         return new TermNormalization();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TermProcessor;
     }
 }
