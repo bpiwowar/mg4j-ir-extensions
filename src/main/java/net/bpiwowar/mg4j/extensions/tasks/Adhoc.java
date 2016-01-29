@@ -1,7 +1,6 @@
 package net.bpiwowar.mg4j.extensions.tasks;
 
 import bpiwowar.argparser.GenericHelper;
-import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
@@ -10,8 +9,6 @@ import it.unimi.di.big.mg4j.document.PropertyBasedDocumentFactory;
 import it.unimi.di.big.mg4j.index.Index;
 import it.unimi.di.big.mg4j.query.SelectedInterval;
 import it.unimi.di.big.mg4j.search.score.DocumentScoreInfo;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
@@ -33,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -127,7 +123,7 @@ public class Adhoc extends AbstractTask {
         }
 
         // Use default token
-        final Tokenizer tokenizer = new Tokenizer(index.getTextToolchain().wordReader);
+        final Tokenizer tokenizer = new Tokenizer(index.getToolchain().wordReader);
 
         // Iterates on topics
         $timer.start();

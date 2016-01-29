@@ -5,6 +5,7 @@ import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.trec.IdentifiableCollection;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -17,6 +18,9 @@ public class Source {
 
     double weight;
     public final long unknownTermId;
+
+    // Internal index
+    public int index;
 
     public Source(IndexedField indexedField, double weight, IndexReader indexReader, IdentifiableCollection collection) {
         this.indexedField = indexedField;
@@ -53,5 +57,13 @@ public class Source {
 
     public long getTermId(CharSequence term) {
         return indexedField.getTermId(term);
+    }
+
+    public int getDocumentFrequency(long tid) throws IOException {
+        return indexedField.getFrequencies().get(tid);
+    }
+
+    public int getDocumentLength(long document) {
+        return indexedField.getSize(document);
     }
 }

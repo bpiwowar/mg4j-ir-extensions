@@ -64,7 +64,7 @@ final public class IndexedField {
     /**
      * Return the size of a document
      */
-    public double getSize(int docId) {
+    public int getSize(long docId) {
         if (index.sizes == null)
             return -1;
 

@@ -21,7 +21,7 @@ final public class IndexedCollection {
     public File path;
 
     @JsonArgument(required = true)
-    TextToolChain textToolchain;
+    TextToolChain toolchain;
 
     @JsonArgument(name = "collection")
     Collection collection;
@@ -50,12 +50,12 @@ final public class IndexedCollection {
         return collection;
     }
 
-    public TextToolChain getTextToolchain() {
-        return textToolchain;
+    public TextToolChain getToolchain() {
+        return toolchain;
     }
 
     public TermProcessor getTermProcessor() {
-        return textToolchain.termProcessor;
+        return toolchain.termProcessor;
     }
 
 
