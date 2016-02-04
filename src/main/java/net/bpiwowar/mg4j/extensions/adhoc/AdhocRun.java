@@ -74,7 +74,14 @@ public class AdhocRun {
             String docno = fields[Fields.DOCNO.ordinal()];
             int rank = Integer.parseInt(fields[Fields.RANK.ordinal()]);
             long iter = Long.parseLong(fields[Fields.ITER.ordinal()]);
-            double score = Double.parseDouble(fields[Fields.SIM.ordinal()]);
+            double score;
+            final String simField = fields[Fields.SIM.ordinal()];
+            try {
+                score = Double.parseDouble(simField);
+            } catch (NumberFormatException e) {
+                LOGGER.error("Number %s cannot be parsed: transforming to NaN", simField);
+                score = Double.NaN;
+            }
             String runId = fields[Fields.RUN_ID.ordinal()];
 
             final ScoreInfo scoreInfo = new ScoreInfo(docno, iter, rank, score, runId);
@@ -127,7 +134,7 @@ public class AdhocRun {
             list.forEach(si -> {
                 out.format("%s 0 %s %d %g %s%n",
                         qid, si.docno, si.rank, si.score, si.runId
-                        );
+                );
             });
         });
     }
