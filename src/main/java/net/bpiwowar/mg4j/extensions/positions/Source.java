@@ -23,7 +23,7 @@ public class Source {
     public final long unknownTermId;
 
     // Internal index
-    public int index;
+    public byte index;
 
     static public class Input {
         @JsonArgument(required = true)
