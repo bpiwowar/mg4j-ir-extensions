@@ -5,6 +5,7 @@ import net.bpiwowar.mg4j.extensions.conf.IndexedCollection;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import net.bpiwowar.mg4j.extensions.trec.IdentifiableCollection;
 import net.bpiwowar.xpm.manager.tasks.JsonArgument;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -46,31 +47,32 @@ public class Source {
         final Integer size = Stream.of(inputs).map(i -> i.fieldNames.size()).reduce(0, (a, b) -> a + b);
         final Source[] sources = new Source[size];
         int i = 0;
+        MutableInt index = new MutableInt(0);
         for (Input input : inputs) {
-            addSources(input.fieldNames, input.index, sources, i);
+            addSources(input.fieldNames, input.index, sources, index);
         }
         return sources;
     }
 
     public static Source[] getSources(Map<String, Double> fieldNames, IndexedCollection index) throws Exception {
         final Source[] sources = new Source[fieldNames.size()];
-        int i = 0;
+        MutableInt i = new MutableInt(0);
         addSources(fieldNames, index, sources, i);
         return sources;
     }
 
-    private static void addSources(Map<String, Double> fieldNames, IndexedCollection index, Source[] sources, int i) throws Exception {
+    private static void addSources(Map<String, Double> fieldNames, IndexedCollection index, Source[] sources, MutableInt i) throws Exception {
         for (Map.Entry<String, Double> entry : fieldNames.entrySet()) {
             String fieldName = entry.getKey();
             IndexedField _index = index.get(fieldName);
             double v = entry.getValue();
             if (v <= 0) v = _index.getNumberOfPostings();
-            if (i > 0) v += sources[i - 1].weight;
-            sources[i] = new Source(_index, v, _index.getReader(), (IdentifiableCollection) index.getCollection().get());
+            if (i.intValue() > 0) v += sources[i.intValue() - 1].weight;
+            sources[i.intValue()] = new Source(_index, v, _index.getReader(), (IdentifiableCollection) index.getCollection().get());
             if (!_index.index.hasPositions) {
                 throw new RuntimeException("No positions for index " + fieldName + "!");
             }
-            ++i;
+            i.increment();
         }
     }
 
