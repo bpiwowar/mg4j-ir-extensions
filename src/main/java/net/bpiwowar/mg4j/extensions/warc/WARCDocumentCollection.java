@@ -15,6 +15,7 @@ import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
 import net.bpiwowar.mg4j.extensions.utils.HTMLDocumentFactory;
+import net.bpiwowar.xpm.manager.tasks.ProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,15 +41,15 @@ public class WARCDocumentCollection extends SegmentedDocumentCollection {
 
     /**
      * Creates a new TREC WARC collection by parsing the given files.
-     *
-     * @param file        an array of file names containing documents in TREC WARC
+     *  @param file        an array of file names containing documents in TREC WARC
      *                    format.
      * @param bufferSize  the buffer size.
      * @param compression true if the files are gzipped.
+     * @param progress
      */
     public WARCDocumentCollection(String[] file,
-                                  int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile) throws IOException {
-        super(file, new HTMLDocumentFactory(), bufferSize, compression, metadataFile, uriToDocumentFile);
+                                  int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile, ProgressListener progress) throws IOException {
+        super(file, new HTMLDocumentFactory(), bufferSize, compression, metadataFile, uriToDocumentFile, progress);
     }
 
     /**

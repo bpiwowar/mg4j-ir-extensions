@@ -74,11 +74,11 @@ public class BuildCollection extends AbstractTask {
                 final TRECDocumentFactory documentFactory = new TRECDocumentFactory(properties);
 
                 collection = new TRECDocumentCollection(files,
-                        documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile, uriToDocumentFile);
+                        documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile, uriToDocumentFile, progress);
                 break;
 
             case "warc/0.18":
-                collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile, uriToDocumentFile);
+                collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile, uriToDocumentFile, progress);
                 break;
             default:
                 LOGGER.error(String.format("Unknown document type [%s]", docType));

@@ -7,6 +7,7 @@ import it.unimi.dsi.io.SegmentedInputStream;
 import it.unimi.dsi.logging.ProgressLogger;
 import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.trec.IdentifiableCollection;
+import net.bpiwowar.xpm.manager.tasks.ProgressListener;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.mapdb.*;
 import org.slf4j.Logger;
@@ -111,7 +112,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
      */
     public SegmentedDocumentCollection(String[] files, DocumentFactory factory,
                                        int bufferSize, Compression compression, File metadataFile,
-                                       File uriToDocumentFile) throws IOException {
+                                       File uriToDocumentFile, ProgressListener progress) throws IOException {
         this.files = files;
         this.factory = factory;
         this.bufferSize = bufferSize;
@@ -143,6 +144,7 @@ public abstract class SegmentedDocumentCollection extends AbstractDocumentCollec
         for (int i = 0; i < files.length; i++) {
             parseContent(i, openFileStream(files[i]), metadataStream);
             progressLogger.update();
+            progress.progress((float)i / (float)files.length);
         }
         metadataStream.close();
 

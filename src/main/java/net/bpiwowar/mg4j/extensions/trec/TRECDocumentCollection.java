@@ -31,6 +31,7 @@ import net.bpiwowar.mg4j.extensions.Compression;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentDescriptor;
 import net.bpiwowar.mg4j.extensions.utils.ByteMatch;
+import net.bpiwowar.xpm.manager.tasks.ProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +79,8 @@ public class TRECDocumentCollection extends SegmentedDocumentCollection {
 
     transient byte docnoBuffer[];
 
-    public TRECDocumentCollection(String[] files, DocumentFactory factory, int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile) throws IOException {
-        super(files, factory, bufferSize, compression, metadataFile, uriToDocumentFile);
+    public TRECDocumentCollection(String[] files, DocumentFactory factory, int bufferSize, Compression compression, File metadataFile, File uriToDocumentFile, ProgressListener progress) throws IOException {
+        super(files, factory, bufferSize, compression, metadataFile, uriToDocumentFile, progress);
     }
 
     public TRECDocumentCollection(String[] files, DocumentFactory factory, ObjectBigArrayBigList<SegmentedDocumentDescriptor> descriptors,
