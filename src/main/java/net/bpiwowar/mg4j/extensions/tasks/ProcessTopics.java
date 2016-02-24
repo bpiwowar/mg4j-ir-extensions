@@ -32,7 +32,7 @@ public class ProcessTopics extends AbstractTask {
     ArrayList<Query> queries;
 
     @Override
-    public JsonObject execute(JsonObject r, ProgressListener progress) throws Throwable {
+    public JsonObject execute(JsonObject r) throws Throwable {
         MutableString word = new MutableString();
         MutableString delimiter = new MutableString();
 

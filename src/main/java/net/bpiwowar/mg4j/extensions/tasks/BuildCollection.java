@@ -15,12 +15,22 @@ import net.bpiwowar.mg4j.extensions.segmented.SegmentedDocumentCollection;
 import net.bpiwowar.mg4j.extensions.trec.TRECDocumentCollection;
 import net.bpiwowar.mg4j.extensions.trec.TRECDocumentFactory;
 import net.bpiwowar.mg4j.extensions.warc.WARCDocumentCollection;
-import net.bpiwowar.xpm.manager.tasks.*;
+import net.bpiwowar.xpm.manager.tasks.AbstractTask;
+import net.bpiwowar.xpm.manager.tasks.JsonArgument;
+import net.bpiwowar.xpm.manager.tasks.JsonPath;
+import net.bpiwowar.xpm.manager.tasks.JsonType;
+import net.bpiwowar.xpm.manager.tasks.TaskDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.NamespaceContext;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -42,7 +52,7 @@ public class BuildCollection extends AbstractTask {
     File collection;
 
     @Override
-    public JsonObject execute(JsonObject r, ProgressListener progress) throws Throwable {
+    public JsonObject execute(JsonObject r) throws Throwable {
         // Create the file now
         OutputStream out = new FileOutputStream(collection);
 
@@ -74,11 +84,13 @@ public class BuildCollection extends AbstractTask {
                 final TRECDocumentFactory documentFactory = new TRECDocumentFactory(properties);
 
                 collection = new TRECDocumentCollection(files,
-                        documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile, uriToDocumentFile, progress);
+                        documentFactory, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile,
+                        uriToDocumentFile, progressListener);
                 break;
 
             case "warc/0.18":
-                collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE, compression, metadataFile, uriToDocumentFile, progress);
+                collection = new WARCDocumentCollection(files, SegmentedDocumentCollection.DEFAULT_BUFFER_SIZE,
+                        compression, metadataFile, uriToDocumentFile, progressListener);
                 break;
             default:
                 LOGGER.error(String.format("Unknown document type [%s]", docType));

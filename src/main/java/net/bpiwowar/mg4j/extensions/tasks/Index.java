@@ -47,7 +47,7 @@ public class Index extends AbstractTask {
     File index;
 
     @Override
-    public JsonElement execute(JsonObject r, ProgressListener progress) throws Throwable {
+    public JsonElement execute(JsonObject r) throws Throwable {
         // Retrieve the collection
         DocumentSequence documentSequence = Scan.getSequence(collection.path.getAbsolutePath(),
                 IdentityDocumentFactory.class, new String[]{},

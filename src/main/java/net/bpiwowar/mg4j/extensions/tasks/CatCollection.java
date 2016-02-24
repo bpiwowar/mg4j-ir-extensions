@@ -51,7 +51,7 @@ public class CatCollection extends AbstractTask {
     ArrayList<String> ids = new ArrayList<>();
 
     @Override
-    public JsonObject execute(JsonObject r, ProgressListener progress) throws Throwable {
+    public JsonObject execute(JsonObject r) throws Throwable {
         // Get the list of collections
         CollectionInformation[] collections = this.collectionPaths.stream()
                 .map(Streams.propagateFunction(c -> new CollectionInformation(c, fieldNames)))

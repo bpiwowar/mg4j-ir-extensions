@@ -126,7 +126,7 @@ public class CatCollectionBatches extends AbstractTask {
     }
 
     @Override
-    public JsonObject execute(JsonObject r, ProgressListener progress) throws Throwable {
+    public JsonObject execute(JsonObject r) throws Throwable {
         if (batchSize <= 0) {
             throw new IllegalArgumentException("Batch size should be greater than 0");
         }

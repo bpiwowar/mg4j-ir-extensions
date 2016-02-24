@@ -77,7 +77,7 @@ public class Adhoc extends AbstractTask {
     File run;
 
     @Override
-    public JsonElement execute(JsonObject r, ProgressListener progress) throws Throwable {
+    public JsonElement execute(JsonObject r) throws Throwable {
         // Get collection + index
         DocumentCollection collection = index.getCollection().get();
         IdentifiableCollection identifiableCollection = (IdentifiableCollection) collection;

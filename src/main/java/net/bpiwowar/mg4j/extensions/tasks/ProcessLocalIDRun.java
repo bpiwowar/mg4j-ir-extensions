@@ -36,7 +36,7 @@ public class ProcessLocalIDRun extends AbstractTask {
     IndexedCollection index;
 
     @Override
-    public JsonElement execute(JsonObject r, ProgressListener progress) throws Throwable {
+    public JsonElement execute(JsonObject r) throws Throwable {
         final IdentifiableCollection collection = (IdentifiableCollection) index.getCollection().get();
 
         final AdhocRun adhocRun = run.load();
