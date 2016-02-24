@@ -52,11 +52,12 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 public class WarcRecord {
 
-    public static String WARC_VERSION = "WARC/0.18";
-    public static String WARC_VERSION_LINE = "WARC/0.18\n";
+    public static String WARC_VERSION_START = "WARC/";
+
     private static String NEWLINE = "\n";
 
     private static byte MASK_THREE_BYTE_CHAR = (byte) (0xE0);
@@ -70,6 +71,7 @@ public class WarcRecord {
      * Flag that controls if we read or drop the content
      */
     private static boolean readContent = true;
+    private static String version;
 
     /**
      * Set the flag that controls if we read or drop the content we read from
@@ -310,8 +312,9 @@ public class WarcRecord {
         // record the decision in stream before the WARC record is read
         marker.startMarker = currentPosition;
         while ((!foundMark) && ((line = readLineFromInputStream(in)) != null)) {
-            if (line.startsWith(WARC_VERSION)) {
+            if (line.startsWith(WARC_VERSION_START)) {
                 foundMark = true;
+                version = line;
             } else marker.startMarker = currentPosition;
         }
 
@@ -518,7 +521,7 @@ public class WarcRecord {
         public String toString() {
             StringBuffer retBuffer = new StringBuffer();
 
-            retBuffer.append(WARC_VERSION);
+            retBuffer.append(version);
             retBuffer.append(NEWLINE);
 
             retBuffer.append("WARC-Type: " + recordType + NEWLINE);

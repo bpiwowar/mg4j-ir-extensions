@@ -32,4 +32,8 @@ public class DefaultQuerySet implements QuerySet, Serializable {
     public void put(String id, Topic topic) {
         queries.put(id, topic);
     }
+
+    public void add(Topic topic) {
+        put(topic.getId(), topic);
+    }
 }

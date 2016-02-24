@@ -19,12 +19,15 @@ import java.util.Map.Entry;
 public class TRECJudgments extends Judgments {
     final static private Logger LOGGER = LoggerFactory.getLogger(TRECJudgments.class);
 
-    public TRECJudgments(Reader in) {
+    public TRECJudgments(Reader in, boolean diversity) {
         for (String line : new ReadLineIterator(in)) {
             String[] fields = line.split("\\s+");
-            if (fields.length != Fields.values().length)
+
+            final int LENGTH = Fields.values().length;
+            if (fields.length < LENGTH || (fields.length > LENGTH && !diversity)) {
                 throw new RuntimeException(String.format(
                         "Non TREC qrels format for line: %s", line));
+            }
 
             String qid = fields[Fields.QID.ordinal()];
             String docno = fields[Fields.DOCNO.ordinal()];
@@ -41,7 +44,11 @@ public class TRECJudgments extends Judgments {
     }
 
     public TRECJudgments(File file) throws FileNotFoundException {
-        this(new FileReader(file));
+        this(new FileReader(file), false);
+    }
+
+    public TRECJudgments(File path, boolean diversity) throws FileNotFoundException {
+        this(new FileReader(path), diversity);
     }
 
 

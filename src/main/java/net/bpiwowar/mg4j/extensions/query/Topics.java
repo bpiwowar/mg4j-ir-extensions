@@ -2,11 +2,11 @@ package net.bpiwowar.mg4j.extensions.query;
 
 import net.bpiwowar.mg4j.extensions.trec.TRECTopic;
 import net.bpiwowar.xpm.manager.tasks.JsonArgument;
+import org.xml.sax.SAXException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import java.io.*;
 
 import static java.lang.String.format;
 
@@ -23,11 +23,15 @@ public class Topics {
     @JsonArgument(help = "The ID of the topics")
     String id;
 
-    public QuerySet getQuerySet() throws IOException {
+    public QuerySet getQuerySet() throws IOException, XMLStreamException, ParserConfigurationException, SAXException {
         switch ($format) {
             case "trec":
                 try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
                     return TRECTopic.readTopics(reader, false);
+                }
+            case "trec.web.2009":
+                try (FileInputStream is = new FileInputStream(path)) {
+                    return TRECWebTopic.readTopics(is);
                 }
             default:
                 throw new RuntimeException(format("Cannot handle topics of type %s", $format));

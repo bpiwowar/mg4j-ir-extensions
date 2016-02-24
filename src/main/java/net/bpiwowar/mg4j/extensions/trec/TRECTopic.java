@@ -214,19 +214,16 @@ public class TRECTopic implements Topic {
     final static List<String> list = ListAdaptator.create("title", "desc");
 
     @Override
-    public Query getTopicPart(String type) {
-        if ("title".equals(type))
-            return title != null ? new StringQuery(title) : null;
-
-        if ("desc".equals(type))
-            return description != null ? new StringQuery(description) : null;
+    public Query getTopicPart(QueryType type) {
+        switch (type) {
+            case TITLE:
+                return title != null ? new StringQuery(title) : null;
+            case DESCRIPTION:
+                return description != null ? new StringQuery(description) : null;
+        }
 
         return null;
     }
 
-    @Override
-    public List<String> getTypes() {
-        return list;
-    }
 
 }

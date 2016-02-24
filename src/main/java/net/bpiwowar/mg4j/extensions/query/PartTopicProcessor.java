@@ -42,7 +42,8 @@ public class PartTopicProcessor implements TopicProcessor {
         TreeMap<String, MutableInt> terms = new TreeMap<>();
 
         // Iterates over query types until we get something
-        Iterator<Set<String>> fallbackIterator = queryTypes.iterator();
+        List<EnumSet<QueryType>> _queryTypes = convert(queryTypes);
+        Iterator<EnumSet<QueryType>> fallbackIterator = _queryTypes.iterator();
         while (terms.isEmpty() && fallbackIterator.hasNext()) {
             getPositiveTerms(tokenizer, processor, index, topic, terms, fallbackIterator.next());
         }
@@ -50,8 +51,19 @@ public class PartTopicProcessor implements TopicProcessor {
         return terms;
     }
 
-    static private void getPositiveTerms(Tokenizer tokenizer, TermProcessor processor, IndexedField index, Topic topic, TreeMap<String, MutableInt> terms, Set<String> queryTypes) {
-        for (String queryType : queryTypes) {
+    private List<EnumSet<QueryType>> convert(ArrayList<Set<String>> queryTypes) {
+        List<EnumSet<QueryType>> list = new ArrayList<>();
+        for (Set<String> set : queryTypes) {
+            final EnumSet<QueryType> _set = EnumSet.noneOf(QueryType.class);
+            set.stream().map(s -> QueryType.from(s)).forEach(_set::add);
+            list.add(_set);
+        }
+        return list;
+    }
+
+    static private void getPositiveTerms(Tokenizer tokenizer, TermProcessor processor, IndexedField index,
+                                         Topic topic, TreeMap<String, MutableInt> terms, EnumSet<QueryType> queryTypes) {
+        for (QueryType queryType : queryTypes) {
             // Retrieve the query part
             Query query = topic.getTopicPart(queryType);
 

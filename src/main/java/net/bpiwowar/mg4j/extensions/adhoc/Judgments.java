@@ -49,6 +49,8 @@ public abstract class Judgments {
             switch(format) {
                 case "trec":
                     return new TRECJudgments(path);
+                case "trec.diversity":
+                    return new TRECJudgments(path, true);
                 default:
                     throw new IllegalArgumentException("Cannot handle QRELS with format " + format);
             }

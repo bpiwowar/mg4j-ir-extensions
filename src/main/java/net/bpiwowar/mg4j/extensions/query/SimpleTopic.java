@@ -52,14 +52,10 @@ public class SimpleTopic implements Topic {
     }
 
     @Override
-    public Query getTopicPart(String type) {
+    public Query getTopicPart(QueryType type) {
         // we ignore the type
         return new StringQuery(query);
     }
 
-    @Override
-    public List<String> getTypes() {
-        return typeList;
-    }
 
 }

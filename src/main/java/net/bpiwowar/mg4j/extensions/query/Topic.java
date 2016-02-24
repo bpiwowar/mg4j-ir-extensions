@@ -1,7 +1,5 @@
 package net.bpiwowar.mg4j.extensions.query;
 
-import java.util.List;
-
 /**
  * An interface for a topic. Topics may consist of several parts
  * describing the information need. These parts may for instance be a query
@@ -23,14 +21,6 @@ public interface Topic {
      *
      * @param type the topic part/type
      * @return a {@link Query} object representing the topic part, or null if no such object exists
-     * @see #getTypes
      */
-    Query getTopicPart(String type);
-
-    /**
-     * Gets the available topic parts or types
-     *
-     * @return a String list of available topic types
-     */
-    List<String> getTypes();
+    Query getTopicPart(QueryType type);
 }

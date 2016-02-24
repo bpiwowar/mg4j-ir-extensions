@@ -6,10 +6,7 @@ import it.unimi.dsi.parser.Attribute;
 import it.unimi.dsi.parser.BulletParser;
 import it.unimi.dsi.parser.Element;
 import it.unimi.dsi.parser.callback.DefaultCallback;
-import net.bpiwowar.mg4j.extensions.query.DefaultQuerySet;
-import net.bpiwowar.mg4j.extensions.query.Query;
-import net.bpiwowar.mg4j.extensions.query.StringQuery;
-import net.bpiwowar.mg4j.extensions.query.Topic;
+import net.bpiwowar.mg4j.extensions.query.*;
 import net.bpiwowar.mg4j.extensions.trec.TRECParsingFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,19 +214,14 @@ public class TRECTopic implements Topic {
     final static List<String> list = Arrays.asList("title", "desc");
 
     @Override
-    public Query getTopicPart(String type) {
-        if ("title".equals(type))
-            return new StringQuery(title);
-
-        if ("desc".equals(type))
-            return new StringQuery(description);
-
+    public Query getTopicPart(QueryType type) {
+        switch(type) {
+            case TITLE:
+                return new StringQuery(title);
+            case DESCRIPTION:
+                return new StringQuery(description);
+        }
         return null;
-    }
-
-    @Override
-    public List<String> getTypes() {
-        return list;
     }
 
 }
