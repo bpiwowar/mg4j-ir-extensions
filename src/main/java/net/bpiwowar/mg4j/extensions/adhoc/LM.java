@@ -17,7 +17,7 @@ public class LM extends MG4JScorer {
     LMModel smoothing;
 
     @Override
-    Scorer getScorer() {
+    public Scorer getScorer() {
         return smoothing;
     }
 

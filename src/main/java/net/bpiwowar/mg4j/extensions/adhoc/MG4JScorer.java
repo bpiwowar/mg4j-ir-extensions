@@ -36,7 +36,7 @@ public abstract class MG4JScorer implements RetrievalModel {
     @Argument(name = "rf", prefix = "pseudo-rf", help = "How to handle pseudo-relevance feedback", handler = ClassChooser.class)
     PseudoRF pseudoRF;
 
-    abstract Scorer getScorer();
+    public abstract Scorer getScorer();
 
     /**
      * The MG4J topic. Made public to be reusable later. Invoke process()

@@ -23,7 +23,7 @@ public class BM25 extends MG4JScorer {
     }
 
     @Override
-    Scorer getScorer() {
+    public Scorer getScorer() {
         return new BM25Scorer(k1, b);
     }
 }
