@@ -14,6 +14,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A document collection together with its index
+ */
 final public class IndexedCollection {
     final static private Logger LOGGER = LoggerFactory.getLogger(IndexedCollection.class);
 
