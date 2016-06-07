@@ -1,7 +1,11 @@
 package net.bpiwowar.mg4j.extensions.query;
 
 import bpiwowar.argparser.utils.Output;
-import net.bpiwowar.mg4j.extensions.utils.*;
+import net.bpiwowar.mg4j.extensions.utils.Aggregator;
+import net.bpiwowar.mg4j.extensions.utils.DefaultMap;
+import net.bpiwowar.mg4j.extensions.utils.JoinIterator;
+import net.bpiwowar.mg4j.extensions.utils.MapIntersectionIterator;
+import net.bpiwowar.mg4j.extensions.utils.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
 
 import java.io.PrintStream;
