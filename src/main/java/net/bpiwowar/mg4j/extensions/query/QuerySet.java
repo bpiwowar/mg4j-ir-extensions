@@ -3,7 +3,7 @@ package net.bpiwowar.mg4j.extensions.query;
 import java.util.Map;
 
 /**
- * A set of queries resp. topics
+ * A set of topics indexed by ID
  *
  * @author B. Piwowarski <benjamin@bpiwowar.net>
  */

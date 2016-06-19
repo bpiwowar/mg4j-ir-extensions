@@ -1,5 +1,6 @@
 package net.bpiwowar.mg4j.extensions.query;
 
+import net.bpiwowar.mg4j.extensions.Utils;
 import net.bpiwowar.mg4j.extensions.trec.TRECTopic;
 import net.bpiwowar.xpm.manager.tasks.JsonArgument;
 import org.xml.sax.SAXException;
@@ -36,6 +37,9 @@ public class Topics {
             default:
                 throw new RuntimeException(format("Cannot handle topics of type %s", $format));
         }
+    }
 
+    static public Topics fromJSON(String json) {
+        return Utils.get(json, Topics.class);
     }
 }

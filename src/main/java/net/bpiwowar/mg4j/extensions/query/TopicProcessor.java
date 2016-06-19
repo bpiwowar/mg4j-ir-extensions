@@ -1,6 +1,7 @@
 package net.bpiwowar.mg4j.extensions.query;
 
 import it.unimi.di.big.mg4j.index.TermProcessor;
+import net.bpiwowar.mg4j.extensions.Utils;
 import net.bpiwowar.mg4j.extensions.conf.IndexedField;
 import org.apache.commons.lang.mutable.MutableInt;
 
@@ -25,4 +26,8 @@ public interface TopicProcessor {
      * @return A map between positive query terms and their number of occurrences
      */
     TreeMap<String, MutableInt> getPositiveTerms(Tokenizer tokenizer, TermProcessor termProcessor, IndexedField index, Topic topic);
+
+    static TopicProcessor fromJSON(String json) {
+        return Utils.get(json, TopicProcessor.class);
+    }
 }
